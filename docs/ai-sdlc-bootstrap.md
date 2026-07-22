@@ -18,8 +18,7 @@ Do these in order. Do not create or modify any files before Phase 3 approval.
 
 Deep-dive proven agentic SDLC patterns. Consult these sources and extract concrete, reusable building blocks (orchestrator loops, task decomposition, tracking/checkpoint state, specialist roles, quality gates, human-in-the-loop gates):
 
-- https://github.com/githubabcs/gh-abcs-admin/blob/main/docs/20-governed-ai-sdlc-plan.md#5-the-internal-ai-sdlc-agent-team-catalog
-- 
+- [Agent Team Catalog](https://github.com/githubabcs/gh-abcs-admin/blob/main/docs/20-governed-ai-sdlc-plan.md#5-the-internal-ai-sdlc-agent-team-catalog)
 - [Anthropic skills](https://github.com/anthropics/skills)
 - [Microsoft skills](https://github.com/microsoft/skills)
 - [Microsoft hve-core](https://github.com/microsoft/hve-core)
