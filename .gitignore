@@ -1,0 +1,17 @@
+# Copilot / agent runtime state (never commit)
+.copilot-tracking/
+.playwright-mcp/
+.impeccable/
+
+# Screenshot / verification scratch
+verify-*.png
+page-*.png
+*.tmp
+
+# Node / tooling
+node_modules/
+npm-debug.log*
+
+# OS cruft
+Thumbs.db
+.DS_Store

@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI-SDLC: The Agentic Software Delivery System</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg-2: #0f172a;
+    --panel: #131a2e;
+    --panel-2: #1a2440;
+    --line: #26304a;
+    --ink: #eef2ff;
+    --muted: #93a0c0;
+    --idea: #0ea5e9;
+    --plan: #6366f1;
+    --build: #f59e0b;
+    --test: #0d9488;
+    --sign: #a855f7;
+    --deploy: #ef4444;
+    --prod: #16a34a;
+    --orch: #f43f5e;
+    --human: #fbbf24;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    background: radial-gradient(1200px 700px at 15% -10%, #172448 0%, transparent 55%),
+                radial-gradient(1000px 600px at 100% 0%, #201638 0%, transparent 50%),
+                var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- Top bar ---------- */
+  header.topbar {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(14px);
+    background: rgba(11,16,32,.72);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar .wrap { display: flex; align-items: center; gap: 16px; height: 62px; }
+  .logo { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: .3px; }
+  .logo .mark {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: conic-gradient(from 200deg, var(--idea), var(--plan), var(--sign), var(--deploy), var(--prod), var(--idea));
+    box-shadow: 0 0 22px rgba(99,102,241,.55);
+  }
+  .logo small { display:block; font-weight:500; font-size:11px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase; }
+  .topbar nav { margin-left: auto; display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+  .topbar nav a { text-decoration: none; transition: color .2s; }
+  .topbar nav a:hover { color: var(--ink); }
+  .pill-badge {
+    font-size: 12px; padding: 5px 11px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted);
+  }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 74px 0 44px; position: relative; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 12.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--muted); border: 1px solid var(--line);
+    padding: 7px 14px; border-radius: 999px; margin-bottom: 22px;
+    background: rgba(255,255,255,.02);
+  }
+  .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--prod); box-shadow: 0 0 10px var(--prod); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:.35 } }
+  h1.hero-title {
+    font-size: clamp(38px, 6vw, 68px); line-height: 1.02; font-weight: 850;
+    letter-spacing: -1.5px; max-width: 15ch;
+  }
+  h1.hero-title .grad {
+    background: linear-gradient(100deg, var(--idea), var(--plan) 40%, var(--sign) 70%, var(--deploy));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.lead { margin-top: 22px; max-width: 54ch; font-size: 18.5px; color: #c7d0ea; }
+  .hero-cta { margin-top: 30px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
+  .hero-visual { position: relative; }
+  .hero-visual::before {
+    content: ""; position: absolute; inset: -12% -6% -12% 6%; z-index: 0;
+    background: radial-gradient(60% 55% at 60% 45%, rgba(99,102,241,.20), transparent 70%),
+                radial-gradient(45% 45% at 75% 75%, rgba(168,85,247,.16), transparent 70%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .console {
+    position: relative; z-index: 1;
+    background: linear-gradient(180deg, #0f1730, #0c1226);
+    border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 34px 64px -26px rgba(0,0,0,.75), inset 0 0 0 1px rgba(255,255,255,.02);
+  }
+  .console-bar { display: flex; align-items: center; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.02); }
+  .cdot { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+  .cdot.r { background: #ff5f57; } .cdot.y { background: #febc2e; } .cdot.g { background: #28c840; }
+  .console-title { margin-left: 8px; font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+  .console-body { padding: 18px 18px 20px; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 13.5px; }
+  .cprompt { color: #aeb9d6; margin-bottom: 15px; line-height: 1.5; word-break: break-word; }
+  .cprompt .sign { color: var(--test); font-weight: 700; }
+  .cprompt .str { color: #7fd0ff; }
+  .cstep { display: flex; align-items: center; gap: 11px; padding: 7px 0; color: #e2e8ff;
+    opacity: 0; transform: translateY(7px); animation: cin .5s ease forwards; animation-delay: var(--d); }
+  .cmeta { color: #93a0c0; font-size: 12px; margin-left: auto; text-align: right; }
+  .ctick { width: 22px; height: 22px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; color: #0b1020; font-weight: 800; flex: none;
+    background-image: linear-gradient(rgba(255,255,255,.24), rgba(255,255,255,.24)); }
+  .ctick[data-p="plan"] { background-color: var(--plan); }
+  .ctick[data-p="build"] { background-color: var(--build); }
+  .ctick[data-p="test"] { background-color: var(--test); }
+  .ctick[data-p="deploy"] { background-color: var(--deploy); }
+  .ctick.pend { background-color: var(--human); animation: pend 1.7s ease-in-out infinite; }
+  .cstep.signoff .cmeta { color: #fbbf24; }
+  .cdone { margin-top: 14px; padding-top: 15px; border-top: 1px dashed var(--line);
+    opacity: 0; transform: translateY(7px); animation: cin .5s ease forwards; animation-delay: var(--d); }
+  .cdone-pill { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em;
+    color: #c7f9d8; background: rgba(22,163,74,.16); border: 1px solid rgba(22,163,74,.55); padding: 7px 14px; border-radius: 999px; }
+  @keyframes cin { to { opacity: 1; transform: none; } }
+  @keyframes pend { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+  @media (prefers-reduced-motion: reduce) {
+    .cstep, .cdone { animation: none; opacity: 1; transform: none; }
+    .ctick.pend { animation: none; }
+  }
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 36px; }
+    .hero-visual { max-width: 460px; }
+  }
+  .btn {
+    cursor: pointer; border: none; font: inherit; font-weight: 650; font-size: 15px;
+    padding: 13px 22px; border-radius: 12px; display: inline-flex; align-items: center; gap: 9px;
+    transition: transform .15s, box-shadow .2s, background .2s;
+  }
+  .btn.primary { background: linear-gradient(100deg, #4f46e5, #9333ea); color: #fff; box-shadow: 0 10px 30px -8px rgba(124,58,237,.6); }
+  .btn.primary:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -8px rgba(124,58,237,.75); }
+  .btn.ghost { background: rgba(255,255,255,.04); color: var(--ink); border: 1px solid var(--line); }
+  .btn.ghost:hover { background: rgba(255,255,255,.09); transform: translateY(-2px); }
+  a:focus-visible, button:focus-visible, .btn:focus-visible, .stage:focus-visible {
+    outline: 2px solid var(--idea); outline-offset: 3px; border-radius: 6px;
+  }
+
+  .stat-row { margin-top: 52px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .stat {
+    border: 1px solid var(--line); border-radius: 16px; padding: 26px 24px;
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+  }
+  .stat .n { font-size: 48px; font-weight: 850; letter-spacing: -1px; line-height: 1; }
+  .stat .l { font-size: 15px; color: var(--muted); margin-top: 8px; }
+
+  /* ---------- Section headings ---------- */
+  section { padding: 60px 0; }
+  .sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+  .sec-head h2 { font-size: clamp(26px, 3.4vw, 38px); letter-spacing: -.8px; font-weight: 800; }
+  .sec-head p { color: var(--muted); max-width: 52ch; font-size: 15.5px; }
+  .exec-head { display: grid; grid-template-columns: minmax(230px, 330px) 1fr; gap: 26px 56px; align-items: end; margin-bottom: 34px; }
+  .exec-head h2 { font-size: clamp(26px, 3.4vw, 38px); letter-spacing: -.8px; font-weight: 800; }
+  .exec-head p { color: #c6cfea; max-width: none; font-size: clamp(16px, 1.5vw, 19px); line-height: 1.62; }
+  @media (max-width: 760px) { .exec-head { grid-template-columns: 1fr; gap: 14px; align-items: start; } }
+
+  /* ---------- Pipeline ---------- */
+  .stage-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .stage-controls .btn { padding: 10px 16px; font-size: 14px; }
+  .progress-track { height: 5px; border-radius: 999px; background: var(--panel-2); overflow: hidden; margin: 6px 0 26px; }
+  .progress-fill { height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, var(--idea), var(--plan), var(--sign), var(--deploy)); transition: width .5s ease; }
+
+  .pipeline {
+    display: grid; grid-auto-flow: column; grid-auto-columns: minmax(178px, 1fr);
+    gap: 12px; overflow-x: auto; padding: 8px 4px 22px; scroll-snap-type: x proximity;
+  }
+  .pipeline::-webkit-scrollbar { height: 8px; }
+  .pipeline::-webkit-scrollbar-thumb { background: var(--panel-2); border-radius: 999px; }
+  .stage {
+    scroll-snap-align: center; position: relative; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 16px; padding: 16px 15px;
+    background: var(--panel); min-height: 150px;
+    transition: transform .25s, border-color .25s, box-shadow .25s, background .25s;
+  }
+  .stage:hover { transform: translateY(-4px); border-color: var(--accent); }
+  .stage.active {
+    border-color: var(--accent); background: var(--panel-2);
+    box-shadow: 0 0 0 1px var(--accent), 0 18px 40px -14px var(--accent);
+    transform: translateY(-6px);
+  }
+  .stage.done .badge-check { opacity: 1; transform: scale(1); }
+  .stage .top { display: flex; align-items: center; justify-content: space-between; }
+  .stage .ico { font-size: 24px; filter: drop-shadow(0 3px 6px rgba(0,0,0,.4)); }
+  .stage .phase-tag {
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700;
+    color: #0b1020; background-color: var(--accent);
+    background-image: linear-gradient(rgba(255,255,255,.24), rgba(255,255,255,.24));
+    padding: 3px 8px; border-radius: 999px;
+  }
+  .stage h3 { font-size: 16px; margin-top: 12px; font-weight: 750; letter-spacing: -.2px; }
+  .stage .who { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+  .stage .who b { color: #d7def5; font-weight: 650; }
+  .stage .gate { margin-top: 12px; font-size: 12px; color: #cbd4ee; font-weight: 650; display: flex; align-items: center; gap: 6px; }
+  .stage .gate::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--accent); flex: none; }
+  .stage .badge-check {
+    position: absolute; top: -9px; right: -9px; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--prod); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 800;
+    opacity: 0; transform: scale(.4); transition: .3s; box-shadow: 0 4px 12px rgba(22,163,74,.6);
+  }
+  .stage .connector {
+    position: absolute; right: -12px; top: 50%; width: 12px; height: 2px; background: var(--line); z-index: 1;
+  }
+
+  /* ---------- Detail panel ---------- */
+  .detail {
+    margin-top: 8px; border: 1px solid var(--line); border-radius: 20px; overflow: hidden;
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+  }
+  .detail .head { padding: 24px 26px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); transition: background .3s; }
+  .detail .head .big-ico { font-size: 40px; }
+  .detail .head h3 { font-size: 24px; letter-spacing: -.4px; }
+  .detail .head .sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
+  .detail .grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 0; }
+  .detail .cell { padding: 22px 26px; border-right: 1px solid var(--line); }
+  .detail .cell:last-child { border-right: none; }
+  .detail .cell .k { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; padding: 7px 12px; border-radius: 10px; margin: 0 8px 8px 0; border: 1px solid var(--line); }
+  .chip.ai { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.4); }
+  .chip.human { background: rgba(251,191,36,.1); border-color: rgba(251,191,36,.4); }
+  .chip.gate { background: rgba(13,148,136,.12); border-color: rgba(13,148,136,.4); }
+  .detail .desc { font-size: 14.5px; color: #cbd4ee; }
+  @media (max-width: 860px) { .detail .grid { grid-template-columns: 1fr; } .detail .cell { border-right: none; border-bottom: 1px solid var(--line); } .stat-row { grid-template-columns: repeat(2,1fr); } }
+
+  /* ---------- Loops ---------- */
+  .loops { margin-top: 22px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .loop {
+    display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #f4b8b8;
+    border: 1px dashed rgba(239,68,68,.5); background: rgba(239,68,68,.07);
+    padding: 10px 15px; border-radius: 12px;
+  }
+  .loop.gov { color: #e9c6ff; border-color: rgba(168,85,247,.5); background: rgba(168,85,247,.08); }
+
+  /* ---------- Personas ---------- */
+  .persona-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; }
+  .persona-col { border: 1px solid var(--line); border-radius: 18px; padding: 24px; background: var(--panel); }
+  .persona-col h4 { font-size: 15px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; display:flex; align-items:center; gap:10px; }
+  .persona { display: flex; align-items: center; gap: 13px; padding: 11px 0; border-top: 1px solid var(--line); }
+  .persona:first-of-type { border-top: none; }
+  .persona .av { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
+  .persona .nm { font-weight: 680; font-size: 15px; }
+  .persona .rl { font-size: 12.5px; color: var(--muted); }
+  @media (max-width: 720px){ .persona-grid { grid-template-columns: 1fr; } }
+
+  footer { border-top: 1px solid var(--line); padding: 34px 0 60px; color: var(--muted); font-size: 13.5px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s, transform .7s; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ---------- Stat band (under the lifecycle) ---------- */
+  .stat-band { margin-top: 46px; }
+  .stat-band .cap { font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 16px; text-align: center; }
+
+  /* ---------- Executive overview diagram ---------- */
+  .exec { display: flex; flex-direction: column; align-items: stretch; max-width: 980px; margin: 0 auto; }
+  .exec-node { text-align: center; border-radius: 16px; padding: 18px 22px; font-weight: 750; font-size: 18px; border: 1px solid var(--line); color: var(--ink); }
+  .exec-node small { display: block; font-weight: 500; font-size: 13px; margin-top: 5px; color: #cbd4ee; }
+  .exec-node.idea { background: linear-gradient(180deg, rgba(14,165,233,.20), rgba(14,165,233,.05)); border-color: rgba(14,165,233,.55); }
+  .exec-node.orch { background: linear-gradient(180deg, rgba(244,63,94,.18), rgba(15,23,42,.5)); border-color: rgba(244,63,94,.55); }
+  .exec-node.prod { background: linear-gradient(180deg, rgba(22,163,74,.22), rgba(22,163,74,.05)); border-color: rgba(22,163,74,.55); }
+  .exec-arrow { align-self: center; color: var(--muted); font-size: 24px; line-height: 1; padding: 9px 0; }
+  .exec-band { border: 1px dashed var(--line); border-radius: 18px; padding: 16px; background: rgba(255,255,255,.02); }
+  .exec-band-label { text-align: center; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 800; margin-bottom: 13px; }
+  .exec-phases { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 8px; }
+  .exec-phases.two { grid-template-columns: 1fr auto 1fr; }
+  .exec-phase { border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 12px; padding: 15px 15px; background: var(--panel); }
+  .exec-phase .ph-h { display: flex; align-items: center; gap: 9px; font-weight: 750; font-size: 15.5px; }
+  .exec-phase .ph-tag { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 800; color: #0b1020; background-color: var(--accent); background-image: linear-gradient(rgba(255,255,255,.24), rgba(255,255,255,.24)); padding: 3px 8px; border-radius: 999px; margin-left: auto; }
+  .exec-phase .ph-k { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #aab6d6; margin: 12px 0 5px; }
+  .exec-phase .ph-list { font-size: 13.5px; color: #d7def5; }
+  .exec-phase .ph-list .row { padding: 2px 0; }
+  .exec-conn { align-self: center; color: var(--muted); font-size: 20px; font-weight: 700; }
+  @media (max-width: 720px){
+    .exec-phases, .exec-phases.two { grid-template-columns: 1fr; }
+    .exec-conn { transform: rotate(90deg); padding: 3px 0; }
+  }
+
+  /* ---------- AI agents table ---------- */
+  .table-wrap { border: 1px solid var(--line); border-radius: 18px; overflow-x: auto; background: var(--panel); }
+  table.agents { width: 100%; border-collapse: collapse; min-width: 760px; }
+  table.agents th, table.agents td { text-align: left; padding: 15px 18px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 14px; }
+  table.agents thead th { font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: #b7c2df; background: var(--panel-2); font-weight: 700; }
+  table.agents tbody tr:last-child td { border-bottom: none; }
+  table.agents tbody tr:hover { background: rgba(255,255,255,.03); }
+  table.agents .agent-nm { font-weight: 700; white-space: nowrap; }
+  table.agents .agent-nm .ico { margin-right: 8px; }
+  table.agents td .desc-2 { color: #d7def5; }
+  table.agents td .use { color: #aeb9d6; }
+  code.cmd {
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; font-size: 12.5px;
+    color: #cdeaff; background: rgba(14,165,233,.14); border: 1px solid rgba(14,165,233,.38);
+    padding: 3px 8px; border-radius: 7px; white-space: nowrap; display: inline-block; margin: 2px 0;
+  }
+
+  @media (max-width: 640px){ .topbar nav { display: none; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="logo"><span class="mark"></span><span>AI-SDLC<small>Agentic Delivery</small></span></div>
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#pipeline">Lifecycle</a>
+      <a href="#how">Why it wins</a>
+      <a href="#personas">The Team</a>
+      <a href="#agents">AI Agents</a>
+    </nav>
+    <span class="pill-badge">Portable · VS Code + CLI</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="dot"></span> One orchestrator · a team of AI agents · humans in control</span>
+        <h1 class="hero-title">From <span class="grad">idea</span> to <span class="grad">production</span>, delivered by an agentic team.</h1>
+        <p class="lead">A reusable, spec-agnostic <b>AI software delivery lifecycle</b>. A master orchestrator decomposes any idea into verifiable tasks, dispatches each to the right specialist AI agent, enforces the same quality gates as human code, and ships, with one human governance sign-off and full traceability.</p>
+        <div class="hero-cta">
+          <button class="btn primary" id="tourBtn">&#9654; Play the guided tour</button>
+          <a class="btn ghost" href="#pipeline">Explore the lifecycle</a>
+        </div>
+      </div>
+      <aside class="hero-visual" aria-hidden="true">
+        <div class="console">
+          <div class="console-bar"><span class="cdot r"></span><span class="cdot y"></span><span class="cdot g"></span><span class="console-title">AI-SDLC &middot; Copilot CLI</span></div>
+          <div class="console-body">
+            <div class="cprompt"><span class="sign">$</span> copilot -p <span class="str">"ait-sdlc-orchestrate ./specs"</span></div>
+            <div class="cstep" style="--d:.5s"><span class="ctick" data-p="plan">&#10003;</span> Plan <span class="cmeta">design &middot; PRD &middot; spec</span></div>
+            <div class="cstep" style="--d:1.05s"><span class="ctick" data-p="build">&#10003;</span> Build <span class="cmeta">implement &middot; tests</span></div>
+            <div class="cstep" style="--d:1.6s"><span class="ctick" data-p="test">&#10003;</span> Test <span class="cmeta">QA &middot; review &middot; security</span></div>
+            <div class="cstep signoff" style="--d:2.15s"><span class="ctick pend">&#9208;</span> Sign-off <span class="cmeta">awaiting human approval</span></div>
+            <div class="cstep" style="--d:2.7s"><span class="ctick" data-p="deploy">&#10003;</span> Deploy <span class="cmeta">ships approved artifact</span></div>
+            <div class="cdone" style="--d:3.25s"><span class="cdone-pill">&#10003; DONE &middot; fully traceable</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- EXECUTIVE OVERVIEW -->
+  <section id="overview" class="reveal">
+    <div class="exec-head">
+      <h2>Executive overview</h2>
+      <p>One AI orchestrator conducts a team of specialist AI agents from idea to production &#8212; designing, building, testing, and shipping autonomously &#8212; while humans stay in control at a single governance sign-off.</p>
+    </div>
+    <div class="exec">
+      <div class="exec-node idea">&#128161; New idea<small>product concept &#183; PRD &#183; specs</small></div>
+      <div class="exec-arrow">&#8595;</div>
+      <div class="exec-node orch">&#127919; AI-SDLC Orchestrator<small>decomposes work &#183; dispatches AI agents &#183; tracks progress &#183; resumes on failure &#183; reports DONE</small></div>
+      <div class="exec-arrow">&#8595;</div>
+
+      <div class="exec-band">
+        <div class="exec-band-label">Plan &#8594; Build &#8594; Test</div>
+        <div class="exec-phases">
+          <div class="exec-phase" style="--accent: var(--plan)">
+            <div class="ph-h">&#129517; Plan <span class="ph-tag">plan</span></div>
+            <div class="ph-k">&#129302; AI agents</div>
+            <div class="ph-list"><div class="row">&#127912; Product Designer</div><div class="row">&#128203; Product Owner</div><div class="row">&#127963;&#65039; Architect</div></div>
+            <div class="ph-k">&#128101; Humans</div>
+            <div class="ph-list"><div class="row">Product Owner &#183; Tech Lead</div></div>
+          </div>
+          <div class="exec-conn">&#8594;</div>
+          <div class="exec-phase" style="--accent: var(--build)">
+            <div class="ph-h">&#128296; Build <span class="ph-tag">build</span></div>
+            <div class="ph-k">&#129302; AI agents</div>
+            <div class="ph-list"><div class="row">&#128187; Backend Dev</div><div class="row">&#128421;&#65039; Frontend Dev</div></div>
+            <div class="ph-k">&#128101; Humans</div>
+            <div class="ph-list"><div class="row">Software Engineers &#183; Tech Lead</div></div>
+          </div>
+          <div class="exec-conn">&#8594;</div>
+          <div class="exec-phase" style="--accent: var(--test)">
+            <div class="ph-h">&#9989; Test <span class="ph-tag">test</span></div>
+            <div class="ph-k">&#129302; AI agents</div>
+            <div class="ph-list"><div class="row">&#129514; QA</div><div class="row">&#128270; Code Critic</div><div class="row">&#128737;&#65039; Security / RAI</div></div>
+            <div class="ph-k">&#128101; Humans</div>
+            <div class="ph-list"><div class="row">QA Lead &#183; Tech Lead &#183; Security Team</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="exec-arrow">&#8595;</div>
+
+      <div class="exec-band">
+        <div class="exec-band-label">Sign-off &#8594; Deploy</div>
+        <div class="exec-phases two">
+          <div class="exec-phase" style="--accent: var(--sign)">
+            <div class="ph-h">&#128272; Sign-off <span class="ph-tag">governance</span></div>
+            <div class="ph-k">&#128101; Humans approve</div>
+            <div class="ph-list"><div class="row">&#128203; Product Owner</div><div class="row">&#128737;&#65039; Security Team</div><div class="row">&#127963;&#65039; Tech Lead / Architect</div></div>
+          </div>
+          <div class="exec-conn">&#8594;</div>
+          <div class="exec-phase" style="--accent: var(--deploy)">
+            <div class="ph-h">&#128640; Deploy <span class="ph-tag">deploy</span></div>
+            <div class="ph-k">&#129302; AI agents</div>
+            <div class="ph-list"><div class="row">&#9881;&#65039; DevOps</div></div>
+            <div class="ph-k">&#128101; Humans</div>
+            <div class="ph-list"><div class="row">DevOps / SRE</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="exec-arrow">&#8595;</div>
+      <div class="exec-node prod">&#128230; Production<small>shipped &#183; traceable &#183; governed</small></div>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section id="pipeline" class="reveal">
+    <div class="sec-head">
+      <div>
+        <h2>Agentic Lifecycle</h2>
+        <p>idea &#8594; ideate &#8594; prototype (UI only) &#8594; PRD &#8594; spec &#8594; implement &#8594; test &#8594; sign-off &#8594; deploy. Click any stage, or let the guided tour walk the whole chain.</p>
+      </div>
+      <div class="stage-controls">
+        <button class="btn ghost" id="prevBtn">&#8249; Prev</button>
+        <button class="btn ghost" id="playPause">&#9654; Play</button>
+        <button class="btn ghost" id="nextBtn">Next &#8250;</button>
+        <button class="btn ghost" id="restartBtn">&#8635; Restart</button>
+      </div>
+    </div>
+    <div class="progress-track" role="progressbar" aria-label="Guided tour progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressTrack"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="pipeline" id="pipelineTrack"></div>
+
+    <div class="detail" id="detail">
+      <div class="head" id="detailHead">
+        <div class="big-ico" id="dIco">&#128161;</div>
+        <div>
+          <h3 id="dTitle">Idea</h3>
+          <div class="sub" id="dSub">Kickoff</div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="cell"><div class="k">What happens</div><div class="desc" id="dDesc"></div></div>
+        <div class="cell"><div class="k">&#129302; AI agents</div><div id="dAI"></div></div>
+        <div class="cell"><div class="k">&#128101; Humans in the loop</div><div id="dHumans"></div><div class="k" style="margin-top:16px">Quality gate</div><div id="dGate"></div></div>
+      </div>
+    </div>
+
+    <div class="loops">
+      <div class="loop">&#8617; <b>Gate fail</b>: Test bounces work back to Implement automatically.</div>
+      <div class="loop gov">&#8617; <b>Changes requested</b>: Sign-off can loop back to Build; deploy ships the approved artifact only.</div>
+    </div>
+
+    <div class="stat-row stat-band">
+      <div class="stat"><div class="n">9</div><div class="l">lifecycle stages, idea &#8594; deploy</div></div>
+      <div class="stat"><div class="n">11</div><div class="l">specialist AI agent personas</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">human governance sign-off</div></div>
+      <div class="stat"><div class="n">100%</div><div class="l">tracked &amp; resumable on failure</div></div>
+    </div>
+  </section>
+
+  <!-- HOW / WHY IT WINS -->
+  <section id="how" class="reveal">
+    <div class="sec-head">
+      <div>
+        <h2>Why it wins</h2>
+        <p>Faster idea-to-market with governance and traceability built in, not bolted on.</p>
+      </div>
+    </div>
+    <div class="persona-grid">
+      <div class="persona-col"><h4>&#9889; Speed with control</h4><p style="color:#cbd4ee;font-size:14.5px">The orchestrator runs the whole chain autonomously, but pauses at one human governance gate before anything ships. Run the full pipeline or a single phase on demand.</p></div>
+      <div class="persona-col"><h4>&#128737; Same gates as humans</h4><p style="color:#cbd4ee;font-size:14.5px">Agent-authored code passes the identical build, lint, test, review, and security/RAI gates a human's code would. No exemptions, no shortcuts.</p></div>
+      <div class="persona-col"><h4>&#9851; Resumable by design</h4><p style="color:#cbd4ee;font-size:14.5px">Progress is tracked at every step. A run can fail or pause and pick up exactly where it left off, and finished work is never redone.</p></div>
+      <div class="persona-col"><h4>&#129517; Traceable &amp; governed</h4><p style="color:#cbd4ee;font-size:14.5px">Every decision, file change, and gate result is recorded. You always know who (which agent or human) did what, and why it shipped.</p></div>
+    </div>
+  </section>
+
+  <!-- PERSONAS -->
+  <section id="personas" class="reveal">
+    <div class="sec-head">
+      <div>
+        <h2>The team: AI agents &amp; humans</h2>
+        <p>Every stage pairs an AI agent that does the work with the humans who steer, review, and approve.</p>
+      </div>
+    </div>
+    <div class="persona-grid">
+      <div class="persona-col">
+        <h4>&#129302; Specialist AI agents</h4>
+        <div id="aiPersonas"></div>
+      </div>
+      <div class="persona-col">
+        <h4>&#128101; Humans in the loop</h4>
+        <div id="humanPersonas"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI AGENTS TABLE -->
+  <section id="agents" class="reveal">
+    <div class="sec-head">
+      <div>
+        <h2>The AI agents at a glance</h2>
+        <p>Each specialist agent owns one part of delivery and can be invoked by a single command&#8212;run the whole chain, or just one phase on demand.</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="agents">
+        <thead>
+          <tr><th>AI agent</th><th>What it does</th><th>When you'd use it</th><th>Command</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="agent-nm"><span class="ico">&#127919;</span>Orchestrator</td><td class="desc-2">Turns an idea into a plan, dispatches every agent, enforces quality gates, and tracks progress end to end.</td><td class="use">Ship an idea from concept to production in one run.</td><td><code class="cmd">/product-run</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#127912;</span>Product Designer</td><td class="desc-2">Shapes the user experience, maps journeys, and builds a clickable prototype verified in a real browser.</td><td class="use">Explore and de-risk an experience before building.</td><td><code class="cmd">/product-design</code> <code class="cmd">/product-prototype</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#128203;</span>Product Owner</td><td class="desc-2">Writes the requirements and clear acceptance criteria that later gate the build.</td><td class="use">Turn a validated concept into an agreed plan.</td><td><code class="cmd">/product-specs</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#127963;&#65039;</span>Architect</td><td class="desc-2">Designs the architecture, API contracts, and data models, plus an implementation-ready breakdown.</td><td class="use">Decide how the product will be built.</td><td><code class="cmd">/product-specs</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#128187;</span>Backend Dev</td><td class="desc-2">Builds services, APIs, and data layers with tests, against the spec.</td><td class="use">Implement server-side logic and integrations.</td><td><code class="cmd">/product-implement</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#128421;&#65039;</span>Frontend Dev</td><td class="desc-2">Builds the user interface, client state, and accessibility, with tests.</td><td class="use">Implement the customer-facing interface.</td><td><code class="cmd">/product-implement</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#129514;</span>QA / Test</td><td class="desc-2">Validates the work against acceptance criteria and produces test evidence.</td><td class="use">Prove the feature actually does what was asked.</td><td><code class="cmd">/product-qa</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#128270;</span>Code Critic</td><td class="desc-2">Reviews changes for blocking correctness, reliability, and maintainability defects.</td><td class="use">Catch serious issues before anything ships.</td><td><code class="cmd">/product-review</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#128737;&#65039;</span>Security / RAI</td><td class="desc-2">Runs secret, SAST, dependency, and responsible-AI checks.</td><td class="use">De-risk security and compliance before sign-off.</td><td><code class="cmd">/product-security</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#9881;&#65039;</span>DevOps</td><td class="desc-2">Releases the approved artifact safely with smoke checks and a rollback plan.</td><td class="use">Ship to production after human sign-off.</td><td><code class="cmd">/product-deploy</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#128221;</span>Scribe</td><td class="desc-2">Consolidates decisions and a change log so every run stays fully traceable.</td><td class="use">Maintain an audit trail across the whole run.</td><td><code class="cmd">runs with /product-run</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>AI-SDLC: reusable agentic software delivery system · portable across VS Code Copilot &amp; Copilot CLI.</span>
+    <span>Prototype · for executive demonstration.</span>
+  </div>
+</footer>
+
+<script>
+  const STAGES = [
+    { id:"idea", phase:"Kickoff", ico:"\uD83D\uDCA1", title:"Idea", sub:"A human points the system at a concept",
+      color:"var(--idea)",
+      desc:"You hand the system a product idea, PRD, or spec, no need to break it down. The orchestrator decomposes it into small, ordered, verifiable tasks and starts tracking.",
+      ai:["\uD83C\uDFAF AI-SDLC Orchestrator"], humans:["Anyone with an idea"], gate:["(starts the run)"] },
+    { id:"ideate", phase:"Plan", ico:"\uD83C\uDFA8", title:"Ideate", sub:"UX flows & design direction",
+      color:"var(--plan)",
+      desc:"The Product Designer AI explores the idea, maps user journeys, and shapes UX flows, wireframes, and design tokens: the design direction everything downstream builds on.",
+      ai:["\uD83C\uDFA8 Product Designer AI"], humans:["Product Owner","Tech Lead / Architect"], gate:["design-review"] },
+    { id:"prototype", phase:"Plan \u00B7 UI only", ico:"\uD83D\uDDBC\uFE0F", title:"Prototype", sub:"Clickable spike, verified in-browser",
+      color:"var(--plan)",
+      desc:"For user-facing work, the Product Designer AI turns design direction into a runnable, clickable prototype and verifies it in a real browser (Playwright MCP). A throwaway spike that de-risks the experience before any spec is written.",
+      ai:["\uD83C\uDFA8 Product Designer AI","\uD83E\uDDEA Prototype-testing (Playwright MCP)"], humans:["Product Owner","Tech Lead"], gate:["prototype-review"] },
+    { id:"prd", phase:"Plan", ico:"\uD83D\uDCCB", title:"PRD", sub:"Requirements & acceptance criteria",
+      color:"var(--plan)",
+      desc:"The Product Owner AI turns the validated experience into a Product Requirements Doc: scope, requirements, and clear acceptance criteria that later gate the build.",
+      ai:["\uD83D\uDCCB Product Owner AI"], humans:["Product Owner"], gate:["spec-review"] },
+    { id:"spec", phase:"Plan", ico:"\uD83C\uDFDB\uFE0F", title:"Spec", sub:"Architecture, APIs & ADRs",
+      color:"var(--plan)",
+      desc:"The Architect AI produces the technical spec: architecture, API contracts, data models, and ADRs, plus an implementation-ready task breakdown.",
+      ai:["\uD83C\uDFDB\uFE0F Architect AI"], humans:["Tech Lead / Architect"], gate:["spec-review"] },
+    { id:"implement", phase:"Build", ico:"\uD83D\uDD28", title:"Implement", sub:"Working code + tests",
+      color:"var(--build)",
+      desc:"The Backend and Frontend Dev AI agents write the production code and tests against the spec. Every change must pass automated build, lint, and unit gates before it moves on.",
+      ai:["\uD83D\uDCBB Backend Dev AI","\uD83D\uDDA5\uFE0F Frontend Dev AI"], humans:["Software Engineers","Tech Lead"], gate:["build \u00B7 lint \u00B7 unit"] },
+    { id:"test", phase:"Test", ico:"\u2705", title:"Test", sub:"Acceptance \u00B7 review \u00B7 security",
+      color:"var(--test)",
+      desc:"QA validates against acceptance criteria, the Code Critic hunts blocking defects, and Security/RAI runs SAST, secrets, dependency and responsible-AI checks. Any failure loops straight back to Build.",
+      ai:["\uD83E\uDDEA QA AI","\uD83D\uDD0E Code Critic AI","\uD83D\uDEE1\uFE0F Security / RAI AI"], humans:["QA Lead","Tech Lead","Security Team"], gate:["qa \u00B7 review \u00B7 security"] },
+    { id:"signoff", phase:"Sign-off", ico:"\uD83D\uDD10", title:"Sign-off", sub:"Human governance gate",
+      color:"var(--sign)",
+      desc:"Nothing ships on AI's say-so. Product Owner, Security Team, and Tech Lead review and approve, or request changes that loop back to Build. The approval is persisted so a resumed run can prove it.",
+      ai:["(humans decide)"], humans:["Product Owner","Security Team","Tech Lead"], gate:["mandatory human approval"] },
+    { id:"deploy", phase:"Deploy", ico:"\uD83D\uDE80", title:"Deploy", sub:"Release with rollback",
+      color:"var(--deploy)",
+      desc:"Once approved, the DevOps AI releases the approved artifact safely: CI/CD, environment promotion, smoke checks, and a rollback plan, overseen by DevOps / SRE.",
+      ai:["\u2699\uFE0F DevOps AI"], humans:["DevOps / SRE"], gate:["pre-deploy \u00B7 smoke \u00B7 rollback-ready"] },
+    { id:"production", phase:"Shipped", ico:"\uD83D\uDCE6", title:"Production", sub:"Shipped \u00B7 traceable \u00B7 governed",
+      color:"var(--prod)",
+      desc:"The result is a shipped feature that passed every gate and the human sign-off, fully traceable, with a record of which agent or human did each step.",
+      ai:["\uD83C\uDFAF Orchestrator reports DONE"], humans:["Whole team"], gate:["\u2714 DONE"] },
+  ];
+
+  const AI_PERSONAS = [
+    ["\uD83C\uDFAF","AI-SDLC Orchestrator","Decomposes, dispatches, tracks, resumes","var(--orch)"],
+    ["\uD83C\uDFA8","Product Designer AI","Ideation, UX flows & clickable prototype","var(--plan)"],
+    ["\uD83D\uDCCB","Product Owner AI","PRD, acceptance criteria, scope","var(--plan)"],
+    ["\uD83C\uDFDB\uFE0F","Architect AI","Architecture, API contracts, ADRs","var(--plan)"],
+    ["\uD83D\uDCBB","Backend Dev AI","Services, APIs, data, backend tests","var(--build)"],
+    ["\uD83D\uDDA5\uFE0F","Frontend Dev AI","UI, state, accessibility, client tests","var(--build)"],
+    ["\uD83E\uDDEA","QA / Test AI","Validates acceptance criteria","var(--test)"],
+    ["\uD83D\uDD0E","Code Critic AI","Blocking-defect review","var(--test)"],
+    ["\uD83D\uDEE1\uFE0F","Security / RAI AI","SAST, secrets, deps, responsible-AI","var(--test)"],
+    ["\u2699\uFE0F","DevOps AI","Release, IaC, rollback","var(--deploy)"],
+    ["\uD83D\uDCDD","Scribe","Consolidates decisions & change log","var(--muted)"],
+  ];
+  const HUMAN_PERSONAS = [
+    ["\uD83D\uDC54","Product Owner","Steers plan \u00B7 approves at sign-off","var(--human)"],
+    ["\uD83E\uDDD1\u200D\uD83D\uDCBC","Tech Lead / Architect","Reviews design, spec & code \u00B7 approves","var(--human)"],
+    ["\uD83E\uDDD1\u200D\uD83D\uDCBB","Software Engineers","Pair with & review the build agents","var(--human)"],
+    ["\uD83D\uDD2C","QA / Test Lead","Owns acceptance quality","var(--human)"],
+    ["\uD83D\uDEE1\uFE0F","Security Team","Owns security & RAI sign-off","var(--human)"],
+    ["\uD83D\uDEF0\uFE0F","DevOps / SRE","Oversees release & rollback","var(--human)"],
+  ];
+
+  // ---- Build pipeline ----
+  const pipeline = document.getElementById("pipelineTrack");
+  STAGES.forEach((s, i) => {
+    const el = document.createElement("div");
+    el.className = "stage";
+    el.style.setProperty("--accent", s.color);
+    el.dataset.i = i;
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    el.setAttribute("aria-label", s.title + " stage");
+    el.innerHTML =
+      '<span class="badge-check">\u2713</span>' +
+      '<div class="top"><span class="ico">' + s.ico + '</span><span class="phase-tag">' + s.phase + '</span></div>' +
+      '<h3>' + s.title + '</h3>' +
+      '<div class="who">' + s.sub + '</div>' +
+      '<div class="gate">' + s.gate[0] + '</div>' +
+      (i < STAGES.length-1 ? '<span class="connector"></span>' : '');
+    el.addEventListener("click", () => { stopTour(); select(i); });
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); stopTour(); select(i); }
+    });
+    pipeline.appendChild(el);
+  });
+
+  // ---- Personas ----
+  const aiWrap = document.getElementById("aiPersonas");
+  AI_PERSONAS.forEach(function(p){
+    var ic=p[0],nm=p[1],rl=p[2],c=p[3];
+    aiWrap.insertAdjacentHTML("beforeend",
+      '<div class="persona"><div class="av" style="background:'+c+'22;border:1px solid '+c+'66">'+ic+'</div><div><div class="nm">'+nm+'</div><div class="rl">'+rl+'</div></div></div>');
+  });
+  const hWrap = document.getElementById("humanPersonas");
+  HUMAN_PERSONAS.forEach(function(p){
+    var ic=p[0],nm=p[1],rl=p[2],c=p[3];
+    hWrap.insertAdjacentHTML("beforeend",
+      '<div class="persona"><div class="av" style="background:'+c+'22;border:1px solid '+c+'66">'+ic+'</div><div><div class="nm">'+nm+'</div><div class="rl">'+rl+'</div></div></div>');
+  });
+
+  // ---- Selection / detail ----
+  let current = 0, timer = null, playing = false;
+  const stagesEls = () => [...pipeline.querySelectorAll(".stage")];
+  const chips = (arr, cls) => arr.map(x => '<span class="chip ' + cls + '">' + x + '</span>').join("");
+
+  function select(i, markDone, doScroll) {
+    current = i;
+    const s = STAGES[i];
+    stagesEls().forEach((el, idx) => {
+      el.classList.toggle("active", idx === i);
+      if (idx >= i) el.classList.remove("done");
+      else if (markDone) el.classList.add("done");
+    });
+    document.getElementById("dIco").innerHTML = s.ico;
+    document.getElementById("dTitle").textContent = s.title;
+    document.getElementById("dSub").textContent = s.phase + " \u00B7 " + s.sub;
+    document.getElementById("dDesc").textContent = s.desc;
+    document.getElementById("dAI").innerHTML = chips(s.ai, "ai");
+    document.getElementById("dHumans").innerHTML = chips(s.humans, "human");
+    document.getElementById("dGate").innerHTML = chips(s.gate, "gate");
+    document.getElementById("detailHead").style.background =
+      'linear-gradient(100deg, ' + s.color + '22, transparent)';
+    var _pct = Math.round(i / (STAGES.length - 1) * 100);
+    document.getElementById("progressFill").style.width = _pct + "%";
+    document.getElementById("progressTrack").setAttribute("aria-valuenow", _pct);
+    if (doScroll !== false) {
+      const el = stagesEls()[i];
+      if (el) el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  }
+
+  function next() {
+    if (current < STAGES.length - 1) select(current + 1, true);
+    else if (playing) stopTour(true);
+  }
+  function prev() { if (current > 0) select(current - 1); }
+
+  function startTour() {
+    playing = true;
+    document.getElementById("playPause").innerHTML = "\u275A\u275A Pause";
+    document.getElementById("tourBtn").innerHTML = "\u275A\u275A Pause tour";
+    stagesEls().forEach(el => el.classList.remove("done"));
+    select(0, true);
+    timer = setInterval(() => {
+      if (current >= STAGES.length - 1) { stopTour(true); return; }
+      next();
+    }, 2600);
+  }
+  function stopTour(complete) {
+    playing = false;
+    clearInterval(timer); timer = null;
+    document.getElementById("playPause").innerHTML = "\u25B6 Play";
+    document.getElementById("tourBtn").innerHTML = "\u25B6 Play the guided tour";
+    if (complete) stagesEls().forEach(el => el.classList.add("done"));
+  }
+  function toggleTour() { playing ? stopTour() : startTour(); }
+
+  document.getElementById("tourBtn").addEventListener("click", () => { document.getElementById("pipeline").scrollIntoView({behavior:"smooth"}); toggleTour(); });
+  document.getElementById("playPause").addEventListener("click", toggleTour);
+  document.getElementById("nextBtn").addEventListener("click", () => { stopTour(); next(); });
+  document.getElementById("prevBtn").addEventListener("click", () => { stopTour(); prev(); });
+  document.getElementById("restartBtn").addEventListener("click", () => { stopTour(); stagesEls().forEach(el=>el.classList.remove("done")); select(0); });
+
+  document.addEventListener("keydown", e => {
+    if (["INPUT", "TEXTAREA", "BUTTON", "A", "SELECT"].includes(e.target.tagName)) return;
+    if (e.key === "ArrowRight") { stopTour(); next(); }
+    if (e.key === "ArrowLeft") { stopTour(); prev(); }
+    if (e.key === " ") { e.preventDefault(); toggleTour(); }
+  });
+
+  select(0, false, false);
+
+  // ---- Reveal on scroll ----
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add("in"); }), { threshold: .12 });
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+</script>
+</body>
+</html>

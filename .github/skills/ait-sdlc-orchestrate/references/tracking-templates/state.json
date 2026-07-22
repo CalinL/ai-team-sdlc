@@ -1,0 +1,27 @@
+{
+  "runId": "{{RUN_ID}}",
+  "spec": "{{SPEC_SOURCE}}",
+  "status": "in_progress",
+  "currentPhase": "plan",
+  "updatedAt": "{{TIMESTAMP}}",
+  "signoff": {
+    "status": "pending",
+    "artifact": null,
+    "approvers": { "product_owner": null, "security_team": null, "tech_lead": null },
+    "grantedAt": null
+  },
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "{{TITLE}}",
+      "owner": "{{OWNER}}",
+      "phase": "plan",
+      "deps": [],
+      "acceptance": "{{ACCEPTANCE}}",
+      "retries": 0,
+      "requiredGates": ["{{GATE}}"],
+      "gateResults": {},
+      "status": "pending"
+    }
+  ]
+}
