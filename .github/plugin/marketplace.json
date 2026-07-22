@@ -1,0 +1,19 @@
+{
+  "name": "ai-team-sdlc",
+  "owner": {
+    "name": "Calin Lupas",
+    "url": "https://github.com/CalinL"
+  },
+  "metadata": {
+    "description": "AI-Team SDLC — a reusable agentic software delivery lifecycle for GitHub Copilot: orchestrator, specialist agents, and skills from idea to production.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "ai-team-sdlc",
+      "source": "plugins/ai-team-sdlc",
+      "description": "Agentic SDLC team: orchestrator + ait- specialist agents and skills, from ideation to deploy with quality gates and one human governance sign-off.",
+      "version": "1.0.0"
+    }
+  ]
+}

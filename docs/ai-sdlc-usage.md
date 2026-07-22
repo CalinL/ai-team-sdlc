@@ -5,8 +5,9 @@ an idea, PRD, or spec into shipped software by decomposing work into verifiable 
 specialist AI agents, enforcing quality gates, keeping resumable tracking state, and reporting
 `DONE` only after every in-scope task passes its gate.
 
-The reusable logic lives in skills under `.github\skills\`. VS Code prompts and agents are thin
-entry points; Copilot CLI can apply the same skills directly with `AGENTS.md` as shared context.
+The team ships as a GitHub Copilot plugin: `ait-` skills and agents under `plugins/ai-team-sdlc/`.
+VS Code prompts and agents are thin entry points; the Copilot CLI applies the same skills directly,
+with the `ait-conventions` skill as the shared contract.
 
 ## Commands
 
@@ -31,26 +32,22 @@ entry points; Copilot CLI can apply the same skills directly with `AGENTS.md` as
 | Specialist persona | Use the matching agent where available; the prompt command routes to the skill and persona. |
 
 Commands are thin routers. The durable procedure lives in the skill; shared rules come from
-`AGENTS.md` and `.github\instructions\ai-sdlc.instructions.md`.
+the `ait-conventions` skill (and `AGENTS.md`, when present).
 
 ## Running in Copilot CLI
 
-Skills and `AGENTS.md` are the portable entry points. If skills are installed through the
-marketplace, make them discoverable with:
+Install the plugin, then invoke a full run or a single phase:
 
 ```powershell
-gh skill install <owner>/<repo> <skill-name>
-```
+copilot plugin marketplace add CalinL/ai-team-sdlc
+copilot plugin install ai-team-sdlc@ai-team-sdlc
 
-Then invoke a full run or a single phase:
-
-```powershell
 copilot -p "Use the ait-sdlc-orchestrate skill. Specs: .\specs\. Run the full SDLC and report DONE."
 copilot -p "Use the ait-product-prototype skill to build and verify a clickable prototype from .\specs\checkout.md"
 ```
 
-If a skill is local to this repository, Copilot can read `.github\skills\<name>\SKILL.md` directly
-alongside the shared `AGENTS.md` instructions.
+The plugin's skills carry their own procedure and reference the `ait-conventions` skill for the
+shared contract, so no repo-level instructions file is required.
 
 ## Full lifecycle with `/product-run`
 

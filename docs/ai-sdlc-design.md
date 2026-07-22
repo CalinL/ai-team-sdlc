@@ -178,8 +178,8 @@ Sources consulted: the *Governed AI‑SDLC Plan* (githubabcs/gh‑abcs‑admin),
 
 | Primitive | Location | Key frontmatter | Portable? |
 |---|---|---|---|
-| Agent | `.github/agents/<name>.agent.md` | `name`, `description`, `model`, `tools[]`, `agents:[]`, `handoffs:[]` | VS Code (CLI "coming soon") |
-| Skill | `.github/skills/<name>/SKILL.md` | `name` (kebab), `description` (when / when‑not) | **VS Code + CLI** (`gh skill install`) |
+| Agent | `.github/agents/<name>.agent.md` | `name`, `description`, `model`, `tools[]`, `agents:[]`, `handoffs:[]` | VS Code + CLI (via plugin) |
+| Skill | `.github/skills/<name>/SKILL.md` | `name` (kebab), `description` (when / when‑not) | **VS Code + CLI** (via plugin) |
 | Prompt (command) | `.github/prompts/<name>.prompt.md` | `mode`/`agent`, `description`, `tools[]` | VS Code slash‑command |
 | Instructions | `.github/instructions/<name>.instructions.md` | `description`, `applyTo` glob | VS Code |
 | Onboarding | `AGENTS.md` (root) | free‑form | **CLI** (read by CLI runtimes) |
@@ -368,13 +368,14 @@ flowchart TB
 
 | # | Component | Path | Type | Portable |
 |---|-----------|------|------|:---:|
-| 1 | Phase commands | `.github/prompts/product-{design,prototype,specs,implement,review,security,qa,deploy,run}.prompt.md` | Prompt | VS Code |
-| 2 | Phase skills | `.github/skills/{ait-product-design,ait-product-prototype,ait-tech-specs,ait-implementation,ait-review-critic,ait-security,ait-qa-validation,ait-deploy}/SKILL.md` | Skill | ✅ |
-| 3 | Orchestrator skill (decompose + dispatch + track + resume) | `.github/skills/ait-sdlc-orchestrate/SKILL.md` | Skill | ✅ |
-| 4 | Shared gate library | `.github/skills/ait-quality-gates/SKILL.md` | Skill | ✅ |
-| 4b | Design toolkit (vendored/adapted, Apache-2.0) | `.github/skills/{frontend-design,theme-factory,web-artifacts-builder,ait-prototype-testing}/SKILL.md` + `NOTICE.md` | Skill | ✅ |
-| 5 | Specialist personas | `.github/agents/{ait-sdlc-orchestrator,ait-product-designer,ait-product-owner,ait-architect,ait-backend-dev,ait-frontend-dev,ait-devops,ait-qa-test,ait-code-reviewer,ait-security-rai,ait-scribe}.agent.md` | Agent | VS Code |
-| 6 | Shared conventions | `.github/instructions/ai-sdlc.instructions.md` (`applyTo:'**'`) | Instructions | VS Code |
+| 1 | Phase commands | `plugins/ai-team-sdlc/prompts/product-{design,prototype,specs,implement,review,security,qa,deploy,run}.prompt.md` | Prompt | VS Code |
+| 2 | Phase skills | `plugins/ai-team-sdlc/skills/{ait-product-design,ait-product-prototype,ait-tech-specs,ait-implementation,ait-review-critic,ait-security,ait-qa-validation,ait-deploy}/SKILL.md` | Skill | ✅ |
+| 3 | Orchestrator skill (decompose + dispatch + track + resume) | `plugins/ai-team-sdlc/skills/ait-sdlc-orchestrate/SKILL.md` | Skill | ✅ |
+| 4 | Shared gate library | `plugins/ai-team-sdlc/skills/ait-quality-gates/SKILL.md` | Skill | ✅ |
+| 4b | Design toolkit (vendored/adapted, Apache-2.0) | `plugins/ai-team-sdlc/skills/{frontend-design,theme-factory,web-artifacts-builder,ait-prototype-testing}/SKILL.md` + `NOTICE.md` | Skill | ✅ |
+| 5 | Specialist personas | `plugins/ai-team-sdlc/agents/{ait-sdlc-orchestrator,ait-product-designer,ait-product-owner,ait-architect,ait-backend-dev,ait-frontend-dev,ait-devops,ait-qa-test,ait-code-reviewer,ait-security-rai,ait-scribe}.agent.md` | Agent | ✅ |
+| 6 | Shared conventions (contract) | `plugins/ai-team-sdlc/skills/ait-conventions/SKILL.md` | Skill | ✅ |
+| 6b | Repo setup (optional) | `plugins/ai-team-sdlc/skills/ait-init/SKILL.md` | Skill | ✅ |
 | 7 | Portable onboarding / CLI entry | `AGENTS.md` | Doc | ✅ CLI |
 | 8 | Usage doc | `docs/ai-sdlc-usage.md` | Doc | ✅ |
 | 9 | Runtime tracking store | `.copilot-tracking/<run>/` (git‑ignored) | State | ✅ |

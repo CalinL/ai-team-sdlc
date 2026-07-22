@@ -66,19 +66,20 @@ Skills and this file are portable to the CLI. Run one of:
 - `copilot -p "Use the ait-product-design skill to shape UX flows for the feature in ./specs/checkout.md"`
 - `copilot -p "Use the ait-product-prototype skill to build and verify a clickable prototype from ./specs/checkout.md"`
 
-If skills are installed via the marketplace, `gh skill install <owner>/<repo> <skill-name>`
-makes them discoverable (`gh skills` is an alias). Otherwise the agent reads
-`.github/skills/<name>/SKILL.md` directly. This `AGENTS.md` is auto‑read by the CLI and carries
-the full shared contract, so the system works even when only the skills (not the VS Code
-`instructions`/`agents`) are installed.
+Install the team as a Copilot plugin — `copilot plugin marketplace add CalinL/ai-team-sdlc` then
+`copilot plugin install ai-team-sdlc@ai-team-sdlc` — and its skills and agents become available in
+any repo. The plugin's skills reference the `ait-conventions` skill for the shared contract, so the
+system works with no repo-level instructions file. This `AGENTS.md` is auto‑read by the CLI as
+onboarding and points at that contract.
 
 ---
 
 ## Shared contract (every agent MUST follow)
 
 These conventions are the **single source of truth**. Specialist skills reference them instead
-of redefining them. The authoritative long‑form version lives in
-`.github/instructions/ai-sdlc.instructions.md`.
+of redefining them. The authoritative long‑form version lives in the **`ait-conventions`**
+skill (`plugins/ai-team-sdlc/skills/ait-conventions/SKILL.md`), which travels with the plugin so
+the contract is available in any repo that installs it.
 
 ### 1. Tracking store — `.copilot-tracking/<run-id>/`
 `run-id = <YYYY-MM-DD>-<kebab-slug>` (slug derived from the spec/feature name).
