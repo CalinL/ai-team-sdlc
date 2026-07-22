@@ -93,16 +93,68 @@ task schema, gates, resumability, sign-off) and **`ait-quality-gates`** (the reu
 The `/product-*` commands are VS Code Copilot slash-command wrappers. In the Copilot CLI, invoke
 the underlying `ait-*` skill directly (below).
 
-## Running
+## Using the team
 
-**Copilot CLI**
+The same `ait-*` skills and agents power all three surfaces — only the invocation gesture differs.
+
+### Copilot CLI
+
 ```bash
+# One-time: install the plugin
+copilot plugin marketplace add CalinL/ai-team-sdlc
+copilot plugin install ai-team-sdlc@ai-team-sdlc
+
+# Full lifecycle from a spec (folder, file, or pasted idea)
 copilot -p "Use the ait-sdlc-orchestrate skill. Specs: ./specs/. Run the full SDLC and report DONE."
+
+# Resume an interrupted run (nothing finished is redone)
+copilot -p "Use the ait-sdlc-orchestrate skill. Resume run .copilot-tracking/2026-07-22-checkout/."
+
+# Single phase — call the matching skill directly
+copilot -p "Use the ait-product-design skill to shape UX flows for ./specs/checkout.md"
 copilot -p "Use the ait-product-prototype skill to build and verify a clickable prototype from ./specs/checkout.md"
+copilot -p "Use the ait-tech-specs skill to turn the approved prototype into API contracts + acceptance criteria"
+copilot -p "Use the ait-implementation skill to build task T-003 from .copilot-tracking/<run>/tasks.md"
+copilot -p "Use the ait-qa-validation skill to verify acceptance criteria for the checkout feature"
+
+# Optional: wire the plugin into a fresh repo (settings + AGENTS.md pointer + gitignored tracking)
+copilot -p "Use the ait-init skill to set up this repo"
 ```
 
-**VS Code Copilot** — open the SDLC Orchestrator agent or run `/product-run`, then provide a spec
-path, folder, PRD text, or idea. Use a single `/product-*` command to run just one phase.
+### VS Code Copilot
+
+Run a `/product-*` slash command in Copilot Chat; each is a thin router that loads the matching
+skill and persona. Input comes from the text after the command, the current selection
+(`${selection}`), or the open file (`${file}`).
+
+```text
+/product-run        ./specs/checkout.md         → full lifecycle, pauses for sign-off
+/product-design     a mobile checkout flow      → ideation: journeys, UX flows, tokens
+/product-prototype                              → clickable prototype (uses ${file}/${selection})
+/product-specs                                  → PRD + API contracts + acceptance criteria
+/product-implement                              → build the next ready task
+/product-qa    ·    /product-review    ·    /product-security
+/product-deploy                                 → release (after human sign-off)
+```
+
+Or open the agent picker and choose a persona directly (e.g. **ait-sdlc-orchestrator**,
+**ait-product-designer**, **ait-backend-dev**) and describe the task in your own words.
+
+### Copilot app / coding agent
+
+Enable the plugin once — from the plugin manager (add marketplace `CalinL/ai-team-sdlc`, then
+install), or declaratively in `.github/copilot/settings.json`:
+
+```json
+{ "enabledPlugins": ["ai-team-sdlc@ai-team-sdlc"] }
+```
+
+Then just describe the goal in a session — skills activate by description, no slash command needed:
+
+```text
+Take ./specs/checkout.md through the full SDLC and stop for sign-off before deploy.
+Prototype the onboarding screen, then review it for accessibility issues.
+```
 
 ## Executive presentation
 
@@ -112,8 +164,9 @@ agentic lifecycle. It is published to **GitHub Pages** and linked at the top of 
 - Live: <https://calinl.github.io/ai-team-sdlc/demo/ai-sdlc-lifecycle.html>
 - Static poster: [`docs/demo/ai-sdlc-lifecycle-poster.png`](docs/demo/ai-sdlc-lifecycle-poster.png)
 
-> First-time setup: in the repo's **Settings → Pages**, set the build source to **GitHub Actions**.
-> The included workflow (`.github/workflows/deploy-pages.yml`) then publishes `docs/` on every push to `main`.
+> The workflow (`.github/workflows/deploy-pages.yml`) auto-enables GitHub Pages (`enablement: true`)
+> and publishes `docs/` on every push to `main`. If your org blocks automatic enablement, set
+> **Settings → Pages → Source: GitHub Actions** once, then re-run the workflow from the **Actions** tab.
 
 ## Repo layout
 
