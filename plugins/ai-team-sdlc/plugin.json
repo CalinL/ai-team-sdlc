@@ -8,6 +8,7 @@
   },
   "repository": "https://github.com/CalinL/ai-team-sdlc",
   "homepage": "https://github.com/CalinL/ai-team-sdlc",
+  "license": "Apache-2.0",
   "keywords": [
     "sdlc",
     "agentic",

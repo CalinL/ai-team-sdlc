@@ -510,7 +510,7 @@
         </thead>
         <tbody>
           <tr><td class="agent-nm"><span class="ico">&#127919;</span>Orchestrator</td><td class="desc-2">Turns an idea into a plan, dispatches every agent, enforces quality gates, and tracks progress end to end.</td><td class="use">Ship an idea from concept to production in one run.</td><td><code class="cmd">/product-run</code></td></tr>
-          <tr><td class="agent-nm"><span class="ico">&#127912;</span>Product Designer</td><td class="desc-2">Shapes the user experience, maps journeys, and builds a clickable prototype verified in a real browser.</td><td class="use">Explore and de-risk an experience before building.</td><td><code class="cmd">/product-design</code> <code class="cmd">/product-prototype</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#127912;</span>Product Designer</td><td class="desc-2">Shapes the user experience, maps journeys, and builds a clickable prototype verified in a real browser.</td><td class="use">Explore and de-risk an experience before building.</td><td><code class="cmd">/product-design</code> <code class="cmd">/product-prototype</code> <code class="cmd">/product-showcase</code></td></tr>
           <tr><td class="agent-nm"><span class="ico">&#128203;</span>Product Owner</td><td class="desc-2">Writes the requirements and clear acceptance criteria that later gate the build.</td><td class="use">Turn a validated concept into an agreed plan.</td><td><code class="cmd">/product-specs</code></td></tr>
           <tr><td class="agent-nm"><span class="ico">&#127963;&#65039;</span>Architect</td><td class="desc-2">Designs the architecture, API contracts, and data models, plus an implementation-ready breakdown.</td><td class="use">Decide how the product will be built.</td><td><code class="cmd">/product-specs</code></td></tr>
           <tr><td class="agent-nm"><span class="ico">&#128187;</span>Backend Dev</td><td class="desc-2">Builds services, APIs, and data layers with tests, against the spec.</td><td class="use">Implement server-side logic and integrations.</td><td><code class="cmd">/product-implement</code></td></tr>
@@ -545,7 +545,7 @@
       ai:["\uD83C\uDFA8 Product Designer AI"], humans:["Product Owner","Tech Lead / Architect"], gate:["design-review"] },
     { id:"prototype", phase:"Plan \u00B7 UI only", ico:"\uD83D\uDDBC\uFE0F", title:"Prototype", sub:"Clickable spike, verified in-browser",
       color:"var(--plan)",
-      desc:"For user-facing work, the Product Designer AI turns design direction into a runnable, clickable prototype and verifies it in a real browser (Playwright MCP). A throwaway spike that de-risks the experience before any spec is written.",
+      desc:"For user-facing work, the Product Designer AI turns design direction into a runnable, clickable prototype and verifies it in a real browser (Playwright MCP). It can build a quick spike to de-risk a flow, an executive-ready showcase generated from a spec, or a faithful reproduction of an existing visual design (wireframes, mockups, or a Figma export) \u2014 static HTML by default. A throwaway artifact that de-risks the experience before any spec is written.",
       ai:["\uD83C\uDFA8 Product Designer AI","\uD83E\uDDEA Prototype-testing (Playwright MCP)"], humans:["Product Owner","Tech Lead"], gate:["prototype-review"] },
     { id:"prd", phase:"Plan", ico:"\uD83D\uDCCB", title:"PRD", sub:"Requirements & acceptance criteria",
       color:"var(--plan)",

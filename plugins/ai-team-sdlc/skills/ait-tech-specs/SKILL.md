@@ -1,7 +1,7 @@
 ---
 name: ait-tech-specs
 description: 'Technical specification phase for the AI-SDLC system. Use when converting a PRD, design, or product idea into architecture, API contracts, data models, ADRs, backlog slices, and acceptance criteria. Do not use when the task is primarily UX design, coding, QA execution, code review, security validation, or deployment.'
-license: MIT
+license: Apache-2.0
 ---
 
 # Technical Specs

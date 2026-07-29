@@ -1,7 +1,7 @@
 ---
 name: ait-product-prototype
 description: 'Prototyping phase for the AI-SDLC system. Use to turn approved design direction (UX flows, wireframes, design tokens) into a runnable, clickable prototype and verify it before technical specification. Do not use for idea/UX ideation (that is ait-product-design), technical specs, production implementation, QA of the built product, review, security, or deployment.'
-license: MIT
+license: Apache-2.0
 ---
 
 # Product Prototype
@@ -35,8 +35,9 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 - Validating the built product against acceptance criteria → use `ait-qa-validation`.
 
 ## Prototype toolkit (companion skills)
-- **`web-artifacts-builder`** — scaffold the clickable prototype (React + Tailwind + shadcn/ui),
-  bundle it to a single shareable HTML artifact. **Prototype/spike only.**
+- **`web-artifacts-builder`** — **opt-in only** for a rich, multi-screen interactive spike (React +
+  Tailwind + shadcn/ui) bundled to a single shareable artifact. **Prototype/spike only** — the
+  default output is static HTML + vanilla CSS/JS (see Procedure step 2).
 - **`ait-prototype-testing`** — drive the prototype in a real browser via the Playwright MCP to verify
   flows, states, console health, responsiveness, and accessibility smoke. Feeds this skill's gate.
 - **`frontend-design`** — apply visual craft; avoid templated "AI-slop" defaults.
@@ -54,8 +55,9 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 ## Procedure
 1. Read the design direction and the critical flows/states to prototype. Confirm scope: which flows
    must be clickable to validate the experience (happy path + key empty/loading/error states).
-2. Choose fidelity and approach. For an interactive multi-screen prototype, scaffold with
-   `web-artifacts-builder`; for a single static screen, a hand-built HTML file may be enough.
+2. Choose fidelity and approach. Default to a **static, self-contained HTML file with vanilla
+   CSS/JS — no framework, no build step**. Reach for `web-artifacts-builder` (React/Tailwind/shadcn)
+   only when the user explicitly asks or the spike genuinely needs heavy state/routing.
 3. Build the prototype, applying `frontend-design` for craft and `theme-factory` for the chosen
    tokens/theme. Keep it a spike — no backend, no production concerns; stub data is fine.
 4. Verify it with `ait-prototype-testing` (Playwright MCP): walk each critical flow, check interaction

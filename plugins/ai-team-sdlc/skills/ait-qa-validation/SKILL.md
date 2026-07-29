@@ -1,7 +1,7 @@
 ---
 name: ait-qa-validation
 description: 'QA validation phase for the AI-SDLC system. Use when authoring or running test plans, verifying acceptance criteria, and validating implemented behavior with unit, integration, or end-to-end tests. Do not use for product design, architecture, implementation, critic review, security scans, or deployment.'
-license: MIT
+license: Apache-2.0
 ---
 
 # QA Validation

@@ -21,6 +21,7 @@ Code entry points; in the CLI you invoke the same skills directly (see **Running
 |-------|---------|-------|------------------------|--------------------|
 | 🧭 Plan | `/product-design` | `ait-product-design` | Product Designer | Product Owner, Tech Lead |
 | 🧭 Plan | `/product-prototype` | `ait-product-prototype` | Product Designer | Product Owner, Tech Lead |
+| 🧭 Plan | `/product-showcase` | `ait-product-showcase` | Product Designer | Product Owner, Tech Lead |
 | 🧭 Plan | `/product-specs` | `ait-tech-specs` | Product Owner, Architect | Product Owner, Tech Lead/Architect |
 | 🔨 Build | `/product-implement` | `ait-implementation` | Backend Dev, Frontend Dev | Software Engineers, Tech Lead |
 | ✅ Test | `/product-qa` | `ait-qa-validation` | QA / Test | QA Lead |
@@ -34,17 +35,21 @@ The **Orchestrator** (`ait-sdlc-orchestrate`) runs the whole chain; **Scribe** k
 state consistent. See `docs/ai-sdlc-design.md` for the full design and diagrams.
 
 ### Design toolkit (companion skills for the Plan phase)
-Four companion skills support the two design stages (`ait-product-design` = ideation, `ait-product-prototype`
-= prototyping): three are vendored unprefixed and one (`ait-prototype-testing`) is adapted and namespaced.
-They don't own a phase or gate on their own — the stage skills own the flows,
-decisions, and gates (`design-review`, `prototype-review`):
+Companion skills support the design stages: `ait-product-design` (ideation) and the prototyping
+stage, which has two modes — `ait-product-prototype` (lightweight clickable spike to de-risk UX) and
+`ait-product-showcase` (executive showcase from a spec/brief, generated from text or reproduced from an
+existing visual design). Three companion skills are vendored unprefixed, one
+(`ait-prototype-testing`) is adapted and namespaced, and one (`ait-wireframe-to-frontend`) is a
+first-party reproduction engine. They don't own a phase or gate on their own —
+the stage skills own the flows, decisions, and gates (`design-review`, `prototype-review`):
 
 | Skill | Supports | Role | Origin |
 |-------|----------|------|--------|
 | `frontend-design` | both | Visual craft: typography, palette, layout; avoid "AI-slop" defaults | vendored, Apache-2.0 |
 | `theme-factory` | both | Concrete color/font themes to ground design tokens | vendored, Apache-2.0 |
-| `web-artifacts-builder` | `ait-product-prototype` | Scaffold a **throwaway** clickable prototype (React/Tailwind/shadcn) — prototype only, not the production build | vendored, Apache-2.0 |
-| `ait-prototype-testing` | `ait-product-prototype` | Verify the prototype in a real browser via the **Playwright MCP**; feeds `prototype-review` | repurposed from Anthropic `webapp-testing`, Apache-2.0 |
+| `web-artifacts-builder` | `ait-product-prototype`, `ait-product-showcase` | **Opt-in** scaffold for a rich React/Tailwind/shadcn prototype — prototype only, not the production build; the default output is static HTML | vendored, Apache-2.0 |
+| `ait-wireframe-to-frontend` | `ait-product-showcase` | Faithful-reproduction engine: turn an existing visual design (wireframes/mockups/Figma/PDF) into a clickable frontend with pixel-diff validation | first-party |
+| `ait-prototype-testing` | `ait-product-prototype`, `ait-product-showcase` | Verify the prototype in a real browser via the **Playwright MCP**; feeds `prototype-review` | repurposed from Anthropic `webapp-testing`, Apache-2.0 |
 
 `ait-prototype-testing` tests the *prototype we designed* (feeds `prototype-review`); `ait-qa-validation`
 tests the *product built from spec* (feeds `acceptance`) — they are deliberately separate. Vendored

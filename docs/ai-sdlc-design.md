@@ -202,6 +202,7 @@ flowchart TB
         direction TB
         C1[/product-design/]
         C1b[/product-prototype/]
+        C1c[/product-showcase/]
         C2[/product-specs/]
         C3[/product-implement/]
         C5[/product-review/]
@@ -215,6 +216,7 @@ flowchart TB
         direction TB
         S1[ait-product-design]
         S1b[ait-product-prototype]
+        S1c[ait-product-showcase]
         S2[ait-tech-specs]
         S3[ait-implementation]
         S5[ait-review-critic]
@@ -237,6 +239,7 @@ flowchart TB
     U --> CMD
     C1 --> S1 --> A1
     C1b --> S1b --> A1
+    C1c --> S1c --> A1
     C2 --> S2 --> A2
     C3 --> S3 --> A3
     C4 --> S4 --> A4
@@ -244,7 +247,7 @@ flowchart TB
     C6 --> S6 --> A6
     C7 --> S7 --> A7
     C0 --> ORCH[SDLC Orchestrator + Scribe]
-    ORCH --> S1 & S1b & S2 & S3 & S4 & S5 & S6 & S7
+    ORCH --> S1 & S1b & S1c & S2 & S3 & S4 & S5 & S6 & S7
 
     classDef plan   fill:#6366f1,stroke:#4338ca,color:#fff
     classDef build  fill:#f59e0b,stroke:#b45309,color:#111
@@ -252,7 +255,7 @@ flowchart TB
     classDef deploy fill:#ef4444,stroke:#b91c1c,color:#fff
     classDef orch   fill:#0f172a,stroke:#000,color:#fff
 
-    class C1,C1b,C2,S1,S1b,S2,A1,A2 plan
+    class C1,C1b,C1c,C2,S1,S1b,S1c,S2,A1,A2 plan
     class C3,S3,A3 build
     class C4,C5,C6,S4,S5,S6,A4,A5,A6 test
     class C7,S7,A7 deploy
@@ -310,7 +313,7 @@ flowchart TB
 
 | Phase | Commands | Agents |
 |---|---|---|
-| 🧭 **Plan** | `/product-design`, `/product-prototype`, `/product-specs` | Product Designer · Product Owner · Architect |
+| 🧭 **Plan** | `/product-design`, `/product-prototype`, `/product-showcase`, `/product-specs` | Product Designer · Product Owner · Architect |
 | 🔨 **Build** | `/product-implement` | Backend/Frontend Dev |
 | ✅ **Test** | `/product-qa`, `/product-review`, `/product-security` | QA / Test · Code Reviewer/Critic · Security/RAI |
 | 🔐 **Sign‑off** | *(human approval gate)* | Product Owner + Security Team + Tech Lead approve/reject |
@@ -368,11 +371,11 @@ flowchart TB
 
 | # | Component | Path | Type | Portable |
 |---|-----------|------|------|:---:|
-| 1 | Phase commands | `plugins/ai-team-sdlc/prompts/product-{design,prototype,specs,implement,review,security,qa,deploy,run}.prompt.md` | Prompt | VS Code |
-| 2 | Phase skills | `plugins/ai-team-sdlc/skills/{ait-product-design,ait-product-prototype,ait-tech-specs,ait-implementation,ait-review-critic,ait-security,ait-qa-validation,ait-deploy}/SKILL.md` | Skill | ✅ |
+| 1 | Phase commands | `plugins/ai-team-sdlc/prompts/product-{design,prototype,showcase,specs,implement,review,security,qa,deploy,run}.prompt.md` | Prompt | VS Code |
+| 2 | Phase skills | `plugins/ai-team-sdlc/skills/{ait-product-design,ait-product-prototype,ait-product-showcase,ait-tech-specs,ait-implementation,ait-review-critic,ait-security,ait-qa-validation,ait-deploy}/SKILL.md` | Skill | ✅ |
 | 3 | Orchestrator skill (decompose + dispatch + track + resume) | `plugins/ai-team-sdlc/skills/ait-sdlc-orchestrate/SKILL.md` | Skill | ✅ |
 | 4 | Shared gate library | `plugins/ai-team-sdlc/skills/ait-quality-gates/SKILL.md` | Skill | ✅ |
-| 4b | Design toolkit (vendored/adapted, Apache-2.0) | `plugins/ai-team-sdlc/skills/{frontend-design,theme-factory,web-artifacts-builder,ait-prototype-testing}/SKILL.md` + `NOTICE.md` | Skill | ✅ |
+| 4b | Design toolkit (Plan phase) | `plugins/ai-team-sdlc/skills/{ait-wireframe-to-frontend,frontend-design,theme-factory,web-artifacts-builder,ait-prototype-testing}/SKILL.md` + `NOTICE.md` — `ait-wireframe-to-frontend` is first-party; the rest are vendored/adapted (Apache-2.0) | Skill | ✅ |
 | 5 | Specialist personas | `plugins/ai-team-sdlc/agents/{ait-sdlc-orchestrator,ait-product-designer,ait-product-owner,ait-architect,ait-backend-dev,ait-frontend-dev,ait-devops,ait-qa-test,ait-code-reviewer,ait-security-rai,ait-scribe}.agent.md` | Agent | ✅ |
 | 6 | Shared conventions (contract) | `plugins/ai-team-sdlc/skills/ait-conventions/SKILL.md` | Skill | ✅ |
 | 6b | Repo setup (optional) | `plugins/ai-team-sdlc/skills/ait-init/SKILL.md` | Skill | ✅ |
@@ -402,17 +405,19 @@ first ready task — no finished work redone.
 .github/
   prompts/
     product-design.prompt.md      product-prototype.prompt.md
-    product-specs.prompt.md       product-implement.prompt.md
-    product-review.prompt.md      product-security.prompt.md
-    product-qa.prompt.md          product-deploy.prompt.md
-    product-run.prompt.md
+    product-showcase.prompt.md    product-specs.prompt.md
+    product-implement.prompt.md   product-review.prompt.md
+    product-security.prompt.md    product-qa.prompt.md
+    product-deploy.prompt.md      product-run.prompt.md
   skills/
     ait-product-design/SKILL.md       ait-product-prototype/SKILL.md
-    ait-tech-specs/SKILL.md           ait-implementation/SKILL.md
-    ait-review-critic/SKILL.md        ait-security/SKILL.md
-    ait-qa-validation/SKILL.md        ait-deploy/SKILL.md
-    ait-sdlc-orchestrate/SKILL.md     ait-quality-gates/SKILL.md
-    # design toolkit (vendored/adapted, Apache-2.0 — support the Plan phase)
+    ait-product-showcase/SKILL.md     ait-tech-specs/SKILL.md
+    ait-implementation/SKILL.md       ait-review-critic/SKILL.md
+    ait-security/SKILL.md             ait-qa-validation/SKILL.md
+    ait-deploy/SKILL.md               ait-sdlc-orchestrate/SKILL.md
+    ait-quality-gates/SKILL.md
+    # design toolkit (Plan phase — ait-wireframe-to-frontend is first-party)
+    ait-wireframe-to-frontend/SKILL.md
     frontend-design/SKILL.md      theme-factory/SKILL.md
     web-artifacts-builder/SKILL.md ait-prototype-testing/SKILL.md
     NOTICE.md                     # attribution for vendored skills
@@ -431,7 +436,7 @@ docs/
 .copilot-tracking/                # runtime state (add to .gitignore)
 ```
 
-**Roster:** 9 commands · 14 skills (11 namespaced core + 3 unprefixed vendored) · 11 agents · 1 instructions · `AGENTS.md` · usage doc, organized into 5 phases (Plan · Build · Test · Sign-off · Deploy) + Orchestrator.
+**Roster:** 10 commands · 18 skills (15 namespaced core + 3 unprefixed vendored) · 11 agents · 1 instructions · `AGENTS.md` · usage doc, organized into 5 phases (Plan · Build · Test · Sign-off · Deploy) + Orchestrator.
 
 ---
 

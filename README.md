@@ -35,6 +35,12 @@ copilot plugin marketplace add CalinL/ai-team-sdlc
 copilot plugin install ai-team-sdlc@ai-team-sdlc
 ```
 
+Already installed? Pull the latest agents, skills, and prompts:
+
+```bash
+copilot plugin update ai-team-sdlc@ai-team-sdlc
+```
+
 That's it — the team works immediately. The orchestrator auto-creates its runtime tracking store
 on the first run, so **no setup step is required**.
 
@@ -62,7 +68,7 @@ copilot -p "Use the ait-init skill to set up this repo"
 | Agent | Role | Phase | Invoke via |
 |---|---|---|---|
 | `ait-sdlc-orchestrator` | Decomposes work, dispatches specialists, enforces gates, reports `DONE` | All | `/product-run` |
-| `ait-product-designer` | User journeys, UX flows, wireframes, clickable prototype | Plan | `/product-design`, `/product-prototype` |
+| `ait-product-designer` | User journeys, UX flows, wireframes, clickable prototype | Plan | `/product-design`, `/product-prototype`, `/product-showcase` |
 | `ait-product-owner` | PRD, acceptance criteria, scope and priorities | Plan | `/product-specs` |
 | `ait-architect` | Architecture, API contracts, data models, technical specs | Plan | `/product-specs` |
 | `ait-backend-dev` | Server logic, APIs, data, persistence, backend tests | Build | `/product-implement` |
@@ -82,6 +88,7 @@ task schema, gates, resumability, sign-off) and **`ait-quality-gates`** (the reu
 |---|---|---|
 | `/product-design` | `ait-product-design` | Product Designer |
 | `/product-prototype` | `ait-product-prototype` | Product Designer |
+| `/product-showcase` | `ait-product-showcase` | Product Designer |
 | `/product-specs` | `ait-tech-specs` | Product Owner, Architect |
 | `/product-implement` | `ait-implementation` | Backend / Frontend Dev |
 | `/product-qa` | `ait-qa-validation` | QA / Test |
@@ -92,6 +99,42 @@ task schema, gates, resumability, sign-off) and **`ait-quality-gates`** (the reu
 
 The `/product-*` commands are VS Code Copilot slash-command wrappers. In the Copilot CLI, invoke
 the underlying `ait-*` skill directly (below).
+
+## Building prototypes
+
+The Plan phase has two complementary prototyping stages, both driven by the Product Designer.
+Every prototype is a **static, self-contained HTML site with vanilla CSS/JS** — no framework and
+no build step — so it opens in any browser and is easy to share.
+
+| Stage | Command · skill | Use it to |
+|---|---|---|
+| Lightweight spike | `/product-prototype` · `ait-product-prototype` | De-risk a UX flow with a quick clickable spike before writing a spec. |
+| Executive showcase | `/product-showcase` · `ait-product-showcase` | Produce a polished, presentation-ready prototype — generated from text/specs, or faithfully reproduced from an existing visual design. |
+
+The showcase stage composes more skills as needed: `ait-wireframe-to-frontend` (faithfully reproduce
+wireframes, mockups, a Figma export, or a PDF), plus `frontend-design` and `theme-factory` for visual
+craft. Reach for a framework only on explicit request — the default output stays static HTML.
+
+### Copilot CLI
+
+```bash
+# Quick clickable spike to de-risk a flow (static HTML + vanilla CSS/JS)
+copilot -p "Use the ait-product-prototype skill to prototype the onboarding flow in ./specs/onboarding.md"
+
+# Executive showcase generated from a written spec
+copilot -p "Use the ait-product-showcase skill to build an executive showcase prototype from ./specs/checkout.md"
+
+# Faithfully reproduce an existing visual design as a clickable frontend
+copilot -p "Use the ait-wireframe-to-frontend skill to reproduce ./design/dashboard.png as a static HTML prototype"
+```
+
+### VS Code Copilot
+
+```text
+/product-prototype                                → clickable spike (uses ${file}/${selection})
+/product-showcase   ./specs/checkout.md           → executive showcase from a spec
+/product-showcase   reproduce ./design/dashboard.png  → faithful reproduction of a visual design
+```
 
 ## Using the team
 
@@ -173,7 +216,7 @@ agentic lifecycle. It is published to **GitHub Pages** and linked at the top of 
 | Path | What |
 |---|---|
 | `plugins/ai-team-sdlc/plugin.json` | Plugin manifest |
-| `plugins/ai-team-sdlc/skills/` | 16 skills, incl. `ait-conventions` (the contract) and `ait-init` (setup) |
+| `plugins/ai-team-sdlc/skills/` | 18 skills, incl. `ait-conventions` (the contract) and `ait-init` (setup) |
 | `plugins/ai-team-sdlc/agents/` | 11 specialist agent personas |
 | `plugins/ai-team-sdlc/prompts/` | `/product-*` slash commands (VS Code convenience) |
 | `.github/plugin/marketplace.json` | Marketplace registration |
@@ -185,3 +228,11 @@ agentic lifecycle. It is published to **GitHub Pages** and linked at the top of 
 
 See `docs/ai-sdlc-design.md` for the full design and diagrams, and `docs/ai-sdlc-usage.md`
 for command usage.
+
+## License
+
+This project is licensed under the **Apache License 2.0** — see [`LICENSE`](LICENSE) for the full
+text. First-party `ait-` agents and skills are Apache-2.0. A few skills are vendored from third
+parties under their own Apache-2.0 terms (`frontend-design`, `theme-factory`, `web-artifacts-builder`)
+or adapted from them (`ait-prototype-testing`); each keeps its upstream `LICENSE.txt`, and
+`plugins/ai-team-sdlc/skills/NOTICE.md` records the attribution.

@@ -1,7 +1,7 @@
 ---
 name: ait-product-design
 description: 'Ideation and UX design phase for the AI-SDLC system. Use when turning a product idea, PRD, or task into user journeys, UX flows, wireframes, design direction, design tokens, and acceptance-ready UX notes. Do not use to build or verify a runnable/clickable prototype (that is ait-product-prototype), or when architecture, implementation, QA, code review, security, or deployment is the primary work.'
-license: MIT
+license: Apache-2.0
 ---
 
 # Product Design (Ideation & UX)
@@ -39,8 +39,9 @@ still owns the flows, decisions, and the `design-review` gate.
 - **`theme-factory`** — concrete color/font themes to ground your **design-token** proposal
   instead of inventing tokens ad hoc.
 
-For a **runnable clickable prototype** (via `web-artifacts-builder`) and its browser verification
-(via `ait-prototype-testing`), hand off to the **`ait-product-prototype`** skill — that is the next stage.
+For a **runnable clickable prototype** (static, self-contained HTML by default; `web-artifacts-builder`
+opt-in) and its browser verification (via `ait-prototype-testing`), hand off to the
+**`ait-product-prototype`** skill — that is the next stage.
 
 ## Inputs
 | Input | Required | Notes |

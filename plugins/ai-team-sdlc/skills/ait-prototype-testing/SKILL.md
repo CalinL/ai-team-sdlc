@@ -75,7 +75,8 @@ If you are validating shipped, spec-derived behavior against acceptance criteria
    Playwright MCP and documented review criteria; do not invent or install test tooling.
 9. **Handoff depends on how you were invoked:** when dispatched as a **standalone** task, write
    exactly one `inbox/<ts>-ait-product-designer-<task-id>.md` summarizing flows verified, findings,
-   evidence, and gate results. When invoked as a **sub-step of `ait-product-prototype`**, do **not**
+   evidence, and gate results. When invoked as a **sub-step of `ait-product-prototype` or
+   `ait-product-showcase`**, do **not**
    write your own inbox file — return the evidence and gate result to the parent, which writes the
    single handoff (one handoff per specialist task, per the shared contract).
 10. Return the standard Result block.

@@ -15,6 +15,7 @@ with the `ait-conventions` skill as the shared contract.
 |---|---|---|---|
 | `/product-design` | `ait-product-design` | Product Designer | Ideation: explore an idea, map user journeys, shape UX flows, and produce design direction + tokens. |
 | `/product-prototype` | `ait-product-prototype` | Product Designer | Prototyping: turn approved design direction into a runnable clickable prototype and verify it (Playwright MCP) before specs. |
+| `/product-showcase` | `ait-product-showcase` | Product Designer | Executive-showcase prototyping: build a polished, presentation-ready static-HTML prototype from a spec, or faithfully reproduce an existing visual design (composes `ait-wireframe-to-frontend`). |
 | `/product-specs` | `ait-tech-specs` | Product Owner, Architect | Convert a validated prototype/direction into technical specs, acceptance criteria, and decisions. |
 | `/product-implement` | `ait-implementation` | Backend Dev, Frontend Dev | Build an atomic task or feature slice from specs/tracking. |
 | `/product-review` | `ait-review-critic` | Code Reviewer / Critic | Review implemented changes for blocking issues before completion. |
@@ -42,8 +43,12 @@ Install the plugin, then invoke a full run or a single phase:
 copilot plugin marketplace add CalinL/ai-team-sdlc
 copilot plugin install ai-team-sdlc@ai-team-sdlc
 
+# already installed? pull the latest agents, skills, and prompts
+copilot plugin update ai-team-sdlc@ai-team-sdlc
+
 copilot -p "Use the ait-sdlc-orchestrate skill. Specs: .\specs\. Run the full SDLC and report DONE."
 copilot -p "Use the ait-product-prototype skill to build and verify a clickable prototype from .\specs\checkout.md"
+copilot -p "Use the ait-product-showcase skill to build an executive showcase prototype from .\specs\checkout.md"
 ```
 
 The plugin's skills carry their own procedure and reference the `ait-conventions` skill for the

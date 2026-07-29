@@ -14,7 +14,8 @@ The prototype is a throwaway spike — production UI is built later by `/product
 Input may come from the text after the command, `${selection}`, or the current `${file}`. Treat it as
 the design direction / UX flows / design tokens to prototype.
 
-The skill scaffolds the prototype (`web-artifacts-builder`), applies craft (`frontend-design`,
+The skill builds a static, self-contained HTML prototype by default (vanilla CSS/JS; reach for
+`web-artifacts-builder` only on explicit request), applies craft (`frontend-design`,
 `theme-factory`), and verifies it in a real browser (`ait-prototype-testing` via the Playwright MCP)
 before the `prototype-review` gate.
 

@@ -1,7 +1,7 @@
 ---
 name: ait-implementation
 description: 'Implementation phase for the AI-SDLC system. Use when turning accepted tasks, technical specs, and acceptance criteria into working backend or frontend code with tests. Do not use when the work is primarily product design, architecture/spec writing, QA validation, critic review, security review, or deployment.'
-license: MIT
+license: Apache-2.0
 ---
 
 # Implementation
