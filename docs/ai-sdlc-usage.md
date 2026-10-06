@@ -13,6 +13,7 @@ with the `ait-conventions` skill as the shared contract.
 
 | Command | Routes to skill | Agent persona(s) | Use when |
 |---|---|---|---|
+| `/product-idea` | `ait-idea` | Default agent (web research) | Use-case discovery: research a company from its website, rank ideas, and produce one-page HTML use cases plus build-ready prototype briefs. Portable as a single file (also works in Cowork). |
 | `/product-design` | `ait-product-design` | Product Designer | Ideation: explore an idea, map user journeys, shape UX flows, and produce design direction + tokens. |
 | `/product-prototype` | `ait-product-prototype` | Product Designer | Prototyping: turn approved design direction into a runnable clickable prototype and verify it (Playwright MCP) before specs. |
 | `/product-showcase` | `ait-product-showcase` | Product Designer | Executive-showcase prototyping: build a polished, presentation-ready static-HTML prototype from a spec, or faithfully reproduce an existing visual design (composes `ait-wireframe-to-frontend`). |

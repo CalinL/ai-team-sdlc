@@ -436,7 +436,7 @@ docs/
 .copilot-tracking/                # runtime state (add to .gitignore)
 ```
 
-**Roster:** 10 commands · 18 skills (15 namespaced core + 3 unprefixed vendored) · 11 agents · 1 instructions · `AGENTS.md` · usage doc, organized into 5 phases (Plan · Build · Test · Sign-off · Deploy) + Orchestrator.
+**Roster:** 11 commands · 19 skills (16 namespaced core + 3 unprefixed vendored) · 11 agents · 1 instructions · `AGENTS.md` · usage doc, organized into 5 phases (Plan · Build · Test · Sign-off · Deploy) + Orchestrator.
 
 ---
 

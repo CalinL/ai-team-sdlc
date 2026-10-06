@@ -19,6 +19,7 @@ Code entry points; in the CLI you invoke the same skills directly (see **Running
 
 | Phase | Command | Skill | Specialist AI agent(s) | Humans in the loop |
 |-------|---------|-------|------------------------|--------------------|
+| 🧭 Plan | `/product-idea` | `ait-idea` | Use-case strategist (default agent, needs web access) | Product Owner, Tech Lead |
 | 🧭 Plan | `/product-design` | `ait-product-design` | Product Designer | Product Owner, Tech Lead |
 | 🧭 Plan | `/product-prototype` | `ait-product-prototype` | Product Designer | Product Owner, Tech Lead |
 | 🧭 Plan | `/product-showcase` | `ait-product-showcase` | Product Designer | Product Owner, Tech Lead |

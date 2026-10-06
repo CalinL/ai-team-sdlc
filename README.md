@@ -86,6 +86,7 @@ task schema, gates, resumability, sign-off) and **`ait-quality-gates`** (the reu
 
 | Command | Skill | Specialist agent |
 |---|---|---|
+| `/product-idea` | `ait-idea` | Default agent (web research) |
 | `/product-design` | `ait-product-design` | Product Designer |
 | `/product-prototype` | `ait-product-prototype` | Product Designer |
 | `/product-showcase` | `ait-product-showcase` | Product Designer |
@@ -108,6 +109,7 @@ no build step — so it opens in any browser and is easy to share.
 
 | Stage | Command · skill | Use it to |
 |---|---|---|
+| Use-case ideas | `/product-idea` · `ait-idea` | Research a company and produce one-page HTML use cases plus build-ready prototype briefs to feed the stages below. |
 | Lightweight spike | `/product-prototype` · `ait-product-prototype` | De-risk a UX flow with a quick clickable spike before writing a spec. |
 | Executive showcase | `/product-showcase` · `ait-product-showcase` | Produce a polished, presentation-ready prototype — generated from text/specs, or faithfully reproduced from an existing visual design. |
 
@@ -118,6 +120,9 @@ craft. Reach for a framework only on explicit request — the default output sta
 ### Copilot CLI
 
 ```bash
+# Find 3 high-impact business use cases for a company, with prototype briefs
+copilot -p "Use the ait-idea skill to find 3 business use cases for Contoso from https://www.contoso.com"
+
 # Quick clickable spike to de-risk a flow (static HTML + vanilla CSS/JS)
 copilot -p "Use the ait-product-prototype skill to prototype the onboarding flow in ./specs/onboarding.md"
 

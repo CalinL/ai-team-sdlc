@@ -453,7 +453,7 @@
 
     <div class="stat-row stat-band">
       <div class="stat"><div class="n">9</div><div class="l">lifecycle stages, idea &#8594; deploy</div></div>
-      <div class="stat"><div class="n">11</div><div class="l">specialist AI agent personas</div></div>
+      <div class="stat"><div class="n">11</div><div class="l">specialist AI agent personas + skill-based roles</div></div>
       <div class="stat"><div class="n">1</div><div class="l">human governance sign-off</div></div>
       <div class="stat"><div class="n">100%</div><div class="l">tracked &amp; resumable on failure</div></div>
     </div>
@@ -510,6 +510,7 @@
         </thead>
         <tbody>
           <tr><td class="agent-nm"><span class="ico">&#127919;</span>Orchestrator</td><td class="desc-2">Turns an idea into a plan, dispatches every agent, enforces quality gates, and tracks progress end to end.</td><td class="use">Ship an idea from concept to production in one run.</td><td><code class="cmd">/product-run</code></td></tr>
+          <tr><td class="agent-nm"><span class="ico">&#128161;</span>Use-case Strategist</td><td class="desc-2">A skill-based role (runs in the default agent): it researches a company from its website, ranks high-impact business use cases, and writes on-brand one-page HTML pitches plus build-ready prototype briefs, after critic review.</td><td class="use">Find the right idea to demo before anything is designed.</td><td><code class="cmd">/product-idea</code></td></tr>
           <tr><td class="agent-nm"><span class="ico">&#127912;</span>Product Designer</td><td class="desc-2">Shapes the user experience, maps journeys, and builds a clickable prototype verified in a real browser.</td><td class="use">Explore and de-risk an experience before building.</td><td><code class="cmd">/product-design</code> <code class="cmd">/product-prototype</code> <code class="cmd">/product-showcase</code></td></tr>
           <tr><td class="agent-nm"><span class="ico">&#128203;</span>Product Owner</td><td class="desc-2">Writes the requirements and clear acceptance criteria that later gate the build.</td><td class="use">Turn a validated concept into an agreed plan.</td><td><code class="cmd">/product-specs</code></td></tr>
           <tr><td class="agent-nm"><span class="ico">&#127963;&#65039;</span>Architect</td><td class="desc-2">Designs the architecture, API contracts, and data models, plus an implementation-ready breakdown.</td><td class="use">Decide how the product will be built.</td><td><code class="cmd">/product-specs</code></td></tr>
@@ -537,8 +538,8 @@
   const STAGES = [
     { id:"idea", phase:"Kickoff", ico:"\uD83D\uDCA1", title:"Idea", sub:"A human points the system at a concept",
       color:"var(--idea)",
-      desc:"You hand the system a product idea, PRD, or spec, no need to break it down. The orchestrator decomposes it into small, ordered, verifiable tasks and starts tracking.",
-      ai:["\uD83C\uDFAF AI-SDLC Orchestrator"], humans:["Anyone with an idea"], gate:["(starts the run)"] },
+      desc:"You hand the system a product idea, PRD, or spec, no need to break it down. No idea yet? The Use-case Strategist skill (/product-idea) researches a company's website, ranks high-impact business use cases, and delivers on-brand one-page HTML pitches plus build-ready prototype briefs. The orchestrator then decomposes the chosen idea into small, ordered, verifiable tasks and starts tracking.",
+      ai:["\uD83D\uDCA1 Use-case Strategist skill (optional)","\uD83C\uDFAF AI-SDLC Orchestrator"], humans:["Anyone with an idea","Product Owner"], gate:["(starts the run)"] },
     { id:"ideate", phase:"Plan", ico:"\uD83C\uDFA8", title:"Ideate", sub:"UX flows & design direction",
       color:"var(--plan)",
       desc:"The Product Designer AI explores the idea, maps user journeys, and shapes UX flows, wireframes, and design tokens: the design direction everything downstream builds on.",
@@ -579,6 +580,7 @@
 
   const AI_PERSONAS = [
     ["\uD83C\uDFAF","AI-SDLC Orchestrator","Decomposes, dispatches, tracks, resumes","var(--orch)"],
+    ["\uD83D\uDCA1","Use-case Strategist (skill)","Skill-based \u00B7 company research, ranked use cases, on-brand one-pagers","var(--idea)"],
     ["\uD83C\uDFA8","Product Designer AI","Ideation, UX flows & clickable prototype","var(--plan)"],
     ["\uD83D\uDCCB","Product Owner AI","PRD, acceptance criteria, scope","var(--plan)"],
     ["\uD83C\uDFDB\uFE0F","Architect AI","Architecture, API contracts, ADRs","var(--plan)"],

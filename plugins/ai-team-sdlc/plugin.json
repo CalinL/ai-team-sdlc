@@ -1,7 +1,7 @@
 {
   "name": "ai-team-sdlc",
   "description": "Agentic SDLC team for GitHub Copilot: an orchestrator plus ait- specialist agents and skills that take any idea from ideation to deploy with quality gates and one human governance sign-off.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "Calin Lupas",
     "url": "https://github.com/CalinL"
