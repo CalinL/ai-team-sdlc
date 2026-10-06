@@ -1,0 +1,422 @@
+<!doctype html>
+<!--
+  Simulate kit — voice-narrated guided walkthrough for showcase prototypes.
+
+  Copy the three marked blocks into the prototype (it stays ONE self-contained file):
+    1. SIMULATE · CSS     → inside the prototype's <style>
+    2. SIMULATE · BUTTON  → in the top bar (prominent, top-right)
+    3. SIMULATE · ENGINE  → after the prototype's own <script> (a separate <script> is fine)
+  Then edit only the CONFIG section at the top of the engine (badge, snapshot/restore, STEPS).
+  The engine is wrapped in an IIFE: it declares no globals and needs nothing from the host
+  except the functions your STEPS call. Everything outside the marked blocks is a throwaway
+  demo app so the kit runs as-is. See ../references/simulate.md for the authoring guide.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simulate kit — sample</title>
+<style>
+/* ---- demo app (throwaway) — GitHub Primer dark palette ---- */
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface-2:#21262d;--surface-3:#1c2128;
+  --line:#21262d;--line-2:#30363d;--tx:#e6edf3;--tx-2:#9198a1;--tx-3:#6e7681;
+  --accent:#238636;--info:#2f81f7;--header:#010409;--underline:#f78166;
+  --r-md:6px;--r-lg:12px;--r-pill:999px;--sh-2:0 0 0 1px #30363d,0 16px 32px rgba(1,4,9,.85);
+}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--tx)}
+button{font:inherit;cursor:pointer}
+.top{display:flex;align-items:center;gap:12px;height:62px;padding:0 24px;border-bottom:1px solid var(--line-2);background:var(--header)}
+.top b{font-size:14px;font-weight:600}.top .sp{flex:1}
+.top .logo{width:28px;height:28px;border-radius:50%;background:var(--tx);display:inline-block}
+.btn{border:1px solid rgba(240,246,252,.1);background:var(--surface-2);color:var(--tx);border-radius:var(--r-md);padding:5px 16px;font-weight:500;line-height:20px}
+.btn.pri{background:var(--accent);border-color:rgba(240,246,252,.1);color:#fff}
+.tabs{display:flex;gap:8px;padding:0 24px;border-bottom:1px solid var(--line-2);background:var(--header)}
+.tabs button{border:0;border-bottom:2px solid transparent;background:transparent;color:var(--tx);border-radius:0;padding:12px 8px;font-size:14px}
+.tabs button:hover{background:rgba(177,186,196,.12);border-radius:var(--r-md) var(--r-md) 0 0}
+.tabs button.on{border-bottom-color:var(--underline);font-weight:600}
+.view{padding:24px;max-width:1012px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;margin-bottom:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpi{background:var(--surface-2);border-radius:var(--r-md);padding:14px}.kpi b{font-size:24px;display:block}
+input.q{width:100%;padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--line-2);background:var(--surface-2);color:var(--tx);font:inherit}
+.ans{margin-top:12px;color:var(--tx-2)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--surface);box-shadow:var(--sh-2);border:1px solid var(--line-2);padding:10px 16px;border-radius:var(--r-md);transition:.25s;z-index:90}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ==== SIMULATE · CSS ====================================================
+   Reads the prototype's tokens when present (--accent, --info, --surface-*, --line-2,
+   --tx*, --r-*, --sh-2); map them to the theme rather than editing these rules.
+   --sim-z sets the stacking level; --sim-safe is the space reserved below content. */
+.simprog{position:fixed;top:0;left:0;height:2px;background:var(--accent,#238636);z-index:calc(var(--sim-z,1000) + 1);transition:width .3s}
+.simbar{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:var(--sim-z,1000);display:flex;align-items:flex-start;gap:16px;
+  background:var(--surface-3,#1c2128);color:var(--tx,#e6edf3);border:1px solid var(--line-2,#30363d);border-radius:var(--r-lg,12px);
+  box-shadow:var(--sh-2,0 0 0 1px #30363d,0 16px 32px rgba(1,4,9,.85));padding:13px 17px;width:min(940px,94vw);backdrop-filter:blur(8px);font-size:13px;line-height:1.45}
+/* Reserve room so the panel never covers the bottom of the content. If the prototype scrolls
+   an inner container instead of the page, add the same padding to that container. */
+body.simming{padding-bottom:var(--sim-safe,150px)}
+.simbadge{background:var(--accent,#238636);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;padding:4px 9px;
+  border-radius:var(--r-pill,999px);white-space:nowrap;align-self:flex-start;margin-top:2px;display:inline-flex;align-items:center;gap:6px}
+.simbadge .sim-eq{display:inline-flex;align-items:flex-end;gap:2px;height:9px}
+.simbadge .sim-eq i{width:2px;height:3px;background:#fff;border-radius:1px}
+.simbar.sim-spk .sim-eq i{animation:simeq .7s ease-in-out infinite}
+.simbar.sim-spk .sim-eq i:nth-child(2){animation-delay:.18s}.simbar.sim-spk .sim-eq i:nth-child(3){animation-delay:.36s}
+@keyframes simeq{0%,100%{height:3px}50%{height:9px}}
+.sim-text{flex:1;min-width:0;cursor:default}
+.sim-title{font-weight:650;font-size:13.5px}
+.sim-line{color:var(--tx-2,#9198a1);font-size:12.5px;margin-top:3px;line-height:1.45}
+.sim-dots{display:flex;gap:5px;margin-top:9px}
+.sim-dots i{width:6px;height:6px;border-radius:50%;background:var(--line-2,#30363d)}
+.sim-dots i.on{background:var(--tx-3,#6e7681)}.sim-dots i.cur{background:var(--accent,#238636)}
+.sim-dots i.seam{margin-left:12px;position:relative}
+.sim-dots i.seam::before{content:"";position:absolute;left:-8px;top:-3px;bottom:-3px;width:1px;background:var(--line-2,#30363d)}
+.sim-bonus{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:var(--sim-bonus-bg,#1f6feb);color:#fff;
+  border-radius:var(--r-pill,999px);padding:2px 8px;margin-right:8px;vertical-align:2px}
+.simbar.sim-isbonus{border-color:color-mix(in srgb,var(--info,#2f81f7) 50%,var(--line-2,#30363d))}
+.sim-ctl{display:flex;align-items:center;gap:6px;align-self:center}
+.sim-ctl button{border:1px solid var(--line-2,#30363d);background:transparent;color:inherit;border-radius:var(--r-md,6px);padding:6px 11px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.sim-ctl button:hover{background:var(--surface-2,#21262d)}
+.simbar button:focus-visible,.sim-text:focus-visible{outline:2px solid var(--accent,#238636);outline-offset:2px}
+/* Simulate trigger: prominent, top-right of the top bar. You may use the host's primary-button
+   class instead; keep the data-simulate attribute. */
+.sim-trigger{border:1px solid var(--accent,#238636);background:var(--accent,#238636);color:#fff;border-radius:var(--r-md,6px);padding:7px 13px;font:inherit;font-weight:600;cursor:pointer}
+.sim-trigger:hover{filter:brightness(1.08)}
+.simfocus{outline:2px solid var(--accent,#238636)!important;outline-offset:4px;border-radius:var(--r-md,6px);animation:simfp 1.4s ease-in-out infinite}
+@keyframes simfp{0%,100%{outline-color:var(--accent,#238636)}50%{outline-color:color-mix(in srgb,var(--accent,#238636) 30%,transparent)}}
+/* While simulating, move toasts to the top so the panel never hides them.
+   Rename .toast to the prototype's own toast class if it differs. */
+body.simming .toast{bottom:auto;top:22px;transform:translateX(-50%) translateY(-20px)}
+body.simming .toast.show{transform:translateX(-50%) translateY(0)}
+/* On a phone the transcript must not swallow the product it describes: clamp to two lines, tap to expand. */
+@media(max-width:760px){
+  .simbar{bottom:16px;width:96vw;padding:10px 12px;gap:10px;flex-wrap:wrap;align-items:center}
+  .simbadge{font-size:8.5px;padding:3px 7px;order:1}
+  .sim-text{order:3;flex:1 0 100%;cursor:pointer}
+  .sim-ctl{order:2;margin-left:auto}
+  .sim-ctl button{padding:6px 9px;font-size:11.5px}
+  .sim-title{font-size:12.5px}
+  .sim-line{font-size:11.5px;max-height:2.9em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .simbar.sim-open .sim-line{max-height:40vh;overflow:auto;display:block}
+  .sim-text::after{content:"Tap to expand";display:block;font-size:10px;color:var(--tx-2,#9198a1);margin-top:4px}
+  .simbar.sim-open .sim-text::after{content:"Tap to collapse"}
+  .sim-dots{margin-top:7px}
+}
+@media(prefers-reduced-motion:reduce){.simfocus{animation:none}.simbar.sim-spk .sim-eq i{animation:none;height:6px}.simprog{transition:none}}
+/* ==== /SIMULATE · CSS =================================================== */
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="logo" aria-hidden="true"></span><b>Sample App</b><span class="sp"></span>
+  <!-- ==== SIMULATE · BUTTON ==== -->
+  <button class="sim-trigger" data-simulate type="button" aria-pressed="false">▶ <span class="lb">Simulate</span></button>
+  <!-- ==== /SIMULATE · BUTTON ==== -->
+</header>
+<nav class="tabs" id="tabs">
+  <button data-v="home" class="on">Home</button><button data-v="ask">Ask</button><button data-v="insights">Insights</button>
+</nav>
+<main class="view" id="view"></main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---- demo app (throwaway) — replace with the real prototype ---- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const S = { view: "home", answer: "" };
+function toast(t) { const e = $("#toast"); e.textContent = t; e.classList.add("show"); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove("show"), 2600); }
+function nav(v) { S.view = v; render(); }
+function render() {
+  $$("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === S.view));
+  const v = $("#view");
+  if (S.view === "home") v.innerHTML = `<div class="card hero"><h2>Welcome back</h2><p>Three things changed since your last visit.</p></div>
+    <div class="card list"><b>Recent</b><p>Quarterly review · Onboarding checklist · Team update</p></div>`;
+  if (S.view === "ask") v.innerHTML = `<div class="card"><input class="q" id="q" placeholder="Ask anything…">
+    <button class="btn pri" id="go" style="margin-top:10px">Ask</button><div class="ans" id="ans">${S.answer}</div></div>`;
+  if (S.view === "insights") v.innerHTML = `<div class="card"><div class="kpis"><div class="kpi"><b>1,240</b>Questions</div>
+    <div class="kpi"><b>71%</b>Answered</div><div class="kpi"><b>18/22</b>Docs cited</div></div></div>`;
+  const go = $("#go"); if (go) go.onclick = () => { S.answer = "Here is a sample answer with two sources."; render(); toast("Answer ready"); };
+}
+$$("#tabs button").forEach(b => b.onclick = () => nav(b.dataset.v));
+render();
+</script>
+
+<!-- ==== SIMULATE · ENGINE ==== -->
+<script>
+(function () {
+  "use strict";
+  const q = (s, r = document) => r.querySelector(s);
+  const qa = (s, r = document) => [...r.querySelectorAll(s)];
+
+  /* ------------------------------------------------------------------ CONFIG
+     The only section to edit. Inside STEPS[].r use the helpers passed in:
+       wait(ms)                 pause-aware delay; ends the tour cleanly on Exit
+       hl(selector|el|null)     spotlight + scroll into view (warns if not found)
+       typeInto(selector, text) visible typing that fires input events
+       click(selector|el)       spotlight briefly, then click (no-op + warning if missing)
+     Call the prototype's own functions (navigation, render, state) directly.   */
+  const CONFIG = {
+    trigger: "[data-simulate]",                       // every element that starts/stops the tour
+    badge: "Guided prototype · simulated data",       // say "simulated" when any data is invented
+    restoreOnFinish: true,                            // false = stay on the last frame after a full run
+    snapshot: () => ({ view: S.view, answer: S.answer }),   // capture viewer state before the tour
+    restore: s => { S.answer = s.answer; nav(s.view); },     // put it back on exit / finish
+    steps: ({ wait, hl, typeInto, click }) => [
+      { t: "This is today", d: 9000,
+        n: "This is the home screen people open today. Three things changed, and nothing tells them which one matters.",
+        r: async () => { nav("home"); await wait(600); hl(".hero"); await wait(3500); hl(".list"); } },
+      { t: "Act 1 · Ask once", d: 11000,
+        n: "So she asks. Watch the question go in, and one answer come back with its sources — not a list of links.",
+        r: async () => {
+          nav("ask"); await wait(500); await typeInto("#q", "What changed in the quarterly review?");
+          await click("#go"); await wait(600); hl("#ans");
+        } },
+      { t: "Act 2 · The operating picture", d: 10000,
+        n: "And this is what the owner sees: how many questions arrived, how many were answered, and which documents actually earned their place.",
+        r: async () => { nav("insights"); await wait(600); hl(".kpis"); } },
+      { t: "And that's not all", d: 7000, extra: true, last: true,
+        n: "Everything after the main story is a bonus beat. A presenter who is out of time can stop before it and lose nothing.",
+        r: async () => { nav("home"); hl(null); } }
+    ]
+  };
+  /* ------------------------------------------------------------- /CONFIG */
+
+  // Preferred natural voices, best first, matched by substring. Microsoft Jenny Online (Natural)
+  // ships with Edge; the rest cover Windows, macOS, Chrome and Android.
+  const VOICE_PREF = ["Microsoft Jenny Online", "Jenny Online (Natural)", "Jenny", "Aria Online", "Aria",
+    "Sonia Online", "Sonia", "Libby", "Natural", "Samantha", "Serena", "Google UK English Female",
+    "Google US English", "Hazel", "Zira"];
+  const TICK = 100, STOP = Symbol("sim-stop");
+  const TTS = "speechSynthesis" in window;
+  const reduceMotion = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  const st = { on: false, paused: false, skip: false, stop: false, muted: false, token: 0, i: 0, clock: 0, ticker: null, was: null, voice: null,
+    localOnly: false, silent: false, pending: null };
+  let STEPS = [];
+
+  /* ---- voice ---- */
+  // English voices only, ranked by preference; voices that failed this session are skipped.
+  // After a network failure only local voices are eligible; if none exist the tour runs silently
+  // on its beat timings (st.silent). A null result otherwise means "browser default, en-US".
+  const badVoices = new Set();
+  function pickVoice() {
+    if (!TTS) return null;
+    const en = (speechSynthesis.getVoices() || []).filter(v => /^en(-|_|$)/i.test(v.lang || "") && !badVoices.has(v.name)
+      && (!st.localOnly || v.localService));
+    for (const n of VOICE_PREF) { const v = en.find(x => (x.name || "").toLowerCase().includes(n.toLowerCase())); if (v) return v; }
+    return en.find(v => /^en-US/i.test(v.lang)) || en.find(v => v.localService) || en[0] || null;
+  }
+  if (TTS) { st.voice = pickVoice(); speechSynthesis.addEventListener("voiceschanged", () => { st.voice = pickVoice(); }); }
+
+  function speak(text) {
+    return new Promise(res => {
+      if (!TTS || st.muted || st.silent) return res();
+      hush();
+      // Separators read badly aloud; turn them into pauses.
+      const u = new SpeechSynthesisUtterance(String(text).replace(/[·—–]/g, ", ").replace(/\s+/g, " ").trim());
+      u.lang = "en-US"; try { if (st.voice) { u.voice = st.voice; u.lang = st.voice.lang; } } catch (e) { }
+      u.rate = .92; u.pitch = 1.05; u.onend = () => res();
+      // An online voice can fail offline: drop it, allow only local voices from now on, and go
+      // silent if there are none.
+      u.onerror = e => {
+        if (e && !/interrupted|canceled/.test(e.error || "")) {
+          if (st.voice) badVoices.add(st.voice.name);
+          st.localOnly = true; st.voice = pickVoice(); if (!st.voice) { st.silent = true; syncLive(); }
+        }
+        res();
+      };
+      // A short gap after cancel() avoids Chromium occasionally dropping the next utterance.
+      // The pending start is owned by this run and is cancelled by hush(); it waits out a pause.
+      const tok = st.token;
+      const fire = () => {
+        if (!st.pending || st.pending.res !== res) return;
+        if (st.stop || !st.on || tok !== st.token || st.muted) { st.pending = null; return res(); }
+        if (st.paused) { st.pending.timer = setTimeout(fire, TICK); return; }
+        st.pending = null;
+        try { speechSynthesis.resume(); speechSynthesis.speak(u); } catch (e) { res(); }
+      };
+      st.pending = { res, timer: setTimeout(fire, 60) };
+    });
+  }
+  function hush() {
+    if (st.pending) { clearTimeout(st.pending.timer); const r = st.pending.res; st.pending = null; r(); }
+    if (TTS) try { speechSynthesis.cancel(); } catch (e) { }
+  }
+
+  /* ---- pause-aware clock: advances only while running and not paused ---- */
+  const alive = tok => { if (st.stop || tok !== st.token) throw STOP; };
+  async function wait(ms) {
+    const tok = st.token, end = st.clock + ms;
+    while (st.clock < end) { alive(tok); if (st.skip) return; await sleep(TICK / 2); }
+    alive(tok);
+  }
+  function hl(sel) {
+    qa(".simfocus").forEach(e => e.classList.remove("simfocus"));
+    if (!sel) return;
+    const e = typeof sel === "string" ? q(sel) : sel;
+    if (!e) { console.warn("[simulate] spotlight target not found:", sel); return; }
+    e.classList.add("simfocus");
+    try { e.scrollIntoView({ block: "center", behavior: reduceMotion() ? "auto" : "smooth" }); } catch (x) { }
+  }
+  async function typeInto(sel, text, perChar) {
+    const f = q(sel); if (!f) { console.warn("[simulate] typeInto target not found:", sel); return; }
+    const set = v => { f.value = v; f.dispatchEvent(new Event("input", { bubbles: true })); };
+    f.focus(); set("");
+    for (let i = 0; i < text.length; i++) {
+      alive(st.token);                         // Exit aborts without touching the field again
+      if (st.skip) { set(text); f.blur(); return; }   // Next completes the typing instantly
+      set(text.slice(0, i + 1));
+      if (i % 3 === 0) await wait(perChar || 40);
+    }
+    f.blur();
+  }
+  async function click(sel) {
+    const e = typeof sel === "string" ? q(sel) : sel;
+    if (!e) { console.warn("[simulate] click target not found:", sel); return; }
+    hl(e); await wait(700); e.click();
+  }
+
+  // Waits until the narration has finished AND the beat has been on screen for `minMs`
+  // of un-paused time (measured from the beat start, so stage actions are not added on top).
+  async function narrate(speech, beatStart, minMs, text) {
+    const tok = st.token, bar = q("#simbar");
+    // ~2.4 words/s at rate .92, plus slack: long enough for real speech, short enough not to stall.
+    const guard = String(text || "").split(/\s+/).length / 2.4 * 1000 + 5000;
+    let spoke = !TTS || st.muted || st.silent, endedAt = spoke ? beatStart : null;
+    speech.then(() => { spoke = true; });
+    if (!spoke) bar.classList.add("sim-spk");
+    try {
+      while (true) {
+        alive(tok);
+        if (st.skip) { st.skip = false; hush(); return; }
+        if (spoke && endedAt === null) { endedAt = st.clock; bar.classList.remove("sim-spk"); }
+        const el = st.clock - beatStart;
+        if (!spoke && el >= Math.max(minMs, guard)) { hush(); spoke = true; continue; }   // engine never fired onend
+        if (spoke && el >= minMs && st.clock - endedAt >= (endedAt > beatStart + minMs ? 400 : 0)) return;
+        await sleep(TICK / 2);
+      }
+    } finally { bar && bar.classList.remove("sim-spk"); }
+  }
+
+  /* ---- panel ---- */
+  function buildBar() {
+    if (q("#simbar")) return;
+    const p = document.createElement("div"); p.className = "simprog"; p.id = "simprog"; p.style.width = "0%";
+    const b = document.createElement("div"); b.className = "simbar"; b.id = "simbar";
+    b.setAttribute("role", "region"); b.setAttribute("aria-label", "Guided walkthrough");
+    b.innerHTML = `<span class="simbadge"><span class="sim-eq" aria-hidden="true"><i></i><i></i><i></i></span> ${esc(CONFIG.badge)}</span>
+      <div class="sim-text"><div class="sim-title" id="sim-title"></div><div class="sim-line" id="sim-line"></div><div class="sim-dots" id="sim-dots" aria-hidden="true"></div></div>
+      <div class="sim-ctl"><button id="sim-mute" type="button" aria-pressed="false" aria-label="Mute narration">🔊</button><button id="sim-pause" type="button" aria-pressed="false" aria-label="Pause">⏸</button><button id="sim-next" type="button" aria-label="Next step">Next ⏭</button><button id="sim-exit" type="button" aria-label="Exit walkthrough">✕</button></div>`;
+    document.body.append(p, b);
+    if (!TTS) q("#sim-mute").hidden = true;
+    renderMute();
+    q("#sim-mute").onclick = toggleMute;
+    q("#sim-pause").onclick = togglePause;
+    q("#sim-next").onclick = next;
+    q("#sim-exit").onclick = stop;
+    // The transcript is an expand/collapse control only on narrow screens, where it is clamped.
+    const tx = b.querySelector(".sim-text"), narrow = matchMedia("(max-width:760px)");
+    const flip = () => { if (!narrow.matches) return; const o = b.classList.toggle("sim-open"); tx.setAttribute("aria-expanded", String(o)); };
+    const mode = () => {
+      if (narrow.matches) { tx.setAttribute("role", "button"); tx.tabIndex = 0; tx.setAttribute("aria-expanded", String(b.classList.contains("sim-open"))); }
+      else { tx.removeAttribute("role"); tx.removeAttribute("tabindex"); tx.removeAttribute("aria-expanded"); b.classList.remove("sim-open"); }
+    };
+    mode(); narrow.addEventListener("change", mode);
+    tx.onclick = flip; tx.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } };
+    syncLive();
+  }
+  // Screen readers get the transcript only when the voice is not already reading it.
+  function syncLive() { const n = q("#sim-line"); if (n) n.setAttribute("aria-live", (!TTS || st.muted || st.silent) ? "polite" : "off"); }
+  function renderMute() {
+    const m = q("#sim-mute"); if (!m) return;
+    m.textContent = st.muted ? "🔇" : "🔊"; m.setAttribute("aria-pressed", String(st.muted));
+    m.setAttribute("aria-label", st.muted ? "Unmute narration" : "Mute narration");
+  }
+  function toggleMute() { st.muted = !st.muted; renderMute(); if (st.muted) hush(); syncLive(); }
+  function setPaused(v) {
+    st.paused = v; const p = q("#sim-pause"); if (!p) return;
+    p.textContent = v ? "▶" : "⏸"; p.setAttribute("aria-pressed", String(v)); p.setAttribute("aria-label", v ? "Resume" : "Pause");
+    if (TTS) try { v ? speechSynthesis.pause() : speechSynthesis.resume(); } catch (e) { }
+  }
+  const togglePause = () => setPaused(!st.paused);
+  function next() { if (!st.on) return; if (st.paused) setPaused(false); st.skip = true; hush(); }
+  function caption(s) {
+    q("#sim-title").innerHTML = (s.extra ? '<span class="sim-bonus">Bonus</span>' : "") + esc(s.t);
+    q("#sim-line").textContent = s.n;
+    // A visible seam between the main story and bonus beats tells a presenter where they can stop.
+    q("#sim-dots").innerHTML = STEPS.map((x, j) => `<i class="${j < st.i ? "on" : ""} ${j === st.i ? "cur" : ""}${x.extra && !(STEPS[j - 1] || {}).extra ? " seam" : ""}"></i>`).join("");
+    q("#simprog").style.width = (st.i / Math.max(1, STEPS.length - 1) * 100).toFixed(0) + "%";
+    q("#simbar").classList.toggle("sim-isbonus", !!s.extra);
+  }
+  function setButton(running) {
+    qa(CONFIG.trigger).forEach(b => {
+      b.innerHTML = running ? "✕ <span class='lb'>Exit</span>" : "▶ <span class='lb'>Simulate</span>";
+      b.setAttribute("aria-pressed", String(running));
+    });
+  }
+
+  /* ---- run / stop ---- */
+  async function start() {
+    if (st.on) return;
+    const tok = ++st.token;
+    Object.assign(st, { on: true, paused: false, skip: false, stop: false, clock: 0, was: null, focus: document.activeElement });
+    let finished = false;
+    try {
+      st.was = CONFIG.snapshot();
+      if (TTS && !st.silent) st.voice = pickVoice() || st.voice;   // voices may have arrived since load
+      STEPS = CONFIG.steps({ wait, hl, typeInto, click });
+      st.ticker = setInterval(() => { if (!st.paused) st.clock += TICK; }, TICK);
+      buildBar(); document.body.classList.add("simming"); setButton(true);
+      const pb = document.getElementById("sim-pause"); if (pb) pb.focus({ preventScroll: true }); // Space then pauses instead of re-clicking the trigger
+      for (st.i = 0; st.i < STEPS.length; st.i++) {
+        const s = STEPS[st.i]; caption(s);
+        const t0 = st.clock, speech = speak(s.n);   // voice and stage actions run in parallel
+        if (s.r) await s.r();
+        await narrate(speech, t0, s.d || 0, s.n);
+        if (s.last) await wait(2500);
+      }
+      finished = true;
+    } catch (e) {
+      if (e !== STOP) console.error("[simulate] step failed:", (STEPS[st.i] && STEPS[st.i].t) || "setup", e);
+    } finally {
+      if (tok === st.token) cleanup(finished);
+    }
+  }
+  // Exit only raises the flag; the running loop unwinds and cleans up in its own `finally`,
+  // so no pending stage action can fire after the viewer's state has been restored.
+  function stop() { if (!st.on) return; st.stop = true; hush(); }
+  function cleanup(finished) {
+    clearInterval(st.ticker); hush();
+    if (TTS) try { speechSynthesis.resume(); } catch (e) { }   // never leave the synthesizer paused
+    Object.assign(st, { on: false, paused: false, skip: false });
+    document.body.classList.remove("simming");
+    ["#simbar", "#simprog"].forEach(s => { const e = q(s); if (e) e.remove(); });
+    qa(".simfocus").forEach(e => e.classList.remove("simfocus"));
+    setButton(false);
+    const was = st.was; st.was = null;
+    if (was && (!finished || CONFIG.restoreOnFinish)) {
+      try { CONFIG.restore(was); } catch (e) { console.error("[simulate] restore failed:", e); }
+    }
+    const f = st.focus && st.focus.isConnected ? st.focus : q(CONFIG.trigger); st.focus = null;
+    try { f && f.focus({ preventScroll: true }); } catch (e) { }
+  }
+
+  // Delegated, so triggers on any scene (including ones rendered later) all work.
+  document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(CONFIG.trigger); if (t) st.on ? stop() : start(); });
+  document.addEventListener("keydown", e => {
+    if (!st.on || e.defaultPrevented) return;
+    const t = e.target, typing = t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable);
+    if (e.key === "Escape") stop();
+    else if (typing) return;
+    else if (e.key === "ArrowRight") next();
+    else if (e.key === " " && !/^(BUTTON|A)$/.test(t.tagName) && !t.closest(".sim-text")) { e.preventDefault(); togglePause(); }
+  });
+  window.addEventListener("pagehide", hush);
+  window.Simulate = { start, stop, next, pause: togglePause, get running() { return st.on; } };
+})();
+</script>
+<!-- ==== /SIMULATE · ENGINE ==== -->
+</body>
+</html>

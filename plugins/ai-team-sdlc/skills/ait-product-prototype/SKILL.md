@@ -33,6 +33,8 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 - Technical specs, API contracts, or data models → use `ait-tech-specs`.
 - Building the production UI/feature → use `ait-implementation`.
 - Validating the built product against acceptance criteria → use `ait-qa-validation`.
+- A polished, leadership-ready demo (narrated tour on by default, mandatory two-critic review) →
+  use `ait-product-showcase`.
 
 ## Prototype toolkit (companion skills)
 - **`web-artifacts-builder`** — **opt-in only** for a rich, multi-screen interactive spike (React +
@@ -49,6 +51,8 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 | design direction | yes | UX flows, wireframes, design tokens, and acceptance-ready UX notes from `ait-product-design`. |
 | fidelity | no | Low/mid/high; default to the lowest fidelity that lets stakeholders validate the flow. |
 | constraints | no | Brand, platform, accessibility, device, or design-system constraints. |
+| opt-ins | no | **Default none.** Enable only on explicit user request: `simulate` (narrated guided tour) and/or `peer-review` (one round of critic review). |
+| output folder | no | Default `docs/` at the workspace root (see **Output files**). |
 | tracking path | no | `.copilot-tracking/<run-id>/` for inbox handoff when running under the orchestrator. |
 | task-id | no | Required for orchestrated task handoff. |
 
@@ -56,24 +60,51 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 1. Read the design direction and the critical flows/states to prototype. Confirm scope: which flows
    must be clickable to validate the experience (happy path + key empty/loading/error states).
 2. Choose fidelity and approach. Default to a **static, self-contained HTML file with vanilla
-   CSS/JS — no framework, no build step**. Reach for `web-artifacts-builder` (React/Tailwind/shadcn)
-   only when the user explicitly asks or the spike genuinely needs heavy state/routing.
-3. Build the prototype, applying `frontend-design` for craft and `theme-factory` for the chosen
-   tokens/theme. Keep it a spike — no backend, no production concerns; stub data is fine.
+   CSS/JS — no framework, no build step** — with inline data and no CDN or `fetch`, so it can be
+   shared and still works when opened from `file://`. Reach for `web-artifacts-builder`
+   (React/Tailwind/shadcn) only when the user explicitly asks or the spike genuinely needs heavy
+   state/routing.
+3. Build the prototype at the versioned path in **Output files**, applying `frontend-design` for
+   craft and `theme-factory` for the chosen tokens/theme. Keep it a spike — no backend, no
+   production concerns. Use real data only when the user supplies it; otherwise stub data is fine.
 4. Verify it with `ait-prototype-testing` (Playwright MCP): walk each critical flow, check interaction
    states, capture console errors, test responsive breakpoints, and run an accessibility smoke pass.
    Here `ait-prototype-testing` runs as a **sub-step** and returns its evidence to you; **you** write the
-   single inbox handoff (it does not write its own).
-5. Capture evidence (screenshots, the flows that passed/failed) and note where the prototype
+   single inbox handoff (it does not write its own). After the last fix, re-run the affected checks
+   so the evidence describes the final version.
+5. **Opt-ins (only those the user enabled; otherwise skip).**
+   - `simulate`: add a `Simulate` guided tour by reusing the `ait-product-showcase` skill's kit
+     (`assets/simulate-kit.html`) and guide (`references/simulate.md`) rather than writing a new
+     engine. Keep it short and covering the critical flows; verify it as part of step 4's checks.
+   - `peer-review`: run **one** round with two fresh critic subagents (different model family where
+     available) given the same design direction plus the prototype. Ask for *blocking · major ·
+     minor*; fix blocking and major issues and re-verify. Extra rounds only on request. If a critic
+     contradicts an explicit user instruction, follow the user and surface the disagreement.
+6. Capture evidence (screenshots, the flows that passed/failed) and note where the prototype
    diverges from — or refines — the original design direction.
-6. Convert what the prototype proved into **spec-ready notes**: confirmed flows, validated
+7. Convert what the prototype proved into **spec-ready notes**: confirmed flows, validated
    interactions, open questions, and constraints for `ait-tech-specs` and the Product Owner's PRD.
-7. Run the **`prototype-review`** gate through the `ait-quality-gates` skill (prototype built and
+   Write them to the notes file in **Output files**.
+8. Run the **`prototype-review`** gate through the `ait-quality-gates` skill (prototype built and
    verified, flows work, stakeholder-validatable). Use only the Playwright MCP and documented
    review criteria; do not invent or install test tooling.
-8. Write exactly one `inbox/<ts>-ait-product-designer-<task-id>.md` file summarizing the prototype,
+9. Write exactly one `inbox/<ts>-ait-product-designer-<task-id>.md` file summarizing the prototype,
    verification results, decisions, assumptions, risks, and gate results.
-9. Return the standard Result block.
+10. Return the standard Result block.
+
+## Output files
+All deliverables go in the **output folder** (default `docs/`); `<product>` is a kebab-case slug of
+the product or feature name.
+| Artifact | Path |
+|---|---|
+| Prototype | `docs/<product>-prototype-v<N>.html` (starts at `-v1`) — one self-contained file |
+| Spec-ready notes | `docs/<product>-prototype-notes.md` |
+| Verification evidence | Screenshots under `docs/<product>-prototype-v<N>-evidence/` (optional) |
+
+**Versioning.** Start at `-v1` and iterate on the **current** version in place. Never create `-v2`
+(or copy a version) on your own: the **user** decides when to start a new version by copying the
+previous one. When the user points at an existing version, work on that file and leave earlier
+versions untouched.
 
 ## Output
 ```
