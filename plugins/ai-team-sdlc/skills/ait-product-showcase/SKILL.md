@@ -222,6 +222,9 @@ orchestrator, a resumed run keeps the same version path; the version never comes
   real data is embedded, say so in the handoff — the single file is easy to forward.
 - Follow explicit user product instructions even when a reviewer argues against them; surface the
   disagreement instead of silently overriding.
+- When a significant design or scope decision is genuinely uncertain mid-build, get a quick second
+  opinion from a subagent on a different model before committing to it, rather than waiting for the
+  step 4 review to catch it.
 - Keep outputs portable across VS Code and CLI; note bash/Node requirements of the scaffolder.
 - Do not edit orchestrator-owned tracking files directly.
 - Surface unresolved product, accessibility, brand, or feasibility risks as blockers or decisions.
