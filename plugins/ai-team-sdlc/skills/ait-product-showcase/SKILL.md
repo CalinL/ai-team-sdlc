@@ -173,10 +173,30 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    extras, or fixes — is not yet reviewed. Re-run the affected step 3/5 checks and the step 4 review
    on the final version, with the same rules: fresh critic subagents (give them the previous findings
    to verify), and the 3-round cap is **cumulative** across steps 4 and 8, not reset.
+   **Then run the done-loop. "Looks good" is not "done":** agents tend to stop at a polished but
+   incomplete result.
+   - **(a) Coverage.** Re-read the source and list every feature, persona, scenario, and every
+     figure or record the story relies on. Mark each one as shown and working in the prototype, and
+     note whether the main ones are in the Simulate tour. Anything missing, stubbed or broken is a
+     gap.
+     - Give this inventory to the critics in the re-review. They verify each row by walking it in
+       the prototype, and any row they cannot confirm is a gap.
+     - An item a prototype cannot honestly show (e.g. a real integration) is not a gap if it is
+       demonstrated as simulated.
+     - If an item cannot be shown even that way, or the source is ambiguous or contradictory, ask
+       the user to accept it as a recorded exclusion instead of looping.
+   - **(b) Presenter test.** Answer it honestly: would you present this yourself to the CEO today,
+     with no apologies? If not, write down why.
+   - Any gap or "no" sends you back to fix it, then repeat this step (re-checks, critics, done-loop)
+     within the same cumulative cap. Stop only when (a) has no gaps (apart from user-accepted
+     exclusions), (b) is "yes", and the step 4 peer-review requirement is met: both critics are
+     READY, or the recorded waiver / human approvals stand in for them. If the cap runs out first,
+     mark the task `blocked` with the open gaps; never `done`.
 9. Run the **`prototype-review`** gate through the `ait-quality-gates` skill. Note the gate verifies
    the *baseline* (prototype built and verified, flows work, no console errors, responsive, a11y
    smoke, stakeholder-validatable). The showcase-specific promises — **pixel/spec fidelity, both
-   critics READY on the final version (or the step 4 recorded waiver / human approvals), a working
+   critics READY on the final version (or the step 4 recorded waiver / human approvals), a done-loop
+   with no coverage gaps and a "yes" presenter test (both recorded in the handoff), a working
    `Simulate` narration (unless the user opted out), and (if enabled) each showcase
    extra** — are **explicit task acceptance criteria** this skill must also satisfy; record them in the
    handoff. Use only the Playwright MCP and documented review criteria; do not invent or install test
