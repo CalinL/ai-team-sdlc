@@ -15,7 +15,10 @@ the production build.
 
 **The bar is executive readiness.** Assume a very-high-visibility room (CEO, senior leadership): the
 showcase must create a *wow* moment, not just work. Do not stop at "good enough" — keep iterating
-until you are genuinely satisfied **and** both peer reviewers say READY (step 4).
+until you are genuinely satisfied **and** both peer reviewers say READY (step 4). Before calling it
+done, apply the **presenter test** honestly: would you stand in that room and present this yourself,
+and would the audience buy the pitch? If not, say so and keep improving within the step 4 round
+cap; if it still fails when that budget is spent, report the concerns and mark the task blocked.
 
 Follow the `ait-conventions` skill.
 
@@ -90,7 +93,9 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    fall back to OCR only for scanned/image pages. If a source is inaccessible (locked Figma,
    unreadable scan, missing fonts/assets), request the missing material rather than guessing. Do a
    deep-dive into the domain — the problem, user pain points, and comparable tools — to make the mock
-   data and flows realistic.
+   data and flows realistic, and save a summary to `docs/<product>-research.md` so later versions
+   and reviewers can reuse it (it sits next to the prototype, so treat it as being as shareable as
+   the prototype itself).
 2. **Pick the path based on the source:**
    - **Generate path** (text/specs, no visual design): run `ait-product-design` to identify key
      features and user flows, map the journey, and produce wireframes / low-fidelity sketches before
@@ -107,9 +112,15 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
      (no ES modules, no `fetch`).
    Either way: **no backend**. Use the real data the user supplies (in the source or alongside it)
    where it is available and appropriate for the audience; fill every gap with **realistic mock
-   data** and label invented figures as simulated. Keep data consistent across screens, and keep
+   data**. Show one clear, **persistent** prototype-level disclosure of simulated data, visible
+   during normal browsing and Simulate (e.g. a header chip or footer); it satisfies the
+   "labelled simulated" rule, so do not clutter screens with per-figure caveats. With mixed real and
+   mock data, record which figures are sourced and which are simulated in the handoff. Keep data consistent across screens, and keep
    every screen visually consistent (brand, tone, spacing). Build only the scope the source asks
-   for; enhancements beyond it are `showcase extras`. Write the result to the versioned path in
+   for; enhancements beyond it are `showcase extras`. On the generate path, present the
+   **target-state product** (unless the user asks otherwise): no
+   "not built yet" or roadmap caveats in the UI, and no internal or technical statistics a business
+   user would not care about. Write the result to the versioned path in
    **Output files**.
 3. **Verify** with `ait-prototype-testing` (Playwright MCP) in a real browser: walk each critical
    flow, check interaction states, capture console errors, test responsive breakpoints, and run an
@@ -126,7 +137,10 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    leadership; ask the user if unknown): rigorous,
    specific, blunt; flag anything that would embarrass the presenter in a CEO room, and say whether it
    has the *wow* moment that makes it land; **do not sand off ambition** (cut a claim only if it is
-   false or unsupportable). Ask for *blocking · major · minor · missed opportunities · READY / NOT
+   false or unsupportable). When you apply findings, fix what is weak rather than deleting the
+   standout features — a "safe" version that loses the wow is a regression. When real data is in
+   play, include **factual accuracy** in both critics' brief (no third critic): every claim, name
+   and figure is supported by the user's sources or covered by the simulated-data disclosure. Ask for *blocking · major · minor · missed opportunities · READY / NOT
    READY*. Fix blocking and major issues and re-review; **do not stop** until both are READY. After
    **3 rounds** without agreement, stop iterating and hand the unresolved blockers to the user — the
    task is `blocked`, never `done`, so nothing ships below the bar. Missed opportunities are suggestions, never scope changes without user
@@ -182,6 +196,8 @@ the product or feature name.
 |---|---|
 | Showcase prototype | `docs/<product>-v<N>.html` (starts at `-v1`) — one self-contained file. If the reproduce path's engine must emit several files, put them in `docs/<product>-v<N>/` with `index.html` as the entry. |
 | Each enabled extra | A markdown file in `docs/` — see [`references/optional-extras.md`](references/optional-extras.md) for names. |
+| Domain research | `docs/<product>-research.md` (step 1). |
+| Version proposal + change summary | `docs/<product>-v<N>-changes.md` — for `-v2` onward: the pre-build proposal, then what this version adds or changes versus the previous one, written for the audience. |
 | Verification evidence | Screenshots under `docs/<product>-v<N>-evidence/` (optional). |
 
 **Versioning.** Start at `-v1`. All iteration in a run — fixes, review rounds, Simulate, extras —
@@ -189,6 +205,16 @@ updates the **current** version in place. Never create `-v2` (or copy a version)
 **user** decides when to start a new version by copying the previous one. When the user points at an
 existing version (e.g. `-v2`), work on that file and leave earlier versions untouched. Under the
 orchestrator, a resumed run keeps the same version path; the version never comes from the task-id.
+
+**A new version is a superset.** When the user starts a new version from feedback, first write a
+short change proposal at the top of `docs/<product>-v<N>-changes.md` (the feedback, the planned
+changes, and what stays). Have one fresh critic review it once before you change the prototype; if
+blocking or major findings remain unresolved, mark the task blocked and do not change the
+prototype until the user resolves or accepts them. This pre-build check
+does not use the step 4 round budget. Keep every supported feature, screen and demonstrated
+scenario of the previous version unless the user's feedback removes or replaces it; Simulate beats
+may be rewritten, combined or reordered as long as that coverage stays. Check this with a feature
+inventory before calling the version done, then finish the file with the change summary.
 
 ## Output
 ```
@@ -218,7 +244,10 @@ orchestrator, a resumed run keeps the same version path; the version never comes
   The `Simulate` tour must restore the viewer's state on exit and finish with zero console errors.
 - **Real data only from the user.** Use real customer or business data only when the user supplies
   it; never fetch or guess it. Invented names and figures are mock data and are labelled as
-  simulated. Confirm before sharing confidential source material with other models (step 4). When
+  simulated (via the persistent disclosure). Do not put names of real individuals from any source
+  (meeting notes, transcripts, emails) into the prototype or narration unless the user asks; use
+  roles or invented names.
+  Confirm before sharing confidential source material with other models (step 4). When
   real data is embedded, say so in the handoff — the single file is easy to forward.
 - Follow explicit user product instructions even when a reviewer argues against them; surface the
   disagreement instead of silently overriding.

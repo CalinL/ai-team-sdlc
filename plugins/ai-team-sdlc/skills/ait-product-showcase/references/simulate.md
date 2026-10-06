@@ -135,11 +135,15 @@ The narration is the demo. Write it like a presenter, not a tooltip.
   1. "This is today": the pain, with one hard number.
   2. *Act 1*: the core flow working.
   3. The moment it would fail elsewhere, and doesn't.
-  4. The other persona's view.
+  4. The most important other persona's view. Cover any further personas, and how each one
+     personalises or configures the product, in bonus beats or the montage, so every persona the
+     prototype shows appears somewhere in the tour.
   5. The outcome over time.
   6. **The ask**: the decision you want from the room.
 
-  Then add optional `extra` bonus beats for breadth.
+  Then add optional `extra` bonus beats for breadth, such as a quick montage of the remaining
+  features. Keep the main story to about 3 minutes; cover the remaining screens and personas in
+  bonus beats or the montage.
 - **Perform, don't assert.** If a beat says something happens, the screen must show it happening.
 - **Land on the strongest in-scope moment.** Pick the most compelling thing the prototype actually
   does. Never add a feature just to have a moment to narrate.
@@ -147,7 +151,8 @@ The narration is the demo. Write it like a presenter, not a tooltip.
   minutes, with bonus beats of 10–20 seconds each.
 - **Spell numbers the way they should be heard,** for example "seventy-one per cent".
 - **Point at what you name:** `hl()` every noun the narrator emphasises at that moment.
-- **Honesty:** say "in this scenario" or "simulated" for invented figures.
+- **Honesty:** the prototype's persistent simulated-data disclosure covers invented figures, so
+  per-figure caveats are not needed; never present simulated outcomes as verified real results.
 - **The main story must stand alone.** A presenter who stops at the seam loses nothing structural.
 
 ## 6. Verification checklist
@@ -164,6 +169,9 @@ Run this with `ait-prototype-testing` (Playwright MCP). Serve over `http://` if 
       returns to the trigger.
 - [ ] The panel never hides the spotlighted element.
 - [ ] At mobile width, the transcript clamps and expands, and the controls are reachable.
+- [ ] If persona or theme switches exist, the tour works from each supported persona and in each
+      supported theme, with the panel, icons and highlights legible throughout. Do not add personas
+      or themes just to satisfy this check.
 - [ ] Headless browsers have no voices, so confirm the silent path paces correctly. Hearing the
       actual voice is a **manual** check in Edge. Record it as verified or not verified in the
       handoff, and never claim it without hearing it.
