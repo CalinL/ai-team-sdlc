@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Discover two credible business opportunities and build a reviewed executive showcase with GitHub Copilot. A practical, public-safe Accelerator.">
+<title>The Art of the Possible | GitHub Copilot Accelerator</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+body { margin: 0; background: var(--cp-bg); color: var(--cp-text); font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.65; }
+a { color: var(--cp-link); text-underline-offset: 4px; }
+a:hover { text-decoration-thickness: 2px; }
+button { font: inherit; cursor: pointer; }
+button[hidden] { display: none; }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--cp-link); outline-offset: 4px; }
+.skip-link { position: fixed; top: -100px; left: 16px; z-index: 20; padding: 12px 20px; background: var(--cp-surface); }
+.skip-link:focus { top: 12px; }
+.container { max-width: 1280px; margin: auto; padding: 0 40px; }
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--cp-panel-strong); border-bottom: 1px solid var(--cp-border); }
+.topbar .container { display: flex; align-items: center; gap: 24px; min-height: 72px; }
+.brand { color: var(--cp-text); font-size: 16px; font-weight: 650; text-decoration: none; }
+.brand span { color: var(--cp-text-muted); font-size: 12px; font-weight: 400; display: block; letter-spacing: .08em; text-transform: uppercase; }
+.top-actions { margin-left: auto; display: flex; align-items: center; gap: 20px; font-size: 14px; }
+.quiet-button { border: 1px solid var(--cp-border); border-radius: 10px; padding: 6px 12px; color: var(--cp-text); background: var(--cp-surface); }
+.eyebrow { color: var(--cp-text-muted); font-size: 12px; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; margin: 0 0 16px; }
+.hero { padding: 72px 0 56px; background: var(--cp-surface); border-bottom: 1px solid var(--cp-border); }
+.hero-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 72px; align-items: center; }
+h1 { font-size: clamp(40px, 4.8vw, 68px); line-height: 1.05; letter-spacing: -.045em; font-weight: 650; margin: 0 0 24px; max-width: 13ch; }
+h1 span { color: var(--cp-link); }
+.hero-subtitle { font-size: 24px; line-height: 1.35; font-weight: 500; letter-spacing: -.02em; margin: 0 0 20px; max-width: 26ch; }
+.hero-intro { color: var(--cp-text-muted); max-width: 54ch; margin-bottom: 24px; }
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 20px; border-radius: 10px; font-weight: 600; text-decoration: none; border: 1px solid var(--cp-border); background: var(--cp-surface); color: var(--cp-text); }
+.button.primary { background: var(--cp-accent); border-color: var(--cp-accent); color: var(--cp-accent-fg); }
+.button.primary:hover { background: var(--cp-accent-hover); }
+.hero-note { color: var(--cp-text-muted); font-size: 13px; margin-top: 20px; }
+.reveal-card { border: 1px solid var(--cp-border); border-radius: 16px; padding: 32px; background: var(--cp-bg-elevated); }
+.reveal-card h2 { font-size: 26px; font-weight: 600; line-height: 1.3; margin: 0 0 24px; }
+.journey { list-style: none; padding: 0; margin: 0; }
+.journey li { position: relative; padding: 0 0 24px 36px; border-left: 1px solid var(--cp-border-strong); margin-left: 8px; }
+.journey li::before { content: ""; width: 16px; height: 16px; position: absolute; top: 4px; left: -8px; border-radius: 50%; background: var(--cp-link); border: 3px solid var(--cp-bg-elevated); }
+.journey li:last-child { padding-bottom: 0; border-left-color: var(--cp-bg-elevated); }
+.journey strong { display: block; font-weight: 600; }
+.journey span { color: var(--cp-text-muted); font-size: 14px; }
+.quickstart { padding: 48px 0; }
+.section-heading { margin: 0 0 12px; font-size: 30px; line-height: 1.2; font-weight: 600; letter-spacing: -.02em; }
+.section-lead { color: var(--cp-text-muted); margin: 0 0 28px; }
+.prompt-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.prompt-card { padding: 24px; min-width: 0; border: 1px solid var(--cp-border); background: var(--cp-surface); border-radius: 16px; }
+.step-label { color: var(--cp-link); font-size: 12px; font-weight: 650; letter-spacing: .1em; }
+.prompt-card h3 { margin: 12px 0 8px; font-size: 24px; font-weight: 600; }
+.prompt-card > p { color: var(--cp-text-muted); font-size: 14px; min-height: 46px; }
+.prompt-card pre { font-size: 12px; }
+.quickstart-foot { color: var(--cp-text-muted); margin: 20px 0 0; font-size: 14px; }
+.reading-layout { display: grid; grid-template-columns: 200px minmax(0,1fr); gap: 48px; align-items: start; padding-bottom: 64px; }
+.contents { position: sticky; top: 96px; padding: 20px 0; }
+.contents h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--cp-text-muted); margin: 0 0 16px; }
+.contents a { display: block; padding: 10px 16px; border-left: 2px solid var(--cp-border); text-decoration: none; color: var(--cp-text-muted); font-size: 14px; }
+.contents a[aria-current="location"] { color: var(--cp-link); border-left-color: var(--cp-link); background: var(--cp-surface); font-weight: 600; }
+.contents .small-note { font-size: 12px; color: var(--cp-text-muted); margin: 24px 16px; }
+.chapters { min-width: 0; }
+.chapter { padding: 36px; border-radius: 16px; background: var(--cp-surface); border: 1px solid var(--cp-border); margin-bottom: 24px; scroll-margin-top: 92px; }
+.chapter-head { display: flex; gap: 20px; align-items: center; border-bottom: 1px solid var(--cp-border); margin-bottom: 32px; padding-bottom: 24px; }
+.chapter-number { color: var(--cp-link); font-size: 40px; font-weight: 300; letter-spacing: -.03em; }
+.chapter-head .eyebrow { margin-bottom: 4px; }
+.chapter-head h2 { font-size: 30px; line-height: 1.2; font-weight: 600; letter-spacing: -.02em; margin: 0; }
+.prose { font-size: 16px; overflow-wrap: anywhere; }
+.prose > :first-child { margin-top: 0; }
+.prose h2 { font-size: 23px; margin-top: 40px; line-height: 1.3; font-weight: 600; scroll-margin-top: 96px; }
+.prose h3 { font-size: 19px; margin-top: 28px; font-weight: 600; scroll-margin-top: 96px; }
+.prose li { padding-left: 4px; margin: 8px 0; }
+.prose strong { font-weight: 650; }
+.prose code { font-family: Consolas, "Courier New", Courier, monospace; background: var(--cp-surface-soft); padding: 2px 5px; border-radius: 4px; font-size: .87em; }
+.prompt-block { position: relative; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: 10px; margin: 20px 0; padding: 16px; }
+.snippet-label { display: block; color: var(--cp-text-muted); font-size: 11px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 12px; }
+pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-family: Consolas, "Courier New", Courier, monospace; font-size: 13px; line-height: 1.6; }
+.prose pre code { font-size: inherit; padding: 0; background: var(--cp-surface-soft); }
+.copy-button { margin-top: 12px; background: var(--cp-surface); color: var(--cp-link); border: 1px solid var(--cp-border); padding: 6px 14px; border-radius: 10px; font-size: 13px; min-height: 36px; }
+.copy-button:hover { border-color: var(--cp-link); }
+.table-scroll { overflow-x: auto; border: 1px solid var(--cp-border); border-radius: 10px; margin: 24px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; color: var(--cp-text); background: var(--cp-surface-soft); font-weight: 600; }
+th, td { padding: 14px 16px; border-bottom: 1px solid var(--cp-border); vertical-align: top; }
+td:first-child { width: 32%; }
+tr:last-child td { border-bottom: 0; }
+.closing { background: var(--cp-bg-elevated); border-top: 1px solid var(--cp-border); padding: 48px 0; }
+.closing-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 64px; align-items: center; }
+.closing h2 { font-size: 30px; line-height: 1.25; font-weight: 600; margin: 0 0 16px; }
+.closing p { color: var(--cp-text-muted); }
+.verdict-rule { border-left: 4px solid var(--cp-accent); padding-left: 24px; }
+.verdict-rule a { color: var(--cp-text); text-decoration-color: var(--cp-link); }
+footer { padding: 24px 0; font-size: 12px; color: var(--cp-text-muted); background: var(--cp-surface); }
+footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.status { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 30; max-width: calc(100% - 32px); width: max-content; border: 1px solid var(--cp-border-strong); padding: 12px 20px; border-radius: 10px; background: var(--cp-surface); color: var(--cp-text); }
+.status:empty { display: none; }
+@media (max-width: 1024px) {
+  .container { padding: 0 24px; }
+  .hero-grid { gap: 32px; }
+  .reading-layout { grid-template-columns: 160px minmax(0,1fr); gap: 24px; }
+  .chapter { padding: 24px; }
+  .prompt-cards { grid-template-columns: 1fr; }
+  .prompt-card > p { min-height: 0; }
+}
+@media (max-width: 720px) {
+  .container { padding: 0 20px; }
+  .topbar .container { gap: 12px; min-height: 72px; }
+  .top-actions { gap: 12px; }
+  .top-actions .print-button { display: none; }
+  .hero { padding: 40px 0; }
+  .hero-grid, .closing-grid { grid-template-columns: 1fr; gap: 32px; }
+  h1 { font-size: 48px; max-width: 14ch; }
+  .hero-subtitle { font-size: 22px; }
+  .reveal-card { padding: 24px; }
+  .reading-layout { display: block; }
+  .contents { position: static; padding: 0 0 24px; }
+  .contents a { display: inline-block; border-left: 0; border-bottom: 2px solid var(--cp-border); padding: 10px; }
+  .contents .small-note { margin: 16px 0 0; }
+  .chapter { padding: 24px 20px; }
+  .chapter-head { gap: 16px; }
+  .chapter-head h2 { font-size: 25px; }
+  .chapter-head .eyebrow { font-size: 10px; }
+  th, td { padding: 12px; }
+  .prose { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print {
+  @page { size: A4; margin: 15mm; }
+  html { scroll-padding-top: 0; color-scheme: light; }
+  body { background: var(--cp-surface); color: var(--cp-text); font-size: 10pt; }
+  .container { padding: 0; max-width: none; }
+  .topbar, .contents, .hero-actions, .top-actions, .copy-button, .status, .skip-link { display: none !important; }
+  .hero { padding: 0 0 16px; }
+  .hero-grid { display: block; }
+  h1 { font-size: 34pt; max-width: none; }
+  .hero-subtitle { font-size: 18pt; }
+  .reveal-card { margin-top: 24px; padding: 16px; break-inside: avoid; }
+  .quickstart { padding: 24px 0; }
+  .prompt-cards { display: block; }
+  .prompt-card { margin-bottom: 16px; break-inside: avoid; }
+  .reading-layout { display: block; padding-bottom: 0; }
+  .chapter { border: 0; padding: 0; border-radius: 0; break-before: page; }
+  .chapter-head { padding-bottom: 12px; margin-bottom: 20px; }
+  .prose { font-size: 10pt; }
+  .prose h2, .prose h3 { break-after: avoid; }
+  .prompt-block { break-inside: avoid; padding: 12px; }
+  pre { font-size: 9pt; }
+  .table-scroll { overflow: visible; }
+  table { font-size: 9pt; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th, td { padding: 8px; }
+  .closing { padding: 24px 0; break-inside: avoid; }
+  .closing-grid { display: block; }
+  footer { padding: 16px 0; }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#overview">Skip to the guide</a>
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="#top">The Art of the Possible<span>GitHub Copilot Accelerator</span></a>
+    <div class="top-actions">
+      <a href="https://github.com/CalinL/ai-team-sdlc" target="_blank" rel="noopener noreferrer" aria-label="Open GitHub repository in a new tab">GitHub &#8599;</a>
+      <button class="quiet-button print-button" id="printButton" type="button" hidden>Print guide</button>
+      <button class="quiet-button" id="themeButton" type="button" aria-label="Switch color theme" hidden>Dark</button>
+    </div>
+  </div>
+</header>
+<main id="top">
+  <div class="hero">
+    <div class="container hero-grid">
+      <div>
+        <p class="eyebrow">From a business question to a believable experience</p>
+        <h1>The Art of<br>the <span>Possible.</span></h1>
+        <p class="hero-subtitle">Bring Business Ideas to Life with GitHub Copilot</p>
+        <p class="hero-intro">What if your next executive conversation started with an experience, not a slide deck? Discover two credible opportunities. Build one interactive showcase. Make the business reveal impossible to miss.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#setup">Get ready</a>
+          <a class="button" href="#run-fast-track-one-prompt">Run the fast track &#8594;</a>
+        </div>
+        <p class="hero-note">Use GitHub Copilot App or CLI. No coding experience assumed. Readiness earned, not promised.</p>
+      </div>
+      <aside class="reveal-card" aria-label="The Accelerator journey">
+        <p class="eyebrow">Don't just pitch the idea.</p>
+        <h2>Put it in their hands.</h2>
+        <ol class="journey">
+          <li><strong>A credible opportunity</strong><span>Company context, evidence, and two distinct ideas.</span></li>
+          <li><strong>An experience to explore</strong><span>Brand-aligned screens and a meaningful business reveal.</span></li>
+          <li><strong>A story that lands</strong><span>A narrated Simulate tour with transcript and controls.</span></li>
+          <li><strong>A defensible verdict</strong><span>Browser checks, final peer review, and the presenter test.</span></li>
+        </ol>
+      </aside>
+    </div>
+  </div>
+  <div class="container quickstart" id="three-prompts">
+    <h2 class="section-heading">Three prompts. One business story.</h2>
+    <p class="section-lead">A quick preview of the flow. Complete setup first, then use either the fast track or the guided route below. Prompts go into Copilot; terminal commands belong in your terminal.</p>
+    <div class="prompt-cards"><article class="prompt-card"><span class="step-label">STEP 1</span><h3>Discover</h3><p>Two credible opportunities. One chosen direction.</p><div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code>Use the ait-idea skill to find 2 business use cases for &lt;Company&gt;
+from &lt;https://www.company.com&gt;.</code></pre><button class="copy-button" type="button" hidden>Copy</button></div></article>
+<article class="prompt-card"><span class="step-label">STEP 2</span><h3>Build</h3><p>A product experience, not a prettier slide.</p><div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code>Use the ait-product-showcase skill to build an executive showcase prototype
+from use case 01 in docs. Use its brief as the product requirements, with
+its one-pager and research as narrative, brand and evidence context—not
+a UI to reproduce.</code></pre><button class="copy-button" type="button" hidden>Copy</button></div></article>
+<article class="prompt-card"><span class="step-label">STEP 3</span><h3>Refine</h3><p>A sharper business reveal. A reviewed final version.</p><div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code>Make the business reveal more compelling: &lt;what the user should understand
+or be able to do&gt;. Use the ait-product-showcase skill to refine the
+existing prototype within its brief and update Simulate.</code></pre><button class="copy-button" type="button" hidden>Copy</button></div></article></div>
+    <p class="quickstart-foot">Replace the whole company, website, and feedback placeholders, including angle brackets. Copilot resolves product filename slugs. Don't send these separately while the chained fast track is running.</p>
+  </div>
+  <div class="container reading-layout">
+    <nav class="contents" aria-label="Guide chapters">
+      <h2>Your route</h2>
+      <a href="#overview" aria-current="location">01 &nbsp; The opportunity</a>
+      <a href="#setup">02 &nbsp; Get ready</a>
+      <a href="#run">03 &nbsp; Bring it to life</a>
+      <a href="#fix">04 &nbsp; Keep moving</a>
+      <a href="#export">05 &nbsp; Take it further</a>
+      <p class="small-note">Public sources. Invented demo people. No private integrations or automatic publishing.</p>
+    </nav>
+    <div class="chapters"><section id="overview" class="chapter" aria-labelledby="overview-title"><div class="chapter-head"><span class="chapter-number">01</span><div><p class="eyebrow">What you will build</p><h2 id="overview-title">The opportunity</h2></div></div><div class="prose"><h2 id="overview-start-here">Start here</h2>
+<p><strong>Use the GitHub Copilot App or CLI.</strong> Prefer a visual interface? The
+<a href="#setup-option-a-github-copilot-app">prerequisites</a> include an App setup route.
+Both use the same Accelerator prompts.</p>
+<p><strong>Prefer a visual guide?</strong> <a href="https://calinl.github.io/ai-team-sdlc/accelerator/">View the Accelerator on GitHub Pages</a>.
+It includes the full guide, copyable prompts, chapter navigation, light/dark views, and print styling.
+For offline use, download <a href="index.html">the HTML companion</a> and open it in a browser.
+GitHub's source-file viewer does not run HTML; the Pages version does.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table"><table>
+<thead>
+<tr>
+<th>Your next step</th>
+<th>Open</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Install and check the essentials</td>
+<td><a href="#setup">Prerequisites</a></td>
+</tr>
+<tr>
+<td>Run the Accelerator, step by step or on autopilot</td>
+<td><a href="#run">Guide</a></td>
+</tr>
+<tr>
+<td>Resolve setup or readiness blockers</td>
+<td><a href="#fix">Troubleshooting</a></td>
+</tr>
+<tr>
+<td>Create an optional PDF or PowerPoint leave-behind</td>
+<td><a href="#export">Optional outputs and next steps</a></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="overview-the-whole-experience-in-three-prompts">The whole experience in three prompts</h2>
+<p>Paste <strong>prompts</strong> into Copilot. Run <strong>terminal commands</strong> in your terminal instead.
+Replace the entire <code>&lt;placeholder&gt;</code>, including the angle brackets.</p>
+<p><strong>Discover</strong></p>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Use the ait-idea skill to find 2 business use cases for &lt;Company&gt;
+from &lt;https://www.company.com&gt;.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p><strong>Build</strong></p>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Use the ait-product-showcase skill to build an executive showcase prototype
+from use case 01 in docs. Use its brief as the product requirements, with
+its one-pager and research as narrative, brand and evidence context—not
+a UI to reproduce.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p><strong>Refine</strong></p>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Make the business reveal more compelling: &lt;what the user should understand
+or be able to do&gt;. Use the ait-product-showcase skill to refine the
+existing prototype within its brief and update Simulate.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>For the unattended chain, use the <a href="#run-fast-track-one-prompt">autopilot prompt</a>
+after completing setup. It connects the two skills without restating their workflows.</p>
+<h2 id="overview-what-you-will-have">What you will have</h2>
+<p>In <strong>your own workspace's <code>docs</code> folder</strong>, not this repository's documentation:</p>
+<ul>
+<li>A cited research dossier with company context, evidence classes, brand guidance, and ranked ideas.</li>
+<li>Two company-styled HTML one-pagers and two Markdown prototype briefs.</li>
+<li>One self-contained <code>&lt;product&gt;-v1.html</code> showcase with realistic simulated data,
+  working interactions, and a Simulate tour with narration, transcript, and controls.</li>
+<li>Verification and review findings, with an honest <strong>READY</strong> or <strong>BLOCKED</strong> outcome.</li>
+</ul>
+<p>Readiness is earned, not guaranteed by elapsed time. A workshop agenda can provide checkpoints,
+but must never turn an unfinished draft into an executive-ready deliverable.</p>
+<h2 id="overview-the-executive-bar">The executive bar</h2>
+<p>The wow is a <strong>business reveal</strong>, not an animation: something previously slow, difficult, or
+hard to see becomes understandable or actionable in the demonstration.</p>
+<p>Before presenting, ask: <strong>Would I stand in front of this CEO and present it myself?
+Could I defend the evidence, explain what is simulated, and show why the idea matters?</strong></p>
+<p>Both final showcase critics must agree. If the review budget runs out first, report the
+remaining concerns and mark the showcase <strong>BLOCKED</strong>, not done.</p>
+<h2 id="overview-scope-and-boundaries">Scope and boundaries</h2>
+<p>Use public, non-personal source information and invented demo people in this Accelerator.
+Do not include private documents, credentials, personal records, or internal integrations.
+No publishing, committing, deployment, or production implementation is part of the core run.
+PDF and PowerPoint exports are optional. New prototype versions and expanded scope are your decision.</p>
+<p>The <a href="https://github.com/CalinL/ai-team-sdlc/blob/main/plugins/ai-team-sdlc/skills/ait-idea/SKILL.md">ideation skill</a> and
+<a href="https://github.com/CalinL/ai-team-sdlc/blob/main/plugins/ai-team-sdlc/skills/ait-product-showcase/SKILL.md">showcase skill</a>
+own the workflow and review criteria; these pages explain how to use them, not replace them.</p></div></section>
+<section id="setup" class="chapter" aria-labelledby="setup-title"><div class="chapter-head"><span class="chapter-number">02</span><div><p class="eyebrow">Check the essentials before you start</p><h2 id="setup-title">Get ready</h2></div></div><div class="prose"><p><strong>Finish setup before starting discovery.</strong> Choose <strong>GitHub Copilot App</strong> for a visual
+interface or <strong>GitHub Copilot CLI</strong> for a terminal. The Accelerator prompts and readiness
+criteria are the same; installation and session controls differ.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table"><table>
+<thead>
+<tr>
+<th>Setup</th>
+<th>App</th>
+<th>CLI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Install and sign in</td>
+<td>Download the App; sign in through its window.</td>
+<td>Install <code>copilot</code>; sign in with <code>/login</code>.</td>
+</tr>
+<tr>
+<td>Team plugin</td>
+<td><strong>Customize &gt; Plugins</strong>.</td>
+<td><code>copilot plugin</code> commands.</td>
+</tr>
+<tr>
+<td>Browser tool</td>
+<td><strong>Customize &gt; MCP</strong>; Node.js and a supported browser still needed.</td>
+<td><code>copilot mcp add</code>; same runtime/browser needs.</td>
+</tr>
+<tr>
+<td>Workspace</td>
+<td>Add a local folder under <strong>Projects</strong>, then run in the <strong>local repository</strong>.</td>
+<td>Start <code>copilot</code> in your fresh folder.</td>
+</tr>
+<tr>
+<td>Mode and model</td>
+<td>Pickers below the prompt box.</td>
+<td><code>/model</code> and <code>/autopilot</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Neither route requires document skills unless you want an optional PDF or PowerPoint.</p>
+<h2 id="setup-option-a-github-copilot-app">Option A: GitHub Copilot App</h2>
+<h3 id="setup-1-install-and-sign-in">1. Install and sign in</h3>
+<p>Download the <a href="https://github.com/features/ai/github-app">GitHub Copilot App</a> and install
+<a href="https://git-scm.com/downloads">Git</a>. Open the App, choose <strong>Sign in to GitHub</strong>, and
+complete onboarding with your Copilot account. Organizational App policy is separate
+from CLI policy; contact your administrator if access is blocked.</p>
+<p>The local Playwright MCP server also needs <a href="https://nodejs.org/en/download">Node.js LTS</a>
+and a supported installed browser. PowerShell 7 and the separate CLI installation are
+not requirements for this App route.</p>
+<h3 id="setup-2-add-the-team-plugin">2. Add the team plugin</h3>
+<p>Open <strong>Customize &gt; Plugins</strong>. Use the icon next to the marketplace dropdown to add
+<code>CalinL/ai-team-sdlc</code>, then find <strong>ai-team-sdlc</strong> and select <strong>Install</strong>.
+If already installed, confirm its version rather than installing another copy.</p>
+<h3 id="setup-3-add-or-check-the-browser-tool">3. Add or check the browser tool</h3>
+<p>Open <strong>Customize &gt; MCP</strong> and check <strong>Installed</strong> first. GitHub documents that skills
+and MCP servers configured for your repositories or Copilot CLI are also available in
+the App; verify they load rather than adding duplicate configuration.</p>
+<p>If Playwright is missing, add a custom local MCP server. For the Windows/Edge recipe,
+use command <code>npx</code> with arguments <code>-y @playwright/mcp@latest --browser msedge</code>.
+This runs the public Playwright MCP package; use it only where permitted.
+For other platforms, choose a supported installed browser from the Playwright reference below.</p>
+<p>If you prefer configuring through a terminal and already have the CLI, the Playwright
+command under <strong>CLI step 2</strong> is an alternative—not an extra App prerequisite.
+Restart the session if new tools or skills do not appear.</p>
+<h3 id="setup-4-connect-your-workspace-and-start-a-session">4. Connect your workspace and start a session</h3>
+<p>Create a fresh folder outside the plugin repository using your file manager.
+Initialize it as a Git repository by running <code>git init</code> in a terminal opened in that
+folder. Git is already a prerequisite; this does not require Copilot CLI or PowerShell 7.
+The repository makes ideation's default <code>docs</code> output match the showcase handoff.</p>
+<p>In the App, use the add-project control beside <strong>Projects</strong>, choose
+<strong>Local folder or repository</strong>, and select that folder.</p>
+<p>Below the prompt field, choose execution in the <strong>local repository</strong>, not a new
+working tree or cloud sandbox, so the documented <code>docs</code> path stays in your chosen folder.
+Choose <strong>Interactive</strong> initially and a capable model. Run the
+<a href="#setup-4-prove-the-core-path-works">shared setup check</a> in that project's agent session,
+not in a general Chat.</p>
+<p>For the fast track, select <strong>Autopilot</strong> from the mode picker after checking permissions;
+<code>/autopilot</code> is also available. Tool auto-approval is a separate setting, not a prerequisite
+to enable blindly. If permissions cannot be safely authorized, stay Interactive and use
+the guided route. The CLI continuation-limit flag below is not an App setup command.</p>
+<p>Then go to the <a href="#run">Accelerator guide</a>. The same skill prompts apply.</p>
+<p>App references: <a href="https://docs.github.com/en/copilot/get-started/quickstart-copilot-app">Quickstart</a> |
+<a href="https://docs.github.com/en/copilot/how-tos/github-copilot-app/customize-github-copilot-app">Plugins, skills and MCP</a> |
+<a href="https://docs.github.com/en/copilot/how-tos/github-copilot-app/agent-sessions">Session location, mode and model</a>.</p>
+<h2 id="setup-option-b-github-copilot-cli">Option B: GitHub Copilot CLI</h2>
+<h2 id="setup-1-check-access-and-install-the-essentials">1. Check access and install the essentials</h2>
+<p>You need a GitHub account with access to Copilot CLI, permission to use the required tools,
+and internet access for public research. Organizational policy and usage limits can affect
+availability. Check the <a href="https://docs.github.com/en/copilot/get-started/cli-quickstart">official CLI quickstart</a>
+for current requirements and installation options.</p>
+<p>The Windows recipe uses <strong>PowerShell 7</strong>, <strong>Git</strong>, <strong>Node.js LTS</strong>, and an installed
+<strong>Microsoft Edge</strong> browser. Git is used to create your local working repository;
+Node.js runs the Playwright MCP server. Python and document-generation plugins are not
+core prerequisites.</p>
+<p><strong>Windows terminal commands</strong> - install missing tools only:</p>
+<div class="prompt-block"><span class="snippet-label">Run in your terminal</span><pre><code class="language-powershell">winget install --id Microsoft.PowerShell -e
+winget install --id Git.Git -e
+winget install --id OpenJS.NodeJS.LTS -e
+winget install --id GitHub.Copilot -e
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>Run one command at a time and resolve any errors. If installations are restricted, use your
+approved installation route rather than bypassing policy.</p>
+<p>Close and reopen Terminal, start <strong>PowerShell 7</strong> with <code>pwsh</code>, then check:</p>
+<div class="prompt-block"><span class="snippet-label">Run in your terminal</span><pre><code class="language-powershell">copilot --version
+git --version
+node --version
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>On macOS or Linux, use the official quickstart's platform instructions. Do not paste the
+Windows commands into a different shell.</p>
+<p>Start <code>copilot</code>, complete sign-in when prompted (or use <code>/login</code>), and exit with <code>/exit</code>
+before configuring the tools below.</p>
+<h2 id="setup-2-install-the-team-and-browser-tool">2. Install the team and browser tool</h2>
+<p><strong>Terminal commands:</strong></p>
+<div class="prompt-block"><span class="snippet-label">Run in your terminal</span><pre><code class="language-powershell">copilot plugin marketplace add CalinL/ai-team-sdlc
+copilot plugin install ai-team-sdlc@ai-team-sdlc
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>Already installed? Update rather than reinstall:</p>
+<div class="prompt-block"><span class="snippet-label">Run in your terminal</span><pre><code class="language-powershell">copilot plugin update ai-team-sdlc@ai-team-sdlc
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>For the Windows recipe, add Playwright MCP using Edge:</p>
+<div class="prompt-block"><span class="snippet-label">Run in your terminal</span><pre><code class="language-powershell">copilot mcp add playwright -- npx -y @playwright/mcp@latest --browser msedge
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>This command downloads and runs the public Playwright MCP package. Use it only where permitted.
+If an MCP server named <code>playwright</code> already exists, inspect its configuration using <code>/mcp</code>
+rather than creating a conflicting entry.</p>
+<p>Other platforms can use a supported installed browser; follow the
+<a href="https://github.com/microsoft/playwright-mcp#browser-configuration">Playwright MCP configuration</a>.
+The browser tool and web research are separate checks: opening a page does not prove that
+research is available.</p>
+<h2 id="setup-3-create-a-fresh-workspace">3. Create a fresh workspace</h2>
+<p>Create an empty folder <strong>outside this plugin repository</strong> and outside sensitive working folders.
+The following example creates a uniquely named local workspace; it does not clone the plugin.</p>
+<p><strong>Windows PowerShell commands:</strong></p>
+<div class="prompt-block"><span class="snippet-label">Run in your terminal</span><pre><code class="language-powershell">$workspace = Join-Path $HOME (&quot;art-of-the-possible-&quot; + (Get-Date -Format &quot;yyyyMMdd-HHmmss&quot;))
+New-Item -ItemType Directory -Path $workspace -ErrorAction Stop
+Set-Location $workspace
+git init
+copilot
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>Confirm that Copilot is working in this folder. All generated files go in its <code>docs</code> subfolder.
+<code>ait-init</code> is not required for direct skill use; do not configure adoption unless you intend to.</p>
+<p><strong>A folder is not a sandbox.</strong> For the guided route, leave ordinary permissions in place and
+approve only the access needed for the task. Inspect <code>/permissions</code> and, where supported,
+<code>/sandbox</code>. Do not connect private-data tools. The fast track has a separate permission
+decision, explained below; broad permission approval is never an automatic setup step.</p>
+<h2 id="setup-4-prove-the-core-path-works">4. Prove the core path works</h2>
+<p><strong>Shared check:</strong> CLI users paste into the active CLI session; App users paste into
+the connected project's <strong>Interactive</strong> agent session. No different prompt is needed.</p>
+<p>Paste this <strong>prompt into Copilot</strong> before starting the Accelerator:
+Replace <code>&lt;https://www.company.com&gt;</code> with your target company's actual public site.</p>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Check setup only: confirm ait-idea and ait-product-showcase load, fetch
+&lt;https://www.company.com&gt;, and use Playwright MCP to open both that page
+and a temporary local HTML file. Remove your temporary file afterward.
+Report passed, failed or unavailable checks and whether independent
+review subagents are available. Do not start discovery or a showcase.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p><strong>Ready to start when:</strong> both skills load, research works, the MCP browser opens both web
+and local HTML, and you know which review capabilities are available.</p>
+<p>Two independent reviewers are required for the unattended showcase path. Ideation permits
+its documented, disclosed self-review fallback when reviewers are unavailable, but that
+does not silently satisfy the showcase's independent-review requirement.</p>
+<p>If a core check fails, use <a href="#fix">troubleshooting</a> before spending time on a build.</p>
+<h2 id="setup-choose-the-mode-and-model">Choose the mode and model</h2>
+<p><strong>App:</strong> use the model and mode pickers below the prompt field.
+<strong>CLI:</strong> use <code>/model</code>; for the fast track, enable <code>/autopilot</code>.
+No particular model version is required. Research, builds, and repeated reviews consume
+your allowance. Check <code>/usage</code> and applicable limits before a long run.</p>
+<p><strong>The following permission and continuation details describe the CLI.</strong> Autopilot controls continuation;
+it does not itself grant all permissions. When entering the mode, the CLI may ask whether
+to enable all permissions, use manual approval, or cancel. In autopilot, manual approval
+<strong>automatically denies requests that still need approval</strong> rather than pausing for you to
+approve them. The chain can therefore become blocked.</p>
+<p>For an unattended run, review the official permission guidance and deliberately decide
+whether broad permissions are acceptable in your environment. Consider supported sandboxing
+first and verify that browser and workspace access still work inside it. Never assume the
+workspace folder limits access. If you cannot safely authorize the required actions, cancel
+autopilot and use the guided interactive route instead.</p>
+<p>Autopilot can also pause at its continuation limit (currently five continuations by default).
+The <code>--max-autopilot-continues</code> launch option changes that limit; check current CLI help before
+adjusting it. Continuation limits are separate from the skills' three-round review budgets.
+Do not reset a review budget to resume a paused session. Stop unexpected work with <strong>Esc twice</strong> in the CLI.</p>
+<h2 id="setup-other-interfaces">Other interfaces</h2>
+<ul>
+<li><strong>VS Code Copilot:</strong> use the installed skills or <code>/product-idea</code> and <code>/product-showcase</code>
+  wrappers when available. Confirm installation and browser configuration in VS Code;
+  the CLI's MCP setup is not a promise that another interface is configured.</li>
+<li><strong>GitHub Copilot App:</strong> use the App route above; no separate Accelerator prompts are needed.</li>
+<li><strong>Another agent host:</strong> the ideation skill is self-contained and can be pasted in.
+  Transfer its dossier, selected brief, and one-pager together into the showcase workspace.
+  The full showcase still requires its companion skills, assets, browser tooling, and review capability.</li>
+</ul>
+<h2 id="setup-setup-references">Setup references</h2>
+<ul>
+<li><a href="https://github.com/features/ai/github-app">App download</a></li>
+<li><a href="https://docs.github.com/en/copilot/get-started/quickstart-copilot-app">App quickstart</a></li>
+<li><a href="https://docs.github.com/en/copilot/how-tos/github-copilot-app/customize-github-copilot-app">App customization</a></li>
+<li><a href="https://docs.github.com/en/copilot/how-tos/github-copilot-app/agent-sessions">App session controls</a></li>
+<li><a href="https://docs.github.com/en/copilot/reference/github-copilot-app-reference/slash-commands">App slash commands</a></li>
+<li><a href="https://docs.github.com/en/copilot/get-started/cli-quickstart">CLI quickstart</a></li>
+<li><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-finding-installing">Plugin installation</a></li>
+<li><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers">MCP configuration</a></li>
+<li><a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/autopilot">Autopilot and permissions</a></li>
+<li><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/allowing-tools">Tool permissions</a></li>
+</ul></div></section>
+<section id="run" class="chapter" aria-labelledby="run-title"><div class="chapter-head"><span class="chapter-number">03</span><div><p class="eyebrow">Choose autopilot or guide each step</p><h2 id="run-title">Bring it to life</h2></div></div><div class="prose"><p><strong>Choose one route:</strong> run the fast track, or work through the guided steps.
+Do not send the separate discovery/build prompts while the chained prompt is already running.
+Replace whole placeholders. Prompts go into Copilot, not the terminal.
+Replace the company, website and chosen case number yourself. Copilot chooses the product
+filename; you do not need to supply a slug.</p>
+<p><strong>Let the skills do their job.</strong> Prompts supply the goal, inputs, and feedback. The skills
+already define design, verification, review, Simulate, versioning, and readiness; do not
+paste a second workflow over them. The handoff notes below explain how to interpret the
+inputs, not replace either skill's procedure.</p>
+<h2 id="run-fast-track-one-prompt">Fast track: one prompt</h2>
+<p>Complete <a href="#setup">setup and checks</a>. In <strong>CLI</strong>, enable <code>/autopilot</code>;
+in the <strong>GitHub Copilot App</strong>, select <strong>Autopilot</strong> below the prompt box.
+Saying "autopilot" in a prompt is not a substitute for configuring the mode.
+Check permissions in your interface before an unattended run. In CLI, manual approval
+in autopilot denies requests needing approval rather than stopping to ask. Use the
+interactive guided route if an unattended run cannot be safely authorized.</p>
+<p><strong>Using the App?</strong> Keep the session in your chosen local repository, not a new working
+tree or cloud sandbox. Paste the same prompt below into the project's agent session.</p>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Run on autopilot: use the ait-idea skill to find 2 business use cases for
+&lt;Company&gt; from &lt;https://www.company.com&gt;. Once ideation is READY, use the
+ait-product-showcase skill to build an executive showcase from use case 01
+in docs. Use its brief as the product requirements, with its one-pager
+and research as narrative, brand and evidence context—not a UI to reproduce.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>Both skills use <code>docs</code> by default. The brief drives the product experience; the one-pager
+is the pitch, not a screen design. The skills own file naming, review and stop conditions;
+a NOT READY discovery must not be treated as an approved build input.</p>
+<p><strong>Your job while it runs:</strong> open the one-pagers and brief as they appear, understand the
+problem, and note what would make the pitch compelling. Do not edit files being generated.
+A file appearing on disk does not mean it has passed review.</p>
+<h2 id="run-guided-route">Guided route</h2>
+<h3 id="run-1-discover-two-opportunities">1. Discover two opportunities</h3>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Use the ait-idea skill to find 2 business use cases for &lt;Company&gt;
+from &lt;https://www.company.com&gt;.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>Expect a research dossier, two HTML one-pagers, and two Markdown prototype briefs.
+The dossier contains citations, evidence classes, brand guidance, and ranked ideas.</p>
+<p>Check that the result is READY. Independent critics are preferred when available;
+the skill's self-review fallback must be disclosed if used. If ideation is NOT READY,
+resolve its findings before building.</p>
+<h3 id="run-2-choose-what-deserves-the-room">2. Choose what deserves the room</h3>
+<p>The fast track builds <strong>01</strong>. In the guided route, you may choose a different numbered case.
+Read its one-pager and brief and answer:</p>
+<ol>
+<li>Who is the user, and what business friction are they facing?</li>
+<li>Is that friction confirmed, an industry hypothesis, or an inference?</li>
+<li>What happens on screen that makes the idea worth exploring?</li>
+<li>What evidence supports the company's strategic fit?</li>
+<li>What would the CEO challenge first?</li>
+</ol>
+<p>Prefer one convincing reveal to many disconnected features. AI or agents are useful only
+when they earn their place; a good business idea does not need an agentic label.</p>
+<p><strong>Already have a brief?</strong> Skip discovery. Describe the user, problem, scope, screen flow,
+sample data, and intended reveal. Provide public-safe evidence and brand guidance.
+The showcase skill still owns verification, review, and readiness.</p>
+<h3 id="run-3-build-the-showcase">3. Build the showcase</h3>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Use the ait-product-showcase skill to build an executive showcase from
+use case &lt;NN&gt; in docs. Use its brief as the product requirements, with
+its one-pager and research as narrative, brand and evidence context—not
+a UI to reproduce.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>The workflow includes design preparation, the build, browser checks, peer review,
+source-fidelity validation, Simulate, and final-version verification/review.
+The design preparation is part of showcase, not an optional business-case extra.</p>
+<p>The one-pager is a <strong>pitch</strong>, not a UI wireframe.</p>
+<h3 id="run-4-read-while-it-builds">4. Read while it builds</h3>
+<p>Understand the story before judging the visuals. Read the brief and note two useful changes:
+one that improves the business reveal, and one that makes the experience clearer.
+Do not start a second build in the same workspace or send duplicate build requests.</p>
+<p>If you need a checkpoint, use:</p>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Give me a readiness checkpoint: what exists, which checks and reviews have
+passed, what remains, and any blockers.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<h3 id="run-5-inspect-refine-replay">5. Inspect, refine, replay</h3>
+<p>Open the generated <code>docs/&lt;product&gt;-v1.html</code> in a browser. Start <strong>Simulate</strong> with a click.
+Read the bottom transcript, test the controls actually supplied, and inspect the critical
+flows yourself. Speech availability depends on the browser; missing narration must leave
+the transcript and manual walkthrough usable.</p>
+<p>Use focused feedback instead of asking for "more wow" without direction:</p>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">The reveal should help &lt;persona&gt; understand or decide &lt;specific thing&gt;.
+Use the ait-product-showcase skill to improve &lt;screen/interaction&gt;
+within the existing brief and update Simulate.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Act as a sceptical executive. Identify the 3 hardest questions this
+prototype leaves unanswered. Suggest improvements before making changes.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>After changes, ask which file was updated and refresh it. Re-test the reveal and reset/replay.
+A previously READY verdict does not automatically cover a changed prototype.</p>
+<h3 id="run-6-earn-the-final-verdict">6. Earn the final verdict</h3>
+<p>This checklist is a participant-facing view of the skills' criteria, not a replacement:</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Evidence to look for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Credible problem</td>
+<td>Cited claims; hypotheses/inferences remain identified; no invented outcome promises.</td>
+</tr>
+<tr>
+<td>Business reveal</td>
+<td>A specific improvement the intended persona can see and explain.</td>
+</tr>
+<tr>
+<td>Visual confidence</td>
+<td>Company style or disclosed neutral fallback; readable text and contrast.</td>
+</tr>
+<tr>
+<td>Coverage</td>
+<td>The source inventory is accounted for; critical clicks and states work.</td>
+</tr>
+<tr>
+<td>Honest simulation</td>
+<td>Persistent disclosure; no implication of live integrations or production readiness.</td>
+</tr>
+<tr>
+<td>Repeatable tour</td>
+<td>Simulate, transcript, controls, reset/replay, and usable speech fallback.</td>
+</tr>
+<tr>
+<td>Browser verification</td>
+<td>Critical flows, console health, responsive checks, and accessibility smoke evidence.</td>
+</tr>
+<tr>
+<td>Final peer review</td>
+<td>Both independent showcase critics READY on the version including Simulate.</td>
+</tr>
+<tr>
+<td>Presenter test</td>
+<td>You would present it yourself and can defend the pitch without apologies.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Two separate review budgets:</strong> ideation has up to three rounds under its own contract.
+Showcase has three rounds <strong>total across its intermediate and final reviews</strong>, not three
+per pass. Each round can involve two critics; time and usage depend on the findings.</p>
+<p><strong>Missing reviewers:</strong> ideation can use its disclosed self-review fallback.
+The unattended showcase stops BLOCKED if independent reviewers are unavailable.
+Only explicit user action may request the showcase skill's recorded-waiver/human-review
+route outside this unattended track; the agent must never select or approve it itself.</p>
+<p><strong>Budget exhausted:</strong> report the remaining concerns and BLOCKED status. Do not restart
+the review counter, delete the standout feature to obtain an easy pass, or claim completion.</p>
+<p>Authoritative criteria:
+<a href="https://github.com/CalinL/ai-team-sdlc/blob/main/plugins/ai-team-sdlc/skills/ait-idea/SKILL.md">Ideation review and done-loop</a> |
+<a href="https://github.com/CalinL/ai-team-sdlc/blob/main/plugins/ai-team-sdlc/skills/ait-product-showcase/SKILL.md">Showcase final-version check and acceptance</a>.</p>
+<h3 id="run-7-present-the-idea-not-the-machinery">7. Present the idea, not the machinery</h3>
+<p>A useful short presentation:</p>
+<ul>
+<li><strong>Problem:</strong> the user, the friction, and what is evidenced versus hypothetical.</li>
+<li><strong>Reveal:</strong> show the decisive interaction or Simulate highlights, not every screen.</li>
+<li><strong>Next validation:</strong> explain what is simulated and which assumption needs stakeholder validation.</li>
+</ul>
+<p>Do not present a BLOCKED artifact as executive-ready. It can be shown as a clearly labelled
+work-in-progress if the audience understands its limitations.</p>
+<h2 id="run-facilitate-a-session">Facilitate a session</h2>
+<p>Prepare setup before the session. Begin with a short exemplar, then move through discovery,
+selection, building, and participant review. Let participants read while the AI works.
+Reserve time for the business pitch and questions; use progress checkpoints, not deadlines
+that waive gates. One complete showcase is more valuable than several unfinished builds.</p>
+<p>For follow-up materials or production planning, see <a href="#export">optional outputs</a>.</p></div></section>
+<section id="fix" class="chapter" aria-labelledby="fix-title"><div class="chapter-head"><span class="chapter-number">04</span><div><p class="eyebrow">Fix the cause. Keep the standard.</p><h2 id="fix-title">Keep moving</h2></div></div><div class="prose"><p><strong>Keep the standard, change the plan.</strong> A useful draft is not automatically a verified showcase.
+Do not bypass policy, fabricate evidence, or silently substitute tooling to finish.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Scrollable reference table"><table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A CLI setup command is not found</td>
+<td>Reopen the terminal after installation and verify each tool separately. On Windows, run CLI commands in PowerShell 7. App users do not need the separate CLI or PowerShell 7; check Git and Node.js, then restart the App if needed.</td>
+</tr>
+<tr>
+<td>Installation or access denied</td>
+<td>Follow your approved device/organization process. Close relevant Copilot sessions before retrying a plugin update if files are in use; do not uninstall working components reflexively.</td>
+</tr>
+<tr>
+<td>App access blocked but CLI works</td>
+<td>App and CLI policies are separate. Ask your administrator about App access; switching interfaces is not a policy bypass.</td>
+</tr>
+<tr>
+<td>App cannot see a skill or browser tool</td>
+<td>Check <strong>Customize &gt; Plugins / Skills / MCP</strong>, restart the session and run the shared setup check. Confirm existing configuration before adding duplicates.</td>
+</tr>
+<tr>
+<td>App outputs are not in the selected folder</td>
+<td>Check the session's execution location. A working tree or cloud sandbox has a different workspace; use the local repository route in prerequisites for the documented paths.</td>
+</tr>
+<tr>
+<td>A skill is missing</td>
+<td>CLI: inspect <code>/skills</code> and <code>/plugin</code>. App: check <strong>Customize &gt; Plugins / Skills</strong>. Update the team plugin and restart the session. Confirm that both named skills load before research.</td>
+</tr>
+<tr>
+<td>Public research cannot fetch the site</td>
+<td>Report the limitation. Supply public-safe source excerpts with source references, or choose an accessible public source. Never cite from memory.</td>
+</tr>
+<tr>
+<td>Research is NOT READY</td>
+<td>Read the open findings. Fix them within ideation's remaining budget. Do not pass an incomplete brief into showcase.</td>
+</tr>
+<tr>
+<td>Playwright MCP is unavailable</td>
+<td>Check Node.js, permissions, browser installation and allowed server policy. CLI: inspect <code>/mcp</code>. App: check <strong>Customize &gt; MCP</strong>. Do not replace it silently with a Python browser runner.</td>
+</tr>
+<tr>
+<td>Web page opens but local HTML does not</td>
+<td>Check the MCP server's local-file access options, tool permissions and path restrictions; see the configuration reference below. Retry the temporary-file smoke test.</td>
+</tr>
+<tr>
+<td>Browser verification cannot run</td>
+<td>Keep the showcase BLOCKED. Manual clicks can improve a draft but cannot silently pass the required browser gate.</td>
+</tr>
+<tr>
+<td>Review subagents are unavailable</td>
+<td>Report ideation's self-review if used. The unattended showcase remains BLOCKED; human review/waiver requires explicit user action under the skill contract.</td>
+</tr>
+<tr>
+<td>Model or usage allowance is exhausted</td>
+<td>Inspect <code>/usage</code> and applicable limits. Save the exact source/output paths and findings; resume with the existing artifact when access is restored. Do not start a new version automatically.</td>
+</tr>
+<tr>
+<td>CLI autopilot denies tools instead of asking</td>
+<td>Manual approval in CLI autopilot auto-denies requests still requiring approval. Reassess authorization safely, or switch to the guided interactive route. Do not grant all permissions reflexively.</td>
+</tr>
+<tr>
+<td>CLI autopilot reaches its continuation limit</td>
+<td>Check progress and the <code>--max-autopilot-continues</code> launch option in current CLI help, then resume only as appropriate. This limit is not the review-round budget; never reset that budget to continue.</td>
+</tr>
+<tr>
+<td>The chain appears stalled</td>
+<td>Request a progress checkpoint in the active session. In CLI, also inspect <code>/tasks</code>. Do not launch duplicate builds. Use your interface's interrupt control for unexpected work (Esc twice in CLI).</td>
+</tr>
+<tr>
+<td>Files are hard to find</td>
+<td>Ask for absolute source and output paths. Confirm that you are in your fresh workspace, not the plugin repository.</td>
+</tr>
+<tr>
+<td>The UI looks like the one-pager</td>
+<td>Clarify generate path: the brief defines product screens; the one-pager is narrative/brand reference, not a visual reproduction target.</td>
+</tr>
+<tr>
+<td>Simulate is silent</td>
+<td>Start with a user click, check audio output and browser voices. Test transcript/manual controls. Ask for a graceful fallback; do not depend on one exact voice being installed.</td>
+</tr>
+<tr>
+<td>Simulate or a critical click breaks</td>
+<td>Report the screen, action and expected result. Fix it, repeat browser checks and final peer review within the remaining budget.</td>
+</tr>
+<tr>
+<td>A review asks to remove the main reveal</td>
+<td>Fix weak evidence or execution without losing the useful business idea. Scope changes are user decisions, not automatic reviewer instructions.</td>
+</tr>
+<tr>
+<td>Three showcase rounds are spent</td>
+<td>Report BLOCKED with outstanding findings. Do not reset the budget or turn an incomplete draft into a "happy" completion.</td>
+</tr>
+<tr>
+<td>Presentation time is near</td>
+<td>Request an honest readiness checkpoint. Present only if the criteria pass; otherwise explain draft status or postpone.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="fix-a-useful-help-prompt">A useful help prompt</h2>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">I expected &lt;result&gt;, but &lt;observed behavior&gt; happened at &lt;step/file&gt;.
+Diagnose the cause using the existing tooling and show me the smallest fix.
+Tell me which readiness checks this affects. Do not silently skip them.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>Copy the error text, but remove credentials or personal information before sharing it.</p>
+<h2 id="fix-references">References</h2>
+<ul>
+<li><a href="https://github.com/microsoft/playwright-mcp">Playwright MCP browser and file-access configuration</a></li>
+<li><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers">GitHub MCP setup</a></li>
+<li><a href="https://docs.github.com/en/copilot/how-tos/copilot-cli/use-copilot-cli/allowing-tools">Tool permissions</a></li>
+<li><a href="https://github.com/CalinL/ai-team-sdlc/blob/main/plugins/ai-team-sdlc/skills/ait-product-showcase/SKILL.md">Showcase contract and blocked outcomes</a></li>
+</ul></div></section>
+<section id="export" class="chapter" aria-labelledby="export-title"><div class="chapter-head"><span class="chapter-number">05</span><div><p class="eyebrow">Optional leave-behinds and delivery</p><h2 id="export-title">Take the idea further</h2></div></div><div class="prose"><p><strong>The interactive showcase is the core deliverable.</strong> PDF and PowerPoint are optional
+companions, not substitutes for browser verification, peer review, or the presenter test.
+Do not generate them unless requested. Start from the final reviewed artifact and its sources.
+Do not export a BLOCKED prototype as if it were executive-ready; any draft export must
+explicitly retain its draft status and unresolved limitations.</p>
+<h2 id="export-add-document-skills-only-if-you-want-an-export">Add document skills only if you want an export</h2>
+<p>The relevant skills are <code>pdf</code> and <code>pptx</code>. They may need additional runtimes/packages
+depending on the requested output; follow their setup instructions rather than installing
+document tooling for every Accelerator participant.</p>
+<p><strong>App:</strong> open <strong>Customize &gt; Plugins</strong>, add <code>anthropics/skills</code> through the marketplace
+settings, then install <strong>document-skills</strong> from <strong>anthropic-agent-skills</strong>.
+No separate CLI installation is needed for this route.</p>
+<p>For Copilot CLI, the document-skills plugin can be installed separately:</p>
+<div class="prompt-block"><span class="snippet-label">Run in your terminal</span><pre><code class="language-powershell">copilot plugin marketplace add anthropics/skills
+copilot plugin install document-skills@anthropic-agent-skills
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>Confirm the relevant skill is available before requesting an output. Installing a plugin
+does not prove that all of its rendering dependencies are ready.
+The repository publishes the <code>anthropic-agent-skills</code> marketplace and <code>document-skills</code>
+entry in its <a href="https://github.com/anthropics/skills/blob/main/.claude-plugin/marketplace.json">marketplace manifest</a>.
+If your host rejects the format or restricts marketplace access, follow its supported
+installation process; do not bypass policy.</p>
+<h2 id="export-a-short-pdf-pitch">A short PDF pitch</h2>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Use the pdf skill to create a concise executive leave-behind from the
+reviewed showcase and its brief, one-pager and research: the problem,
+the business reveal, supporting evidence, simulated capabilities and
+next validation steps. Save it in docs without changing the prototype.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<h2 id="export-a-three-slide-powerpoint">A three-slide PowerPoint</h2>
+<div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Use the pptx skill to create a three-slide executive leave-behind from
+the reviewed showcase and its brief, one-pager and research:
+1. The business problem and evidence.
+2. The experience and decisive business reveal.
+3. Assumptions, simulated capabilities and next validation steps.
+Use the established brand guidance and save it in docs without changing
+the prototype.
+</code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
+<p>An exported document needs its own layout/content verification. Do not claim the HTML
+critics also reviewed a PDF or deck they have not seen.</p>
+<h2 id="export-ready-to-move-beyond-the-demo">Ready to move beyond the demo?</h2>
+<p>First validate the business case and scope with the relevant stakeholders.
+Then use <code>ait-tech-specs</code> to translate the approved direction into requirements, acceptance
+criteria and technical specifications, or explicitly request the broader <code>ait-sdlc-orchestrate</code>
+lifecycle.</p>
+<p>This is a <strong>separate, larger delivery scope</strong>, not the next automatic Accelerator step.
+The prototype remains a throwaway representation of the intended experience. Production code
+must be implemented and verified against the chosen stack; do not promote the HTML demo to
+production.</p>
+<p>The broader AI-SDLC includes implementation, QA, code review, security checks and mandatory
+<strong>Product Owner, Security Team and Tech Lead</strong> sign-off before deployment. Adoption through
+<code>ait-init</code>, if wanted, is an explicit configuration decision rather than a prototyping prerequisite.</p>
+<h2 id="export-source-references">Source references</h2>
+<ul>
+<li><a href="https://github.com/anthropics/skills">Document skills</a></li>
+<li><a href="https://github.com/CalinL/ai-team-sdlc/blob/main/plugins/ai-team-sdlc/skills/ait-tech-specs/SKILL.md">Technical specification skill</a></li>
+<li><a href="https://github.com/CalinL/ai-team-sdlc/blob/main/plugins/ai-team-sdlc/skills/ait-sdlc-orchestrate/SKILL.md">Full lifecycle orchestrator</a></li>
+<li><a href="https://github.com/CalinL/ai-team-sdlc/blob/main/plugins/ai-team-sdlc/skills/ait-conventions/SKILL.md">Shared sign-off contract</a></li>
+</ul></div></section></div>
+  </div>
+  <div class="closing">
+    <div class="container closing-grid">
+      <div>
+        <p class="eyebrow">The final question</p>
+        <h2>Would you present this yourself?</h2>
+        <p>Could you defend the evidence, explain what is simulated, and show why the idea matters to this leadership team?</p>
+      </div>
+      <div class="verdict-rule">
+        <strong>Not “looks good.” READY.</strong>
+        <p>Both final showcase critics must agree. If gaps remain when the budget ends, report BLOCKED. A polished draft is still a draft.</p>
+        <a href="#run-6-earn-the-final-verdict">Check the readiness criteria &#8594;</a>
+      </div>
+    </div>
+  </div>
+</main>
+<footer>
+  <div class="container">
+    <span>Independent AI-Team SDLC Accelerator. Not an official Microsoft publication.</span>
+    <span><a href="https://fluent2.microsoft.design/">Fluent-inspired layout and typography</a> &#183; <a href="https://github.com/CalinL/ai-team-sdlc/tree/main/docs/accelerator">Markdown sources</a></span>
+  </div>
+</footer>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<script>
+(() => {
+  const root = document.documentElement;
+  const themeButton = document.getElementById("themeButton");
+  const printButton = document.getElementById("printButton");
+  const status = document.getElementById("status");
+  let statusTimer;
+  function announce(message) {
+    clearTimeout(statusTimer);
+    status.textContent = message;
+    statusTimer = setTimeout(() => { status.textContent = ""; }, 6000);
+  }
+  function setThemeButton() {
+    const dark = root.getAttribute("data-theme") === "dark";
+    themeButton.textContent = dark ? "Light" : "Dark";
+    themeButton.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+  }
+  themeButton.hidden = false;
+  printButton.hidden = false;
+  setThemeButton();
+  themeButton.addEventListener("click", () => {
+    root.setAttribute("data-theme", root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+    setThemeButton();
+  });
+  printButton.addEventListener("click", () => window.print());
+  let beforePrintTheme;
+  window.addEventListener("beforeprint", () => {
+    beforePrintTheme = root.getAttribute("data-theme");
+    root.setAttribute("data-theme", "light");
+  });
+  window.addEventListener("afterprint", () => {
+    if (beforePrintTheme) root.setAttribute("data-theme", beforePrintTheme);
+    setThemeButton();
+  });
+  document.querySelectorAll(".copy-button").forEach((button, index) => {
+    const code = button.parentElement.querySelector("code");
+    code.id = "snippet-" + index;
+    button.setAttribute("aria-label", "Copy " + (code.classList.contains("language-powershell") ? "terminal commands" : "Copilot prompt") + " " + (index + 1));
+    button.hidden = false;
+    button.addEventListener("click", async () => {
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error("Clipboard unavailable");
+        await navigator.clipboard.writeText(code.textContent);
+        announce("Copied. Paste prompts into Copilot; terminal commands into your terminal.");
+      } catch {
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        announce("Clipboard access is unavailable. The text is selected; copy it manually.");
+      }
+    });
+  });
+  if ("IntersectionObserver" in window) {
+    const links = [...document.querySelectorAll(".contents a")];
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        links.forEach((link) => {
+          if (link.getAttribute("href") === "#" + entry.target.id) link.setAttribute("aria-current", "location");
+          else link.removeAttribute("aria-current");
+        });
+      }
+    }, { rootMargin: "-15% 0px -70% 0px" });
+    document.querySelectorAll(".chapter").forEach((section) => observer.observe(section));
+  }
+})();
+</script>
+</body>
+</html>

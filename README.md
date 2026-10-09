@@ -28,6 +28,11 @@ Let stakeholders explore how work could change—not just hear about it. Spark c
 what matters, test assumptions, and build alignment before investing in production development.
 Turn "What could we do?" into "Is this worth pursuing?"
 
+**Try the [Art of the Possible Accelerator](docs/accelerator/README.md):** a public,
+step-by-step guide from two business opportunities to one reviewed executive showcase.
+Prefer a visual walkthrough? [View the Accelerator on GitHub Pages](https://calinl.github.io/ai-team-sdlc/accelerator/),
+or download its [self-contained HTML guide](docs/accelerator/index.html) for offline use.
+
 ## The lifecycle
 
 ```
