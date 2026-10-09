@@ -59,6 +59,8 @@
     font-size: 12px; padding: 5px 11px; border-radius: 999px;
     border: 1px solid var(--line); color: var(--muted);
   }
+  .repo-link { margin-left: auto; flex-shrink: 0; text-decoration: none; }
+  .repo-link:hover { color: var(--ink); border-color: var(--muted); }
 
   /* ---------- Hero ---------- */
   .hero { padding: 74px 0 44px; position: relative; }
@@ -298,7 +300,7 @@
     padding: 3px 8px; border-radius: 7px; white-space: nowrap; display: inline-block; margin: 2px 0;
   }
 
-  @media (max-width: 640px){ .topbar nav { display: none; } }
+  @media (max-width: 640px){ .topbar nav, .topbar .portability-badge { display: none; } }
 </style>
 </head>
 <body>
@@ -313,7 +315,8 @@
       <a href="#personas">The Team</a>
       <a href="#agents">AI Agents</a>
     </nav>
-    <span class="pill-badge">Portable · VS Code + CLI</span>
+    <span class="pill-badge portability-badge">Portable · VS Code + CLI</span>
+    <a class="pill-badge repo-link" href="https://github.com/CalinL/ai-team-sdlc" target="_blank" rel="noopener noreferrer" aria-label="Open AI-SDLC repository on GitHub (new tab)">GitHub &#8599;</a>
   </div>
 </header>
 
