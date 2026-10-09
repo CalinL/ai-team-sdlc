@@ -14,6 +14,20 @@ It is **portable** across VS Code Copilot and the Copilot CLI. The team ships as
 agents and skills; their shared operating contract travels with them in the `ait-conventions`
 skill, so the system behaves identically in any repo that installs the plugin.
 
+## The Art of the Possible: Bring Business Ideas to Life with GitHub Copilot
+
+**What if your next executive conversation started with an interactive experience—not a slide deck?**
+Reusable GitHub Copilot skills turn business challenges into polished showcase prototypes, with
+company-aligned branding, realistic scenarios, peer review, and voice-narrated demos. Bridge the
+gap between "imagine if" and "click here," making ideas tangible while clearly distinguishing
+simulated capabilities from working functionality.
+
+**Purpose and value:** For product teams, technical practitioners, and innovation leaders, these
+skills bring the art of the possible into executive briefings, discovery workshops, and live demos.
+Let stakeholders explore how work could change—not just hear about it. Spark curiosity, uncover
+what matters, test assumptions, and build alignment before investing in production development.
+Turn "What could we do?" into "Is this worth pursuing?"
+
 ## The lifecycle
 
 ```
