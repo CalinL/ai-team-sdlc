@@ -69,6 +69,8 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
    production concerns. Use real data only when the user supplies it; otherwise stub data is fine.
 4. Verify it with `ait-prototype-testing` (Playwright MCP): walk each critical flow, check interaction
    states, capture console errors, test responsive breakpoints, and run an accessibility smoke pass.
+   Use its `--mute-audio` launch setup during automated building/testing, including opt-in Simulate
+   checks; leave delivered narration enabled.
    Here `ait-prototype-testing` runs as a **sub-step** and returns its evidence to you; **you** write the
    single inbox handoff (it does not write its own). After the last fix, re-run the affected checks
    so the evidence describes the final version.

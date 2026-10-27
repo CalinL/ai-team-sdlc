@@ -124,7 +124,9 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    **Output files**.
 3. **Verify** with `ait-prototype-testing` (Playwright MCP) in a real browser: walk each critical
    flow, check interaction states, capture console errors, test responsive breakpoints, and run an
-   accessibility smoke pass. On the reproduce path also run `ait-wireframe-to-frontend`'s pixel-diff
+   accessibility smoke pass. Use its `--mute-audio` launch setup for all automated build/test runs,
+   including Simulate checks; leave delivered narration enabled. On the reproduce path also run
+   `ait-wireframe-to-frontend`'s pixel-diff
    comparison against the source. Fix all issues before proceeding. Here `ait-prototype-testing` runs
    as a **sub-step** and returns its evidence to you; **you** write the single inbox handoff.
 4. **Peer review (mandatory — two independent critics).** Spin up **two** review subagents and run

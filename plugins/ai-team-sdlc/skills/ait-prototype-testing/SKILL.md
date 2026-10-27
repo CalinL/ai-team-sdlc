@@ -56,6 +56,16 @@ If you are validating shipped, spec-derived behavior against acceptance criteria
 > (`browser_navigate`, `browser_click`, …). Depending on how the MCP server is registered in your
 > host, they may be exposed namespaced (e.g. `playwright-browser_navigate`). The workflow is
 > identical — use whichever prefix your environment surfaces.
+
+**Silent automated runs.** During building and testing, launch Chromium/Edge with
+`--mute-audio` so Simulate narration does not play aloud. For Playwright MCP, merge
+`"--mute-audio"` into `browser.launchOptions.args` in its JSON configuration (loaded with
+`--config`), preserving existing options, then relaunch the test browser; an already-running
+browser will not pick up launch arguments. If the host cannot configure the launch, report
+the limitation rather than claiming the run is muted. Keep speech, transcript and tour controls
+enabled in the artifact: this is browser-level test muting, not a change to the delivered demo.
+Audible narration remains a separate, explicitly requested manual check in an unmuted browser.
+
 1. Locate the prototype. For a static file, use a `file://` URL or serve the folder; for a bundled
    artifact, open `bundle.html`; for a dynamic app, ensure its dev server is running first.
 2. Open it with the Playwright MCP: `browser_navigate`, then **wait for the page to settle**

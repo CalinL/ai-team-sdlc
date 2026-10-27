@@ -158,6 +158,9 @@ The narration is the demo. Write it like a presenter, not a tooltip.
 ## 6. Verification checklist
 Run this with `ait-prototype-testing` (Playwright MCP). Serve over `http://` if the MCP blocks
 `file://`.
+Launch automated build/test browsers with `--mute-audio` using that skill's MCP configuration
+instructions. Keep the narration engine and controls intact; test muting must not silence the
+delivered showcase.
 - [ ] `▶ Simulate` is visible on load. Clicking it shows the panel, the hairline and the first beat.
 - [ ] Every `hl()`/`click()` target exists, with no `[simulate] … not found` warnings.
 - [ ] Next, pause/resume, mute and `Esc` each respond within about 150ms.
@@ -173,8 +176,8 @@ Run this with `ait-prototype-testing` (Playwright MCP). Serve over `http://` if 
       supported theme, with the panel, icons and highlights legible throughout. Do not add personas
       or themes just to satisfy this check.
 - [ ] Headless browsers have no voices, so confirm the silent path paces correctly. Hearing the
-      actual voice is a **manual** check in Edge. Record it as verified or not verified in the
-      handoff, and never claim it without hearing it.
+      actual voice is a separate, explicitly requested **manual** check in unmuted Edge. Record it
+      as verified or not verified in the handoff, and never claim it without hearing it.
 
 ## 7. Gotchas
 - `speechSynthesis` requires a user gesture, which is why the tour starts only from the button.
