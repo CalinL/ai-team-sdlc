@@ -89,7 +89,13 @@ Never overwrite an earlier run's files silently; ask first, or write new files a
      - the typography: font families, the closest system-font fallbacks, and the weight and case
        used for headings;
      - the visual tone: layout density, corner radius, imagery and iconography style;
-     - the voice: formal or plain, recurring phrases and taglines.
+     - the voice: formal or plain, recurring phrases and taglines;
+     - the **official logo**: its source URL and format. Take it from the company's own site
+       (prefer the header SVG; otherwise the largest PNG, such as the header image or
+       apple-touch-icon) or its published brand/press kit, plus a light-background variant if
+       one exists. If page extraction omits assets, read the raw HTML with an available HTTP
+       tool (e.g. `curl`) before giving up. Never redraw, trace or generate a logo; if none can
+       be retrieved, record the text-wordmark fallback and why.
 
      Use a published brand or press kit when one exists. If you cannot read the site's styling,
      choose a restrained neutral style and say so.
@@ -193,16 +199,22 @@ Never overwrite an earlier run's files silently; ask first, or write new files a
 
 Use the company's own nouns and voice, and apply the brand style guide from step 1: its colours,
 font stack, heading style and visual tone. Embed everything inline: no remote fonts, images or
-scripts. Recreate the look with system fonts and CSS. Do not copy the company's logo or
-imagery unless the user supplies them or asks; a simple text wordmark of the company name is
-enough. Design the page with care: clear hierarchy, generous spacing, and the brand accent used
-sparingly. If the page overflows, cut words rather than shrinking the type.
+scripts. Recreate the look with system fonts and CSS. Show the **official logo** in the header,
+embedded so the file stays self-contained: a raster logo as a base64 `<img>` data URI, or an
+SVG sanitised before inlining (remove scripts, event handlers, `foreignObject`, external
+references and CSS `url()`; base64 encoding is not sanitisation). Do not recolour, distort, crop
+or animate it; follow any published usage rules (clear space, minimum size, the variant for the
+background); and keep the "not an official publication" footer. Fall back to a simple text
+wordmark only when no official logo can be retrieved or the user opts out. Use other company
+imagery only when the user supplies it or asks. Design the page with care: clear hierarchy,
+generous spacing, and the brand accent used sparingly. If the page overflows, cut words rather
+than shrinking the type.
 
 ### Prototype brief (markdown)
 - **Header and banner:** the name, the promise, and a note such as "Sample data is synthetic and
   for demonstration only."
-- **Look and feel:** the brand style guide (colours, fonts, tone), so that the prototype is built
-  in the company's style.
+- **Look and feel:** the brand style guide (colours, fonts, tone) and the logo's source URL (or the
+  wordmark fallback), so that the prototype is built in the company's style.
 - **Overview:** who it's for, the build target (a clickable UI prototype), the wow moment, the
   problem it attacks, and what the prototype must prove.
 - **Demo narrative:**

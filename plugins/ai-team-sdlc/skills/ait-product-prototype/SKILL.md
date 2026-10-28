@@ -67,6 +67,9 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 3. Build the prototype at the versioned path in **Output files**, applying `frontend-design` for
    craft and `theme-factory` for the chosen tokens/theme. Keep it a spike — no backend, no
    production concerns. Use real data only when the user supplies it; otherwise stub data is fine.
+   When the design direction or user names a target company, show its official logo following
+   the `ait-product-showcase` skill's company-logo rule (retrieved from the company's own site,
+   sanitised and embedded inline, unaltered, text-wordmark fallback).
 4. Verify it with `ait-prototype-testing` (Playwright MCP): walk each critical flow, check interaction
    states, capture console errors, test responsive breakpoints, and run an accessibility smoke pass.
    Use its `--mute-audio` launch setup during automated building/testing, including opt-in Simulate

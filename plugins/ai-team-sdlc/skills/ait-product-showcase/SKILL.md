@@ -117,7 +117,17 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    "labelled simulated" rule, so do not clutter screens with per-figure caveats. With mixed real and
    mock data, record which figures are sourced and which are simulated in the handoff. Keep data consistent across screens, and keep
    every screen visually consistent (brand, tone, spacing). Build only the scope the source asks
-   for; enhancements beyond it are `showcase extras`. On the generate path, present the
+   for; enhancements beyond it are `showcase extras`. **Company logo:** when the user, source or
+   constraints identify a target company (by name or website), show its official logo in the top
+   bar beside the product name, even without an `ait-idea` brief. Use the recorded logo source if
+   there is one; otherwise take it from the company's own website or brand kit, reading the raw
+   HTML with an available HTTP tool (e.g. `curl`) if page extraction omits assets. Embed it as a
+   base64 `<img>` data URI for raster logos, or as an SVG sanitised before inlining (remove
+   scripts, event handlers, `foreignObject`, external references and CSS `url()`). Never redraw or
+   generate one, do not alter it, and pick the variant that suits the top-bar background. Keep
+   the persistent disclosure visible and add "not an official <company> product" to it. If no logo
+   can be retrieved, use a text wordmark and say why in the handoff. On the reproduce path, follow
+   the source design instead. On the generate path, present the
    **target-state product** (unless the user asks otherwise): no
    "not built yet" or roadmap caveats in the UI, and no internal or technical statistics a business
    user would not care about. Write the result to the versioned path in
