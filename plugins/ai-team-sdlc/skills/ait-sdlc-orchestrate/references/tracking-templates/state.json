@@ -1,5 +1,6 @@
 {
   "runId": "{{RUN_ID}}",
+  "mode": "default",
   "spec": "{{SPEC_SOURCE}}",
   "status": "in_progress",
   "currentPhase": "plan",
@@ -17,6 +18,8 @@
       "owner": "{{OWNER}}",
       "phase": "plan",
       "deps": [],
+      "files": [],
+      "authorModels": [],
       "acceptance": "{{ACCEPTANCE}}",
       "retries": 0,
       "requiredGates": ["{{GATE}}"],

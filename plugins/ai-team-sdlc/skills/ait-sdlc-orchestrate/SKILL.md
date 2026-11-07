@@ -70,6 +70,7 @@ Repeat until no ready tasks remain:
 5. After each batch, consolidate `inbox/*.md` into `decisions.md`/`changes.md` — invoke the
    **Scribe** agent in VS Code, or (CLI, no agent available) do the consolidation inline yourself
    using the Scribe conventions, then move processed files to `inbox/processed/`.
+6. Record the task's `files` and `authorModels` (see `ait-conventions` › Authorship lineage).
 
 ### 3. Sign‑off (mandatory human gate)
 When Build + Test are green, **pause** and request human sign‑off (Product Owner + Security
