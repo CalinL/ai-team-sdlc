@@ -10,6 +10,15 @@ Turn a spec/PRD/idea into a set of **atomic, verifiable tasks** the orchestrator
    **UI‑applicability:** schedule the `design/ideation` and `prototype` tasks **only** when the
    spec has user‑facing UI. For API‑only, library, CLI, infrastructure, or batch work, **omit**
    both (do not schedule them and do not record their gates as `skipped`); start the plan at PRD.
+
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block. The text
+after this block applies in every mode.
+Use the task kinds and order in `ait-contract-mode` §4 (Flow): `stories` → `design` (only if
+enabled) → `prototype` (UI work only) → `specs` → `build` → `test` → `signoff` → `deploy`, and
+record each task's `kind`. There is **no PRD task**.
+Otherwise ignore this section.
+
 3. **Cut atomic tasks** — each task is:
    - independently assignable to **one** specialist,
    - completable in a bounded change,

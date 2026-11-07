@@ -44,6 +44,14 @@ idea → design/ideation (ait-product-designer) → prototype (ait-product-desig
 - Each task carries exactly one phase; `ait-security-rai` findings feed the `signoff` gate but its
   task's phase is `test`.
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+The lifecycle DAG, the prototype's role and where decisions are recorded follow
+`ait-contract-mode` §4 (Flow), §5 (Prototype as UI spec) and §8 (Decisions): stories from the
+existing requirements instead of a PRD, an optional design stage, a prototype that may be kept as
+the UI spec, and an optional external decision log. The safety floors still apply.
+Otherwise ignore this section.
+
 ## Tracking store — `.copilot-tracking/<run-id>/`
 `run-id = <YYYY-MM-DD>-<kebab-slug>` (append a numeric suffix if the slug already exists).
 - `state.json` — machine‑readable run state; **canonical** source of truth.

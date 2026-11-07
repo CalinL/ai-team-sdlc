@@ -36,6 +36,17 @@ Phase gates (plan/deploy tasks):
 | `smoke` | deploy | post‑deploy smoke checks pass |
 | `rollback-ready` | deploy | rollback path verified |
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block. The text
+after this block applies in every mode.
+Contract mode adds gate `path-check` to every task (`ait-contract-mode` §10): no task-changed
+path under `frozen`, `protected` or `decisions.dir` (except a new Proposed record), plus
+`contract.path_check` if set. External gates (`external_gates`) are **preconditions** checked
+before dispatch, not post-task gates, and never appear in `requiredGates` (§7). Default runs never
+schedule `path-check` or external gates.
+Otherwise ignore this section.
+
+
 Each task declares its `requiredGates` (subset of the ids above). Record results in
 `gateResults` as `not_run | passed | failed | skipped`. `design-review` and `prototype-review`
 are scheduled **only** for user‑facing UI work; for non‑UI specs they are not created (not

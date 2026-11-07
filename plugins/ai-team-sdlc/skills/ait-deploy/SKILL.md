@@ -58,6 +58,13 @@ Follow the `ait-conventions` skill.
 - Next: <suggested next agent/phase, or "orchestrator">
 ```
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+When a `release-acceptance` gate is configured, also verify that it is met for the approved
+release candidate (`ait-contract-mode` §7, §13) before deploying. Sign-off verification is
+unchanged: the three-approver record in `decisions.md` and `state.json.signoff` are still required.
+Otherwise ignore this section.
+
 ## Guardrails
 - Never deploy without documented human sign-off recorded in `state.json.signoff` (status `approved`).
 - Deploy the **approved artifact/version only**. If any file, artifact, or gate result changes after

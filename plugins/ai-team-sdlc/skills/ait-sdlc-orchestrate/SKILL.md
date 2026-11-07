@@ -38,6 +38,7 @@ Do not duplicate those rules; apply them.
 2. Otherwise create `run-id = <YYYY-MM-DD>-<slug>` (append a numeric suffix if the slug already
    exists so repeated demos never resume stale state). Scaffold the tracking store from
    `references/tracking-templates/` and **create `inbox/` and `inbox/processed/`**.
+3. Detect and validate the mode (`ait-conventions` › Modes); record it in `state.json`.
 
 ### 1. Research & decompose (Plan)
 1. Read the specs. If ambiguous, ask the **minimum** clarifying questions (batch them once).
@@ -50,6 +51,16 @@ Do not duplicate those rules; apply them.
    user‑facing UI work**; for API‑only, library, CLI, infra, or batch specs, omit them and start at
    PRD. **Re‑decompose** the build/test tasks once design, prototype, and spec exist, so
    implementation is never finalized before requirements.
+
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block. The text
+after this block applies in every mode.
+Instead of item 3's plan order, plan from the brief and the existing requirements per
+`ait-contract-mode` §2 (The brief), §3 (Requirements and stories) and §4 (Flow): stories (no PRD),
+design only if enabled, prototype (UI work only), then specs; re-decompose build and test once
+the specs pass their gates.
+Otherwise ignore this section.
+
 4. Use `references/decompose.md` to produce **atomic tasks**: each has an `id` (`T-001`…), `owner`,
    single `phase`, `deps`, `acceptance`, and `requiredGates`. Write to `state.json` (canonical),
    then project `tasks.md` and `plan.md` checkboxes.
@@ -72,6 +83,15 @@ Repeat until no ready tasks remain:
    using the Scribe conventions, then move processed files to `inbox/processed/`.
 6. Record the task's `files` and `authorModels` (see `ait-conventions` › Authorship lineage).
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+- **Before** each dispatch, check the external gates for the task's kind (`ait-contract-mode` §7).
+  An unmet gate blocks the task and its dependents (`blockedBy: external:<id>`) with no retry
+  consumed; other ready tasks continue, and the run pauses only when no task is ready.
+- Add `path-check` to every task's `requiredGates` and record its baseline before dispatch (§10).
+- Re-check blocked tasks on every iteration and on every resume (§7, §9).
+Otherwise ignore this section.
+
 ### 3. Sign‑off (mandatory human gate)
 When Build + Test are green, **pause** and request human sign‑off (Product Owner + Security
 Team + Tech Lead). Present: what was built, gate results, key decisions, risks, and the exact
@@ -89,6 +109,14 @@ Only after `signoff.status == approved` **and** the append‑only `decisions.md`
 (with all three human approvers' identities) is present: dispatch the `ait-deploy` skill/DevOps
 agent to ship the **approved artifact** (gates `pre-deploy` → `smoke` → `rollback-ready`). Never
 deploy without sign‑off. Surface destructive/infra actions for explicit approval.
+
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+Sign-off also requires the `release-acceptance` gate when it is configured: record the release
+candidate commit SHA in `state.json.signoff.artifact` as soon as Build and Test are green, then
+check the gate (`ait-contract-mode` §7, §13). The sign-off record in `decisions.md`, the three
+human approvers and the deploy preconditions above are unchanged (§8).
+Otherwise ignore this section.
 
 ### 5. Report DONE
 When every task is `done` with all `requiredGates` `passed` and deploy (if in scope) succeeded, set
