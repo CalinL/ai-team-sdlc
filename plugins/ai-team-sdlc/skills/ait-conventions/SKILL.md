@@ -161,3 +161,13 @@ whose `files` include it. Lineage is **incomplete** if any contributing task lac
 `authorModels`, if `authorModels` is empty or contains a non-family entry, or if a file under
 review isn't in any task's `files`. These fields are informational unless reviewer independence
 is enabled (see `ait-review-critic`). Older runs without them still resume.
+
+## Modes
+The team runs in one of two modes, recorded as `mode` in `state.json`:
+- **`default`** — everything in this skill, exactly as written. This is the mode whenever the host
+  repository has no `.github/ai-sdlc.yml`, or that file has no `contract:` block.
+- **`contract`** — detected when the host repository's `.github/ai-sdlc.yml` has a `contract:`
+  block. It is defined entirely in the `ait-contract-mode` skill; other skills only point to it.
+If `.github/ai-sdlc.yml` exists, it is validated first (`ait-contract-mode` › Activation); any error
+stops the run with the errors listed, with no silent fallback to default mode. A run without a
+`mode` field is a `default` run. The safety floors (Host repository rules) apply in both modes.
