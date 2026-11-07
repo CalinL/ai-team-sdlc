@@ -379,9 +379,16 @@ flowchart TB
 | 5 | Specialist personas | `plugins/ai-team-sdlc/agents/{ait-sdlc-orchestrator,ait-product-designer,ait-product-owner,ait-architect,ait-backend-dev,ait-frontend-dev,ait-devops,ait-qa-test,ait-code-reviewer,ait-security-rai,ait-scribe}.agent.md` | Agent | ✅ |
 | 6 | Shared conventions (contract) | `plugins/ai-team-sdlc/skills/ait-conventions/SKILL.md` | Skill | ✅ |
 | 6b | Repo setup (optional) | `plugins/ai-team-sdlc/skills/ait-init/SKILL.md` | Skill | ✅ |
+| 6c | Contract mode (opt-in, via `.github/ai-sdlc.yml`) | `plugins/ai-team-sdlc/skills/ait-contract-mode/SKILL.md` + `references/` | Skill | ✅ |
 | 7 | Portable onboarding / CLI entry | `AGENTS.md` | Doc | ✅ CLI |
 | 8 | Usage doc | `docs/ai-sdlc-usage.md` | Doc | ✅ |
 | 9 | Runtime tracking store | `.copilot-tracking/<run>/` (git‑ignored) | State | ✅ |
+
+Behavior lives in **skills**, not in agent frontmatter: only skills and `AGENTS.md` are read on
+every surface (VS Code Local harness, VS Code Copilot harness, Copilot CLI), so host repository
+rules, authorship lineage, reviewer independence and contract mode are all defined in skills, and
+agent frontmatter carries only fields that work, or are safely ignored, everywhere (no model pins;
+`include-custom-instructions` as a CLI supplement).
 
 ### Tracking / resumability schema
 

@@ -179,6 +179,24 @@ self‑approve deployment. Sign‑off is **persisted** in `state.json.signoff` (
 timestamp) so a resumed run can prove approval. Any change after approval resets sign‑off to
 `pending`. Deploy ships the **approved artifact** only.
 
+### 8. Modes and host rules
+Agents read the host repository's `AGENTS.md` / `.github/copilot-instructions.md` and follow its
+**workflow** rules (paths, naming, stack, process), but never below these **safety floors**, which
+hold in every mode: (1) deploy only after sign‑off by all three human approvers, each from a real
+human turn; (2) the append‑only sign‑off record in `decisions.md` and `state.json.signoff` stay as
+defined above; (3) required gates run, and a skipped required gate blocks unless a human waiver is
+recorded in `decisions.md`; (4) any change after approval voids sign‑off, and deploy ships the
+approved artifact only; (5) no secrets in code or tracking files. A conflicting host rule is
+ignored and reported.
+
+One optional file in the host repository, **`.github/ai-sdlc.yml`**, switches on the opt‑in
+features. Without it, nothing changes. A `contract:` block turns on **contract mode** (deliver from
+an existing brief and requirements under your own architecture governance, with human acceptance
+gates, an external decision log and protected paths); a `review:` block sets optional reviewer
+independence. If the file exists it is validated, and any error stops the run. Contract mode is
+defined entirely in the **`ait-contract-mode`** skill
+(`plugins/ai-team-sdlc/skills/ait-contract-mode/SKILL.md`).
+
 ---
 
 ## Conventions for contributing agents
