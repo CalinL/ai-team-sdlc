@@ -53,6 +53,25 @@ Follow the `ait-conventions` skill.
 - Next: <suggested next agent/phase, or "orchestrator">
 ```
 
+## Reviewer independence (only when .github/ai-sdlc.yml sets review.independence)
+Default (no setting, or `off`): skip this section.
+When `review.independence` is `warn` or `required`:
+1. Compute the lineage of the files under review (`ait-conventions` › Authorship lineage).
+   Map each model id to its family by vendor prefix (`gpt-*`/`o*` → OpenAI, `claude-*` →
+   Anthropic, `gemini-*` → Google, `grok-*` → xAI; any other prefix is its own family).
+   `unknown`, `auto` and router entries (e.g. `fusion`) have **no** family: lineage that contains
+   them is **incomplete**.
+2. Independence is **met** only if the lineage is complete and this review runs on a model whose
+   family is not in the lineage. Use only the model the host reports for this review. If the host
+   doesn't report it, independence is `unknown`. Record the result against the artifact's digest
+   (in contract mode, `ait-contract-mode` › Artifact identity; in default mode, the commit SHA);
+   any later change makes it stale.
+3. If it is not met: ask the human to re-run this review in a session on a model from a qualifying
+   family, and say which families qualify. Do not select or invoke reviewers yourself.
+4. Report `independence: met | not_met | unknown`. With `warn`, the critic gate may pass with
+   the warning. With `required`, the critic gate fails unless independence is `met`, or a human
+   waiver for this artifact version is recorded in `decisions.md`.
+
 ## Guardrails
 - Report only high-confidence issues; do not pad with speculative concerns.
 - Do not rewrite code unless explicitly assigned an implementation task.

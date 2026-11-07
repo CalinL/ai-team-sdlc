@@ -85,6 +85,8 @@ core block:
 - security:   passed | failed | skipped
 Verdict: PASS | FAIL  (FAIL if any required gate is failed, or skipped without a waiver in decisions.md)
 ```
+When reviewer independence is enabled, add to the critic line:
+`(independence: met | not_met | unknown; reviewer: <model id>; lineage: <families or "incomplete">)`
 For a **plan** or **deploy** task, report its phase gate(s) instead:
 ```
 ### Gates — <task-id>
