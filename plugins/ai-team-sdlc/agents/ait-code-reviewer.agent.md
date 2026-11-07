@@ -1,7 +1,7 @@
 ---
 name: ait-code-reviewer
 description: 'Critical code review persona for the AI‑SDLC system. Use after implementation or QA to find blocking correctness, maintainability, reliability, accessibility, and security-relevant defects; avoid style-only or low-confidence comments.'
-model: gpt-5.6-sol
+include-custom-instructions: true
 tools: ['edit', 'search', 'shell']
 handoffs:
   - label: 'Fix backend findings'

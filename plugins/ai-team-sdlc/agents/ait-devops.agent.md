@@ -1,7 +1,7 @@
 ---
 name: ait-devops
 description: 'DevOps and release persona for the AI‑SDLC system. Use after mandatory sign-off for CI/CD, IaC, environments, configuration, deployment automation, release verification, rollback planning, and surfacing destructive operations.'
-model: gpt-5.6-sol
+include-custom-instructions: true
 tools: ['edit', 'search', 'shell']
 handoffs:
   - label: 'Review deployment risk'

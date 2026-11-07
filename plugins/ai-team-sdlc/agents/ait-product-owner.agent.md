@@ -1,7 +1,7 @@
 ---
 name: ait-product-owner
 description: 'Product ownership persona for the AI‑SDLC system. Use when an idea or design needs a PRD, acceptance criteria, backlog slicing, prioritization, scope decisions, or product-ready requirements before architecture.'
-model: gpt-5.6-sol
+include-custom-instructions: true
 tools: ['edit', 'search']
 handoffs:
   - label: 'Create technical spec'
