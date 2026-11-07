@@ -390,6 +390,9 @@ rules, authorship lineage, reviewer independence and contract mode are all defin
 agent frontmatter carries only fields that work, or are safely ignored, everywhere (no model pins;
 `include-custom-instructions` as a CLI supplement).
 
+The full 1.1.0 change (contract mode, reviewer independence, host repository rules and no model
+pins) is specified in [`docs/changes/1.1.0-contract-mode.md`](changes/1.1.0-contract-mode.md).
+
 ### Tracking / resumability schema
 
 Per run, `.copilot-tracking/<YYYY-MM-DD-slug>/`:
