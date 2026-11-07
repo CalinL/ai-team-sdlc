@@ -12,12 +12,15 @@ verify it works before anyone writes a technical spec. The prototype is a **thro
 to de-risk the experience — it is never the production build.
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
-Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block that sets
-`stages.prototype: ui-spec`. The text after this block applies in every mode.
-In that case `ait-contract-mode` §5 (Prototype as UI spec) applies: the output folder is
-`paths.prototype`, critical flows carry canonical `data-testid` attributes, and once accepted the
-prototype is kept as the UI specification (still never shipped). Run on its own: validate the
-config and check your task kind's external gates first (§1, §7).
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+This block ends at the line "Otherwise ignore this section."; the default text after that
+line, up to the next heading, is not part of this block and applies in every mode.
+With `stages.prototype: ui-spec`, `ait-contract-mode` §5 (Prototype as UI spec) applies: the
+output folder is `paths.prototype`, critical flows carry canonical `data-testid` attributes, and
+once accepted the prototype is kept as the UI specification (still never shipped). With `spike`
+or unset, the prototype stays a throwaway spike. In both cases, inputs follow §4 and deliverables
+and decisions follow §11 and §8. Run on its own: validate the config and check your task kind's
+external gates first (§1, §7).
 Otherwise ignore this section.
 
 Follow the `ait-conventions` skill.

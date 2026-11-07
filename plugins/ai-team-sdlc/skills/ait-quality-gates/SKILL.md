@@ -37,8 +37,9 @@ Phase gates (plan/deploy tasks):
 | `rollback-ready` | deploy | rollback path verified |
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
-Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block. The text
-after this block applies in every mode.
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+This block ends at the line "Otherwise ignore this section."; the default text after that
+line, up to the next heading, is not part of this block and applies in every mode.
 Contract mode adds gate `path-check` to every task (`ait-contract-mode` §10): no task-changed
 path under `frozen`, `protected` or `decisions.dir` (except a new Proposed record), plus
 `contract.path_check` if set. External gates (`external_gates`) are **preconditions** checked

@@ -40,20 +40,24 @@ folder_digest docs/delivery/prototype 'ACCEPTED.md'
 # usage: Get-FolderDigest -Dir <dir> [-Exclude <receipt paths relative to dir, wildcards allowed>]
 function Get-FolderDigest([Parameter(Mandatory)][string]$Dir, [string[]]$Exclude = @()) {
   $root = (Resolve-Path -LiteralPath $Dir).Path.TrimEnd('\', '/')
-  $lines = [System.Collections.Generic.List[string]]::new()
+  $utf8 = [Text.UTF8Encoding]::new($false)
+  $keys = [System.Collections.Generic.List[string]]::new()
+  $rows = [System.Collections.Generic.List[string]]::new()
   foreach ($f in Get-ChildItem -LiteralPath $root -Recurse -File -Force) {
     $rel = $f.FullName.Substring($root.Length + 1).Replace('\', '/')
     if ($Exclude | Where-Object { $rel -like $_ }) { continue }
-    $lines.Add("$rel $((Get-FileHash -Algorithm SHA256 -LiteralPath $f.FullName).Hash.ToLower())")
+    # sort key = the path's UTF-8 bytes as fixed-width hex, so ordinal order = byte order of the path
+    $keys.Add((-join ($utf8.GetBytes($rel) | ForEach-Object { $_.ToString('x2') })))
+    $rows.Add("$rel $((Get-FileHash -Algorithm SHA256 -LiteralPath $f.FullName).Hash.ToLower())")
   }
-  $arr = $lines.ToArray(); [Array]::Sort($arr, [StringComparer]::Ordinal)   # = UTF-8 byte order for BMP paths
-  $manifest = if ($arr.Count) { ($arr -join "`n") + "`n" } else { '' }
-  $bytes = [Text.UTF8Encoding]::new($false).GetBytes($manifest)
-  -join ([Security.Cryptography.SHA256]::Create().ComputeHash($bytes) | ForEach-Object { $_.ToString('x2') })
+  $k = $keys.ToArray(); $r = $rows.ToArray(); [Array]::Sort($k, $r, [StringComparer]::Ordinal)
+  $manifest = if ($r.Count) { ($r -join "`n") + "`n" } else { '' }
+  -join ([Security.Cryptography.SHA256]::Create().ComputeHash($utf8.GetBytes($manifest)) | ForEach-Object { $_.ToString('x2') })
 }
 Get-FolderDigest -Dir docs/delivery/prototype -Exclude 'ACCEPTED.md'
 ```
-Both versions produce the same digest for the same bytes.
+Both versions sort by the **path** (not by the whole manifest line) and produce the same digest for
+the same bytes.
 
 ## Release candidate (§13)
 ```bash
@@ -106,10 +110,12 @@ Notes:
 - A pre-existing dirty or untracked file that the task left alone keeps its recorded hash and is
   not reported.
 
-Then classify each reported path (paths in `ai-sdlc.yml` are prefixes relative to the repo root):
+Then classify each reported path (paths in `ai-sdlc.yml` are prefixes relative to the repo root),
+in this order:
 1. under any `frozen` entry → **fail** (no exception);
-2. under any `protected` entry → **fail**;
-3. under `decisions.dir` → **fail**, unless the file is **new** (absent at baseline: not in
-   `hashes` and not in `<baseline HEAD>`), not under `frozen`, and its status is `proposed_status`;
+2. a **new** file in `decisions.dir` (absent at baseline: not in `hashes` and not in
+   `<baseline HEAD>`) whose status is `proposed_status` → **allowed**, even when `decisions.dir`
+   itself sits under a `protected` entry;
+3. any other path under a `protected` entry or in `decisions.dir` → **fail**;
 4. if `contract.path_check` is set, run it; a non-zero exit → **fail**.
 `path-check` passes only when no path fails and the extra command (if any) exits 0.

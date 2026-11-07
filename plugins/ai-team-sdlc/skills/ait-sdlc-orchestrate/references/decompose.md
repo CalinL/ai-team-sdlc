@@ -12,8 +12,9 @@ Turn a spec/PRD/idea into a set of **atomic, verifiable tasks** the orchestrator
    both (do not schedule them and do not record their gates as `skipped`); start the plan at PRD.
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
-Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block. The text
-after this block applies in every mode.
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+This block ends at the line "Otherwise ignore this section."; the default text after that
+line, up to the next heading, is not part of this block and applies in every mode.
 Use the task kinds and order in `ait-contract-mode` §4 (Flow): `stories` → `design` (only if
 enabled) → `prototype` (UI work only) → `specs` → `build` → `test` → `signoff` → `deploy`, and
 record each task's `kind`. There is **no PRD task**.

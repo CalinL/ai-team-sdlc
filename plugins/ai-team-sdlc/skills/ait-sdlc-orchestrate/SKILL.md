@@ -53,8 +53,9 @@ Do not duplicate those rules; apply them.
    implementation is never finalized before requirements.
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
-Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block. The text
-after this block applies in every mode.
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+This block ends at the line "Otherwise ignore this section."; the default text after that
+line, up to the next heading, is not part of this block and applies in every mode.
 Instead of item 3's plan order, plan from the brief and the existing requirements per
 `ait-contract-mode` §2 (The brief), §3 (Requirements and stories) and §4 (Flow): stories (no PRD),
 design only if enabled, prototype (UI work only), then specs; re-decompose build and test once
