@@ -51,21 +51,18 @@ Do not duplicate those rules; apply them.
    user‑facing UI work**; for API‑only, library, CLI, infra, or batch specs, omit them and start at
    PRD. **Re‑decompose** the build/test tasks once design, prototype, and spec exist, so
    implementation is never finalized before requirements.
+4. Use `references/decompose.md` to produce **atomic tasks**: each has an `id` (`T-001`…), `owner`,
+   single `phase`, `deps`, `acceptance`, and `requiredGates`. Write to `state.json` (canonical),
+   then project `tasks.md` and `plan.md` checkboxes.
+5. Confirm the plan with the user when the work is non‑trivial (see Human‑in‑the‑loop).
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
 Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
-This block ends at the line "Otherwise ignore this section."; the default text after that
-line, up to the next heading, is not part of this block and applies in every mode.
 Instead of item 3's plan order, plan from the brief and the existing requirements per
 `ait-contract-mode` §2 (The brief), §3 (Requirements and stories) and §4 (Flow): stories (no PRD),
 design only if enabled, prototype (UI work only), then specs; re-decompose build and test once
 the specs pass their gates.
 Otherwise ignore this section.
-
-4. Use `references/decompose.md` to produce **atomic tasks**: each has an `id` (`T-001`…), `owner`,
-   single `phase`, `deps`, `acceptance`, and `requiredGates`. Write to `state.json` (canonical),
-   then project `tasks.md` and `plan.md` checkboxes.
-5. Confirm the plan with the user when the work is non‑trivial (see Human‑in‑the‑loop).
 
 ### 2. Dispatch (Build/Test)
 Repeat until no ready tasks remain:

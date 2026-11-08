@@ -10,16 +10,6 @@ Turn a spec/PRD/idea into a set of **atomic, verifiable tasks** the orchestrator
    **UI‑applicability:** schedule the `design/ideation` and `prototype` tasks **only** when the
    spec has user‑facing UI. For API‑only, library, CLI, infrastructure, or batch work, **omit**
    both (do not schedule them and do not record their gates as `skipped`); start the plan at PRD.
-
-### Contract mode (only when .github/ai-sdlc.yml defines contract)
-Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
-This block ends at the line "Otherwise ignore this section."; the default text after that
-line, up to the next heading, is not part of this block and applies in every mode.
-Use the task kinds and order in `ait-contract-mode` §4 (Flow): `stories` → `design` (only if
-enabled) → `prototype` (UI work only) → `specs` → `build` → `test` → `signoff` → `deploy`, and
-record each task's `kind`. There is **no PRD task**.
-Otherwise ignore this section.
-
 3. **Cut atomic tasks** — each task is:
    - independently assignable to **one** specialist,
    - completable in a bounded change,
@@ -29,6 +19,13 @@ Otherwise ignore this section.
 5. **Wire dependencies** — set `deps` so shared files/contracts are built before consumers.
 6. **Choose gates** — set `requiredGates` from the `ait-quality-gates` catalog ids.
 7. **Emit** — write `state.json` (canonical), then project `tasks.md` + `plan.md` checkboxes.
+
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+Use the task kinds and order in `ait-contract-mode` §4 (Flow): `stories` → `design` (only if
+enabled) → `prototype` (UI work only) → `specs` → `build` → `test` → `signoff` → `deploy`, and
+record each task's `kind`. There is **no PRD task**.
+Otherwise ignore this section.
 
 ## Owner selection
 | Work | Owner slug | Phase |
