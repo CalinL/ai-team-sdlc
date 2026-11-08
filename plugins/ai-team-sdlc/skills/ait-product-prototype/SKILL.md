@@ -13,6 +13,16 @@ to de-risk the experience — it is never the production build.
 
 Follow the `ait-conventions` skill.
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+With `stages.prototype: ui-spec`, `ait-contract-mode` §5 (Prototype as UI spec) applies: the
+output folder is `paths.prototype`, critical flows carry canonical `data-testid` attributes, and
+once accepted the prototype is kept as the UI specification (still never shipped). With `spike`
+or unset, the prototype stays a throwaway spike. In both cases, inputs follow §4 and deliverables
+and decisions follow §11 and §8. Run on its own: validate the config and check your task kind's
+external gates first (§1, §7).
+Otherwise ignore this section.
+
 ## Where this sits in the pipeline
 ```
 ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-specs) → implementation
@@ -120,6 +130,14 @@ versions untouched.
 - Decisions: <key decisions, or "none">
 - Next: <suggested next agent/phase, or "orchestrator">
 ```
+
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block that sets
+`stages.prototype: ui-spec`.
+For this run, the "throwaway spike" guardrail below is replaced by `ait-contract-mode` §5: the
+accepted prototype is kept as the UI specification (with its canonical `data-testid` selectors),
+and it is still never shipped as the product. All other guardrails below apply.
+Otherwise ignore this section.
 
 ## Guardrails
 - Prototype is a **throwaway spike** — never present it as, or promote it to, the production build.

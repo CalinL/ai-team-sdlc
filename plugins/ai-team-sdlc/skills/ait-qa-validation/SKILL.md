@@ -54,6 +54,14 @@ Follow the `ait-conventions` skill.
 - Next: <suggested next agent/phase, or "orchestrator">
 ```
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+When the prototype is kept as the UI spec, re-run its `data-testid` critical flows against the
+build (`ait-contract-mode` §5). Write results to `paths.results` and keep a pointer in the inbox
+file (§11). Never edit tests under `frozen` (§10). Run on its own: validate the config and check
+your task kind's external gates first (§1, §7).
+Otherwise ignore this section.
+
 ## Guardrails
 - Validate behavior, not implementation preferences.
 - Do not invent test tooling; use only existing project runners and environments.

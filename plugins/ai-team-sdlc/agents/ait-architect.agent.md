@@ -1,7 +1,7 @@
 ---
 name: ait-architect
 description: 'Architecture and technical specification persona for the AI‑SDLC system. Use when PRD/backlog items need system design, API contracts, data models, integration boundaries, ADRs, or implementation-ready technical specs.'
-model: gpt-5.6-sol
+include-custom-instructions: true
 tools: ['edit', 'search', 'shell', 'agent']
 agents: ['ait-backend-dev', 'ait-frontend-dev']
 handoffs:

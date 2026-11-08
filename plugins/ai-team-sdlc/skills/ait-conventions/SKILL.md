@@ -44,6 +44,14 @@ idea → design/ideation (ait-product-designer) → prototype (ait-product-desig
 - Each task carries exactly one phase; `ait-security-rai` findings feed the `signoff` gate but its
   task's phase is `test`.
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+The lifecycle DAG, the prototype's role and where decisions are recorded follow
+`ait-contract-mode` §4 (Flow), §5 (Prototype as UI spec) and §8 (Decisions): stories from the
+existing requirements instead of a PRD, an optional design stage, a prototype that may be kept as
+the UI spec, and an optional external decision log. The safety floors still apply.
+Otherwise ignore this section.
+
 ## Tracking store — `.copilot-tracking/<run-id>/`
 `run-id = <YYYY-MM-DD>-<kebab-slug>` (append a numeric suffix if the slug already exists).
 - `state.json` — machine‑readable run state; **canonical** source of truth.
@@ -135,3 +143,39 @@ Resume an existing run **only** when its `run-id` is supplied; otherwise start a
 - Skills are the portable source of truth (VS Code + CLI). Agents/prompts are VS Code wrappers.
 - Do not hardcode secrets. Prefer small, verifiable, resumable steps.
 - Keep skills ≤ ~500 lines; move detail to `references/`.
+
+## Host repository rules (all modes)
+At the start of any task, if the host repository has `AGENTS.md` or
+`.github/copilot-instructions.md`, read it and follow it. Host rules may change **workflow**
+details (paths, naming, stack, process), but never these **safety floors**:
+1. Deploy only after human sign-off by **all three approvers** (Product Owner, Security Team,
+   Tech Lead), each sourced from a real human turn; agents never self-approve.
+2. The append-only **sign-off record in `decisions.md`** (approver identities, verbatim approval
+   quote or reference, artifact/version, timestamp), and `state.json.signoff`, stay as defined above.
+3. Required quality gates run. A skipped required gate blocks unless a human waiver is recorded
+   **in `decisions.md`**.
+4. Any change after approval voids sign-off; deploy ships the approved artifact only.
+5. No secrets in code or tracking files.
+If a host rule conflicts with a floor, follow the floor and report the conflict in the Result.
+
+## Authorship lineage (all modes)
+For each task, `state.json` may hold:
+- `files`: the paths the task added or changed (from the specialist's Result `Files` line);
+- `authorModels`: the model id(s) that produced the task, **only when the host reports them**;
+  otherwise `["unknown"]`. Router or auto selections (e.g. "auto", "fusion") are recorded as such.
+Never ask the user for the model in default mode. When a task is retried, the union of all
+attempts' models is kept. The lineage of a file is the union of `authorModels` over every task
+whose `files` include it. Lineage is **incomplete** if any contributing task lacks `files` or
+`authorModels`, if `authorModels` is empty or contains a non-family entry, or if a file under
+review isn't in any task's `files`. These fields are informational unless reviewer independence
+is enabled (see `ait-review-critic`). Older runs without them still resume.
+
+## Modes
+The team runs in one of two modes, recorded as `mode` in `state.json`:
+- **`default`** — everything in this skill, exactly as written. This is the mode whenever the host
+  repository has no `.github/ai-sdlc.yml`, or that file has no `contract:` block.
+- **`contract`** — detected when the host repository's `.github/ai-sdlc.yml` has a `contract:`
+  block. It is defined entirely in the `ait-contract-mode` skill; other skills only point to it.
+If `.github/ai-sdlc.yml` exists, it is validated first (`ait-contract-mode` › Activation); any error
+stops the run with the errors listed, with no silent fallback to default mode. A run without a
+`mode` field is a `default` run. The safety floors (Host repository rules) apply in both modes.

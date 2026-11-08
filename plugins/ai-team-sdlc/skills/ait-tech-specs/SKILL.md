@@ -55,6 +55,17 @@ Follow the `ait-conventions` skill.
 - Next: <suggested next agent/phase, or "orchestrator">
 ```
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+- As `ait-product-owner`: slice the existing requirements into stories; write **no PRD**
+  (`ait-contract-mode` §3).
+- As `ait-architect`: write implementation specs to `paths.specs` against the stories and the
+  accepted prototype, and do not dispatch other agents (§6).
+- Decisions are new Proposed records (§8); a change to a protected path or an accepted decision
+  is a change request (§9).
+- Run on its own: validate the config and check your task kind's external gates first (§1, §7).
+Otherwise ignore this section.
+
 ## Guardrails
 - Keep specs sufficient for implementation, not exhaustive for its own sake.
 - Do not choose technologies that conflict with the target repo's existing stack without documenting why.

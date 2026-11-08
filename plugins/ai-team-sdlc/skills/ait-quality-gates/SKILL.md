@@ -41,6 +41,15 @@ Each task declares its `requiredGates` (subset of the ids above). Record results
 are scheduled **only** for user‑facing UI work; for non‑UI specs they are not created (not
 `skipped`).
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+Contract mode adds gate `path-check` to every task (`ait-contract-mode` §10): no task-changed
+path under `frozen`, `protected` or `decisions.dir` (except a new Proposed record), plus
+`contract.path_check` if set. External gates (`external_gates`) are **preconditions** checked
+before dispatch, not post-task gates, and never appear in `requiredGates` (§7). Default runs never
+schedule `path-check` or external gates.
+Otherwise ignore this section.
+
 ## Gate order
 1. **build** → 2. **lint/format** → 3. **unit** → 4. **acceptance (qa)** → 5. **critic review** → 6. **security**
 
@@ -85,6 +94,8 @@ core block:
 - security:   passed | failed | skipped
 Verdict: PASS | FAIL  (FAIL if any required gate is failed, or skipped without a waiver in decisions.md)
 ```
+When reviewer independence is enabled, add to the critic line:
+`(independence: met | not_met | unknown; reviewer: <model id>; lineage: <families or "incomplete">)`
 For a **plan** or **deploy** task, report its phase gate(s) instead:
 ```
 ### Gates — <task-id>

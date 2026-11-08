@@ -1,7 +1,7 @@
 ---
 name: ait-frontend-dev
 description: 'Frontend implementation persona for the AI‑SDLC system. Use for UI, client state, routes, styling, accessibility, interaction states, frontend tests, and build/lint/unit gates for client-side tasks.'
-model: gpt-5.6-sol
+include-custom-instructions: true
 tools: ['edit', 'search', 'shell']
 handoffs:
   - label: 'Review frontend change'

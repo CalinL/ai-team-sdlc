@@ -110,3 +110,131 @@ not self-approve deployment. If approval is missing, `/product-deploy` and `/pro
 surface what was built, gate results, key decisions, risks, and the exact artifact/version. Approval
 is persisted in `state.json.signoff` so a resumed run can prove it. Any change after approval voids
 sign-off and loops back to Build. Deploy ships the approved artifact only.
+
+## Contract mode
+
+Use contract mode when your organization already owns the requirements and the architecture, and
+you want this team only for **delivery**: slicing the existing requirements into stories, a
+prototype kept as the UI spec, implementation, testing and release, under your own architecture
+governance. It is **opt-in**: without `.github/ai-sdlc.yml` (or without a `contract:` block in it)
+nothing changes. The full rules live in the `ait-contract-mode` skill.
+
+### Turn it on
+
+Add `.github/ai-sdlc.yml` to the host repository. Only `contract.brief` is required; every path is
+your choice, relative to the repo root.
+
+```yaml
+# .github/ai-sdlc.yml  (all paths are the host repo's choice)
+contract:
+  brief: docs/delivery/brief.md        # REQUIRED. The run's spec (owned outside this team)
+  requirements: docs/requirements.md   # OPTIONAL. An existing PRD: slice it, never rewrite it
+  stages:
+    design: false                      # OPTIONAL, default true. false = skip design/ideation
+    prototype: ui-spec                 # OPTIONAL, default spike. ui-spec = keep as the UI spec
+  paths:                               # OPTIONAL. Where deliverables go (tracked)
+    stories: docs/delivery/stories.md
+    prototype: docs/delivery/prototype/
+    specs: docs/delivery/specs/
+    results: docs/delivery/results/
+  decisions:                           # OPTIONAL. An external decision log
+    dir: docs/adr/
+    proposed_status: Proposed          # specialists may only ADD new records with this status
+    accepted_status: Accepted          # only humans set this
+  protected: [docs/architecture/]      # OPTIONAL. Never edited by the team
+  frozen: [tests/contract/]            # OPTIONAL. Never edited (e.g. an agreed evaluation set)
+  path_check: scripts/check-paths.sh   # OPTIONAL. Extra check command; non-zero exit = fail
+  external_gates:                      # OPTIONAL. Human acceptance files (schema below)
+    - id: prototype-accepted
+      before: specs                    # one of: stories | prototype | specs | build | signoff
+      file: docs/delivery/prototype/ACCEPTED.md
+    - id: spec-conformance
+      before: build
+      file: docs/delivery/conformance/{spec}.md
+    - id: release-acceptance
+      before: signoff
+      file: docs/delivery/results/acceptance-{version}.md
+review:                                # OPTIONAL (G4); works with or without contract
+  independence: off                    # off | warn | required
+```
+
+If the file exists, it is validated before anything runs. Invalid YAML, a missing `brief`, a path
+with `..`, an unknown `before`, `ui-spec` without `paths.prototype`, duplicate gate ids or a bad
+`review.independence` **stop the run** with every error listed; there is no silent fallback to
+default mode. Unknown keys only produce a warning.
+
+### The flow
+
+| Step | What happens | Output |
+|---|---|---|
+| 1. Stories | The Product Owner slices `requirements` (or the brief) into stories that cite requirement IDs and decision records. **No PRD is written.** | `paths.stories` |
+| 2. Design (optional) | Only when `stages.design` is true (the default) and the work has UI. | Design direction |
+| 3. Prototype (UI work) | With `ui-spec`, the prototype defines canonical `data-testid` attributes and, once accepted, is kept as the UI specification (never shipped). | `paths.prototype` |
+| 4. Specs | The Architect writes implementation specs against the stories and the accepted prototype; it does not dispatch other agents. | `paths.specs` |
+| 5. Build / Test | Implementation reuses the prototype's selectors; QA re-runs those flows against the build. | Code, tests, `paths.results` |
+| 6. Sign-off | The usual three-approver human sign-off, plus `release-acceptance` when configured. | `decisions.md` sign-off record |
+| 7. Deploy | Unchanged: ships the approved artifact only. | Release evidence |
+
+### The gates
+
+- **External acceptance gates** are preconditions checked **before** a task of kind `before` is
+  dispatched. A human writes the receipt file (the team never does):
+
+  ```markdown
+  ---
+  status: accepted            # accepted | rejected
+  accepted_by: <name>         # a human
+  accepted_at: <ISO date>
+  artifact: <path accepted>
+  digest: <digest of the accepted artifact>
+  ---
+  <free text: conditions, notes>
+  ```
+
+  The `digest` binds the acceptance to content: SHA-256 of a file, SHA-256 of a canonical manifest
+  for a folder (receipts excluded), or the release candidate's commit SHA. Any later change (for
+  example a new `-v<N+1>` prototype) makes the acceptance **stale**. The gate is met only when the
+  receipt is accepted, the digest is current, and you have confirmed it once in the chat (recorded
+  in `decisions.md`). Commands to compute digests are in the skill's
+  `references/path-check-and-digests.md`.
+- **`path-check`** runs after every task: it fails if the task changed anything under `frozen`,
+  `protected` or `decisions.dir` (adding a new `Proposed` decision record is the one exception), and
+  it also runs your `path_check` command when set.
+- **Sign-off** is unchanged: Product Owner, Security Team and Tech Lead, recorded in `decisions.md`.
+
+### Pause and resume
+
+A task whose gate isn't met is `blocked` (`blockedBy: external:<id>`) without using a retry; a
+change to a protected path or an accepted decision becomes a new `Proposed` record and blocks its
+story (`blockedBy: decision:<id>`). Other ready tasks keep running, and the run pauses only when
+nothing is ready. To continue, write or update the receipt (or accept/reject the record), confirm
+in the chat, and resume with the same `run-id`:
+
+```powershell
+copilot -p "Use the ait-sdlc-orchestrate skill. Resume run-id 2026-11-07-checkout."
+```
+
+Blocked tasks are re-checked on every loop and every resume; confirmations persist in
+`decisions.md`, so they survive a new session.
+
+## Reviewer independence
+
+Optionally, the critic review can check that its reviewer comes from a **different model family**
+than the models that wrote the code. It works with or without contract mode:
+
+```yaml
+# .github/ai-sdlc.yml
+review:
+  independence: warn                   # off (default) | warn | required
+```
+
+- Each task records `files` and `authorModels` (when the host reports the model; otherwise
+  `unknown`). The lineage of a reviewed file is the union of its tasks' models, mapped to families
+  (`gpt-*`/`o*` → OpenAI, `claude-*` → Anthropic, `gemini-*` → Google, `grok-*` → xAI).
+- Independence is **met** when the lineage is complete and the reviewer's family isn't in it. If
+  not, the reviewer asks you to re-run the review in a session on a qualifying model family; it
+  never picks models itself. Lineage with `unknown`, `auto` or a router such as `fusion` is
+  **incomplete**, so independence is `unknown`.
+- With `warn`, the critic gate can pass with a warning. With `required`, it fails unless
+  independence is `met` or a human waiver for that artifact version is recorded in `decisions.md`.
+- Without the setting (or with `off`), the critic review is exactly as before.

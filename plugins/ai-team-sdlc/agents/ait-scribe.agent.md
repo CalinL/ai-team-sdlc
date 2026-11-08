@@ -1,7 +1,7 @@
 ---
 name: ait-scribe
 description: 'History keeper for the AI‑SDLC system. Consolidates isolated inbox/*.md writes from specialists into a coherent decisions.md (ADRs) and changes.md (file‑change log), resolving overlaps and keeping the record concise. Use after a dispatch batch or when the tracking history needs tidying.'
-model: gpt-5.6-sol
+include-custom-instructions: true
 tools: ['edit', 'search']
 ---
 

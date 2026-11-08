@@ -1,7 +1,7 @@
 ---
 name: ait-backend-dev
 description: 'Backend implementation persona for the AI‑SDLC system. Use for server logic, APIs, services, persistence, database migrations, integration code, backend tests, and build/lint/unit gates for server-side tasks.'
-model: gpt-5.6-sol
+include-custom-instructions: true
 tools: ['edit', 'search', 'shell']
 handoffs:
   - label: 'Review backend change'

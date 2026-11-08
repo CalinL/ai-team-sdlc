@@ -81,6 +81,7 @@ copilot -p "Use the ait-init skill to set up this repo"
 - **One human governance sign-off.** Product Owner, Security, and Tech Lead approve before deploy; agents never self-approve. Control without micromanaging.
 - **Portable.** Install once; it works across VS Code Copilot and the Copilot CLI, in any repo, with zero in-repo duplication.
 - **Transparent.** Every decision and file change is tracked in an auditable, append-only history.
+- **Contract mode:** deliver under your own architecture governance (opt-in).
 
 ## The AI agents at a glance
 
@@ -100,6 +101,8 @@ copilot -p "Use the ait-init skill to set up this repo"
 
 Two more skills underpin the team: **`ait-conventions`** (the shared contract — tracking store,
 task schema, gates, resumability, sign-off) and **`ait-quality-gates`** (the reusable gate library).
+
+The opt-in **`ait-contract-mode`** skill lets the team deliver under your own requirements and architecture governance when the host repo has a `.github/ai-sdlc.yml` with a `contract:` block (see [`docs/ai-sdlc-usage.md`](docs/ai-sdlc-usage.md#contract-mode)).
 
 ## Commands (phases → skills)
 
@@ -240,7 +243,7 @@ agentic lifecycle. It is published to **GitHub Pages** and linked at the top of 
 | Path | What |
 |---|---|
 | `plugins/ai-team-sdlc/plugin.json` | Plugin manifest |
-| `plugins/ai-team-sdlc/skills/` | 18 skills, incl. `ait-conventions` (the contract) and `ait-init` (setup) |
+| `plugins/ai-team-sdlc/skills/` | 20 skills, incl. `ait-conventions` (the contract) and `ait-init` (setup) |
 | `plugins/ai-team-sdlc/agents/` | 11 specialist agent personas |
 | `plugins/ai-team-sdlc/prompts/` | `/product-*` slash commands (VS Code convenience) |
 | `.github/plugin/marketplace.json` | Marketplace registration |

@@ -1,7 +1,7 @@
 ---
 name: ait-qa-test
 description: 'QA and validation persona for the AI‑SDLC system. Use for test plans, automated test coverage, acceptance verification, regression checks, bug reproduction, and evidence that implemented work satisfies acceptance criteria.'
-model: gpt-5.6-sol
+include-custom-instructions: true
 tools: ['edit', 'search', 'shell']
 handoffs:
   - label: 'Review validated change'

@@ -54,6 +54,16 @@ Follow the `ait-conventions` skill.
 - Next: <suggested next agent/phase, or "orchestrator">
 ```
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+- Build against the implementation spec your task names (`spec`) and, for UI work, the accepted
+  prototype; reuse its `data-testid` selectors (`ait-contract-mode` §5, §6).
+- Respect `path-check` (§10): never change paths under `frozen`, `protected` or `decisions.dir`
+  (except adding a new Proposed record); add your own tests outside `frozen`.
+- A needed change to a protected path or an accepted decision is a change request (§9).
+- Run on its own: validate the config and check your task kind's external gates first (§1, §7).
+Otherwise ignore this section.
+
 ## Guardrails
 - Make surgical changes; avoid unrelated refactors and speculative abstractions.
 - Do not hardcode secrets or environment-specific values.

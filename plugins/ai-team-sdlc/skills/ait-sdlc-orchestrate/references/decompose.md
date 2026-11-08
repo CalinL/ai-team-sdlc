@@ -20,6 +20,13 @@ Turn a spec/PRD/idea into a set of **atomic, verifiable tasks** the orchestrator
 6. **Choose gates** — set `requiredGates` from the `ait-quality-gates` catalog ids.
 7. **Emit** — write `state.json` (canonical), then project `tasks.md` + `plan.md` checkboxes.
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+Use the task kinds and order in `ait-contract-mode` §4 (Flow): `stories` → `design` (only if
+enabled) → `prototype` (UI work only) → `specs` → `build` → `test` → `signoff` → `deploy`, and
+record each task's `kind`. There is **no PRD task**.
+Otherwise ignore this section.
+
 ## Owner selection
 | Work | Owner slug | Phase |
 |------|-----------|-------|

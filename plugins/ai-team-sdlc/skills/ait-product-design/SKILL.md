@@ -81,6 +81,14 @@ opt-in) and its browser verification (via `ait-prototype-testing`), hand off to 
 - Next: <suggested next agent/phase, or "orchestrator">
 ```
 
+### Contract mode (only when .github/ai-sdlc.yml defines contract)
+Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
+With `stages.design: false`, design/ideation is not scheduled (`ait-contract-mode` §4); the
+prototype works from the brief, the stories and any design system in the host repo. With
+`stages.design` true or unset, this skill runs as written, with deliverables per §11 and
+decisions per §8.
+Otherwise ignore this section.
+
 ## Guardrails
 - Do not over-design; create the smallest artifact that removes ambiguity for build and QA.
 - Keep outputs stack-agnostic and portable across VS Code and CLI.
