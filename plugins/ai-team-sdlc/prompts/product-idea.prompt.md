@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Find high-impact business use cases for a company from its website using the ait-idea skill: deep research, ranked ideas, one-page HTML use cases, and build-ready prototype briefs for an executive demo.'
 ---
 

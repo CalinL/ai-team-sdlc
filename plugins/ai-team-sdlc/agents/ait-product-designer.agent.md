@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-product-designer
 description: 'UX and product design persona for the AI‑SDLC system. Use when a product idea needs journey mapping, prototype direction, wireframes, UX flows, accessibility notes, or design tokens before PRD/spec work begins.'
 include-custom-instructions: true

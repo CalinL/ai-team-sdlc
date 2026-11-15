@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-review-critic
 description: 'Critical code review phase for the AI-SDLC system. Use when reviewing implemented changes for correctness, security-adjacent risks, maintainability, regressions, and blocking defects before sign-off. Do not use for style-only reviews, writing code, QA execution, dedicated security scanning, or deployment.'
 license: Apache-2.0

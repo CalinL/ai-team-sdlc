@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-code-reviewer
 description: 'Critical code review persona for the AI‑SDLC system. Use after implementation or QA to find blocking correctness, maintainability, reliability, accessibility, and security-relevant defects; avoid style-only or low-confidence comments.'
 include-custom-instructions: true

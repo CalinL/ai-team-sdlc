@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Turn approved product direction into technical specs using the ait-tech-specs skill.'
 agent: ait-architect
 ---

@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-sdlc-orchestrator
 description: 'Master orchestrator persona for the AI‑SDLC system. Drives a spec/PRD/idea end‑to‑end through Plan → Build → Test → Sign‑off → Deploy by decomposing work, dispatching to specialist agents, enforcing quality gates, and tracking progress for resumability. Use for full‑lifecycle delivery or to resume a run.'
 include-custom-instructions: true

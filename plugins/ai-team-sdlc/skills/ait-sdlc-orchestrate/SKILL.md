@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-sdlc-orchestrate
 description: 'Master AI‑SDLC orchestrator. Use when asked to implement a spec/PRD/idea end‑to‑end, run the full software delivery lifecycle, or resume a previous run. Decomposes specs into verifiable tasks, dispatches each to the right specialist agent, enforces quality gates, tracks progress for resumability, and reports DONE only when every task passes its gate. Do not use for a single isolated phase — use the matching phase skill instead.'
 license: Apache-2.0

@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-contract-mode
 description: 'Contract mode for the AI-SDLC team: deliver from a brief and existing requirements under an external architecture owner, with a kept UI-spec prototype, human acceptance gates, an external decision log and protected paths. Use only when the host repo has .github/ai-sdlc.yml with a contract block; never otherwise.'
 license: Apache-2.0

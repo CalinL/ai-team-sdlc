@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-security-rai
 description: 'Security and Responsible-AI persona for the AI‑SDLC system. Use for SAST, secret scanning, dependency/SCA review, threat modeling, abuse-case analysis, privacy checks, and Responsible-AI validation before sign-off.'
 include-custom-instructions: true

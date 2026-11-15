@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Build a polished, executive-ready showcase prototype from a spec/brief using the ait-product-showcase skill: generate the UI from text specs or reproduce an existing visual design, with user-supplied or mock data, two-critic peer review, spec-fidelity validation, and a voice-narrated demo.'
 agent: ait-product-designer
 ---

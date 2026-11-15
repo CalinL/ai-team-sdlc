@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-product-showcase
 description: 'Executive-grade showcase prototyping for the AI-SDLC system. Use to turn a spec/brief into a polished, self-contained frontend prototype (user-supplied or mock data), mandatory two-critic peer review, spec-fidelity validation, and a voice-narrated demo simulation for leadership. Opt-in extras on request: market discovery, portfolio/agentic enhancements, and a companion business case. Generates the UI from text specs, or delegates to ait-wireframe-to-frontend to faithfully reproduce an existing visual design. Do not use for the lightweight design-phase clickable prototype (that is ait-product-prototype), UX ideation (ait-product-design), technical specs, production implementation, QA of the built product, review, security, or deployment.'
 license: Apache-2.0

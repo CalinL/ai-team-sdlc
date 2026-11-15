@@ -14,6 +14,8 @@ It is **portable** across VS Code Copilot and the Copilot CLI. The team ships as
 agents and skills; their shared operating contract travels with them in the `ait-conventions`
 skill, so the system behaves identically in any repo that installs the plugin.
 
+Created by **Calin Lupas, Sr Cloud Solution Architect**, with AI assistance: the human guides and decides; AI drafts, critiques and executes. See [NOTICE](NOTICE).
+
 ## The Art of the Possible: Bring Business Ideas to Life with GitHub Copilot
 
 **What if your next executive conversation started with an interactive experience—not a slide deck?**
@@ -255,6 +257,15 @@ agentic lifecycle. It is published to **GitHub Pages** and linked at the top of 
 
 See `docs/ai-sdlc-design.md` for the full design and diagrams, and `docs/ai-sdlc-usage.md`
 for command usage.
+
+## Authors and credits
+
+- **Author:** Calin Lupas, Sr Cloud Solution Architect. He guided and decided the design and every
+  release.
+- **AI assistance:** AI tools drafted, critiqued and executed the work under his direction.
+- **Vendored skills:** `frontend-design`, `theme-factory` and `web-artifacts-builder` are vendored,
+  and `ait-prototype-testing` is adapted, from Anthropic's agent-skills under the Apache License
+  2.0; see [`plugins/ai-team-sdlc/skills/NOTICE.md`](plugins/ai-team-sdlc/skills/NOTICE.md).
 
 ## License
 

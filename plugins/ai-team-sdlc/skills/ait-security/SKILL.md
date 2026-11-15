@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-security
 description: 'Security and Responsible-AI phase for the AI-SDLC system. Use when running or interpreting secret scans, SAST, dependency/SCA checks, threat and privacy review, and Responsible-AI validation before human sign-off. Do not use for general code review, implementation, QA acceptance testing, product design, or deployment.'
 license: Apache-2.0

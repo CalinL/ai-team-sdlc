@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-idea
 description: 'Discover, assess and pitch high-impact business use cases for a target company, starting from its public website: real problems the company has, each turned into an idea people can see and click as a UI/UX experience in the company''s own brand style (with AI or agents behind the scenes only where they earn their place). Use whenever the user wants business use cases, AI or product ideas, opportunity discovery, account research for an executive or CEO demo, or use-case one-pagers and prototype briefs for a named company or website, even if they do not name this skill. Researches the company, competitors and process pain with citations; ranks a wide idea list; delivers a self-contained one-page HTML per idea plus a build-ready prototype brief (screens, sample data, acceptance criteria, demo runbook), after critic review. Do not use to build the prototype itself, to write technical specs, or when the user only wants an already-chosen idea formatted into a brief (unless they ask to reassess it).'
 license: Apache-2.0

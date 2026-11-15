@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-init
 description: 'Optional one-time bootstrap for a repository/workspace adopting the ai-team-sdlc plugin. Wires the plugin in (enables it declaratively, seeds a thin AGENTS.md pointer, creates and git-ignores the runtime tracking store) WITHOUT copying agents, skills, or the contract. The team already works right after plugin install because the orchestrator auto-creates the tracking store, so this only makes adoption explicit and tidy. Do not use to run the lifecycle (that is ait-sdlc-orchestrate) or to author primitives.'
 ---

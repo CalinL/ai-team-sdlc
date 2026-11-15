@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-conventions
 description: 'Authoritative shared contract for the AI-SDLC agentic team (ait- agents and skills): tracking store, task schema, handoff/result contract, quality gates, resumability, difficulty gating, and human sign-off. Read and follow this whenever you act as any ait- specialist, orchestrator, or scribe.'
 ---

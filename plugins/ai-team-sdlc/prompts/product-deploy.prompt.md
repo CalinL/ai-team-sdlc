@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Prepare or execute deployment using the ait-deploy skill after human sign-off.'
 agent: ait-devops
 ---

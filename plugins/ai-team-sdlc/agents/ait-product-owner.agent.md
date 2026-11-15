@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-product-owner
 description: 'Product ownership persona for the AI‑SDLC system. Use when an idea or design needs a PRD, acceptance criteria, backlog slicing, prioritization, scope decisions, or product-ready requirements before architecture.'
 include-custom-instructions: true

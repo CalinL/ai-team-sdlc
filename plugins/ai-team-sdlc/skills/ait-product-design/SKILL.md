@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-product-design
 description: 'Ideation and UX design phase for the AI-SDLC system. Use when turning a product idea, PRD, or task into user journeys, UX flows, wireframes, design direction, design tokens, and acceptance-ready UX notes. Do not use to build or verify a runnable/clickable prototype (that is ait-product-prototype), or when architecture, implementation, QA, code review, security, or deployment is the primary work.'
 license: Apache-2.0

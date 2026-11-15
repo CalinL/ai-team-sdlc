@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-product-prototype
 description: 'Prototyping phase for the AI-SDLC system. Use to turn approved design direction (UX flows, wireframes, design tokens) into a runnable, clickable prototype and verify it before technical specification. Do not use for idea/UX ideation (that is ait-product-design), technical specs, production implementation, QA of the built product, review, security, or deployment.'
 license: Apache-2.0

@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Validate acceptance criteria using the ait-qa-validation skill.'
 agent: ait-qa-test
 ---

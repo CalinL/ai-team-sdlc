@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Implement planned AI-SDLC tasks using the ait-implementation skill.'
 agent: ait-backend-dev
 ---

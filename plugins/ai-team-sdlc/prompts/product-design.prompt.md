@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Shape a product idea into UX flows and design direction using the ait-product-design skill (ideation stage).'
 agent: ait-product-designer
 ---

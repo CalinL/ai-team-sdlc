@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-architect
 description: 'Architecture and technical specification persona for the AI‑SDLC system. Use when PRD/backlog items need system design, API contracts, data models, integration boundaries, ADRs, or implementation-ready technical specs.'
 include-custom-instructions: true

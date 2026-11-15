@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-frontend-dev
 description: 'Frontend implementation persona for the AI‑SDLC system. Use for UI, client state, routes, styling, accessibility, interaction states, frontend tests, and build/lint/unit gates for client-side tasks.'
 include-custom-instructions: true

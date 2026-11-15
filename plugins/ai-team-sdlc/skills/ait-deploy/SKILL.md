@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-deploy
 description: 'Deployment phase for the AI-SDLC system. Use when preparing or executing release plans, CI/CD steps, environment promotion, operational checks, and rollback plans after mandatory human sign-off. Do not use before Product Owner, Security Team, and Tech Lead approval, or for design, specs, implementation, QA, review, or security validation.'
 license: Apache-2.0

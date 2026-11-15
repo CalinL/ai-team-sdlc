@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-quality-gates
 description: 'Reusable quality‑gate library for the AI‑SDLC system. Use to verify that a task or change is correct before marking it done: build, lint/format, unit tests, acceptance, critic review, and security scans. Auto‑detects the project stack and runs only the gates that already exist in the repo. Use whenever a specialist finishes a task or before sign‑off/deploy.'
 license: Apache-2.0

@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Run security and responsible-AI validation using the ait-security skill.'
 agent: ait-security-rai
 ---

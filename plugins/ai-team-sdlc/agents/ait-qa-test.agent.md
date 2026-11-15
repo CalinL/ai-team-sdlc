@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-qa-test
 description: 'QA and validation persona for the AI‑SDLC system. Use for test plans, automated test coverage, acceptance verification, regression checks, bug reproduction, and evidence that implemented work satisfies acceptance criteria.'
 include-custom-instructions: true

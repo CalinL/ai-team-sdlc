@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-scribe
 description: 'History keeper for the AI‑SDLC system. Processes isolated inbox/*.md writes from specialists into committed decision records (the decision log, default architecture/adr/) and delivery/approvals.md (gate confirmations and waivers), resolving overlaps and keeping the record concise. Use after a dispatch batch or when the run history needs tidying.'
 include-custom-instructions: true
