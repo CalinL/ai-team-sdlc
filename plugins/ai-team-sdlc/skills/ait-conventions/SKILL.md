@@ -158,6 +158,18 @@ details (paths, naming, stack, process), but never these **safety floors**:
 5. No secrets in code or tracking files.
 If a host rule conflicts with a floor, follow the floor and report the conflict in the Result.
 
+## Where things live
+Every work product (PRD, design, prototype, feature stories, specs and task plans, decision records,
+results, approvals, release records, showcase and idea material) goes where the
+**`ait-artifact-layout`** skill puts it: an explicit output folder, the contract paths and the host
+rules first, then its committed defaults (`specs/`, `architecture/adr/`, `delivery/`, `showcase/`;
+`docs/` is documentation only). Never invent a folder; if no row fits, write nothing and ask.
+`.copilot-tracking/<run-id>/` is **agent state only**: a run started on 1.1.1 creates and writes
+only `state.json`, `plan.md`, `inbox/` (with `inbox/processed/`) and, in contract mode, the
+`path-check` baselines. It never creates `decisions.md`, `changes.md` or a `tasks.md` projection,
+and no artifact's only copy may live there: deleting the folder, or cloning the repo elsewhere,
+loses no requirement, spec, decision, result, approval or release record.
+
 ## Authorship lineage (all modes)
 For each task, `state.json` may hold:
 - `files`: the paths the task added or changed (from the specialist's Result `Files` line);
