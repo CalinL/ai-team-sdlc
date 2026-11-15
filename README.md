@@ -249,7 +249,7 @@ The team writes its work products to committed, spec-driven folders, never to `d
 |---|---|
 | `specs/` | The PRD (`prd.md`), design, the prototype (`ui/`), one folder per feature (`features/<NNN-slug>/`: stories, spec, task plan) |
 | `architecture/adr/` | Decision records (proposed by the team, accepted by humans) |
-| `delivery/` | Results, `approvals.md` (sign-off, gate confirmations, waivers), release records |
+| `delivery/` | Results, `approvals.md` (human records only: sign-off, gate confirmations, waivers), release records |
 | `showcase/` | Showcase and idea material |
 
 An explicit output folder, the contract paths and your repo's rules come first, and existing files

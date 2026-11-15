@@ -177,7 +177,9 @@ rules first, then its committed defaults (`specs/`, `architecture/adr/`, `delive
 only `state.json`, `plan.md`, `inbox/` (with `inbox/processed/`) and, in contract mode, the
 `path-check` baselines. It never creates `decisions.md`, `changes.md` or a `tasks.md` projection,
 and no artifact's only copy may live there: deleting the folder, or cloning the repo elsewhere,
-loses no requirement, spec, decision, result, approval or release record.
+loses no requirement, spec, decision, result, approval or release record. `delivery/approvals.md`
+holds only human-sourced records (sign-off, human gate confirmations, human waivers); agent gate
+results stay in `state.json` and `delivery/results/`.
 
 ## Authorship lineage (all modes)
 For each task, `state.json` may hold:

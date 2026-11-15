@@ -92,7 +92,8 @@ Repeat until no ready tasks remain:
    - Any gate **failed/skipped‑required** → keep task open, capture the failure in the inbox,
      re‑dispatch with the failure context (bump `retries`; after 2, mark `blocked` and surface).
 5. After each batch, process `inbox/*.md` into committed decision records and
-   `delivery/approvals.md` (gate confirmations, waivers) — invoke the
+   `delivery/approvals.md` (human gate confirmations and waivers only; agent gate results stay in
+   `state.json` and `delivery/results/`) — invoke the
    **Scribe** agent in VS Code, or (CLI, no agent available) do it inline yourself
    using the Scribe conventions, then move processed files to `inbox/processed/`. No run writes
    `decisions.md` or `changes.md` any more (a run resumed from 1.1.0 keeps them read-only).

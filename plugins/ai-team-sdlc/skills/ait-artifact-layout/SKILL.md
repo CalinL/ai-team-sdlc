@@ -79,7 +79,10 @@ company name.
    references, the release candidate, timestamp), every gate confirmation and every waiver are
    appended to `delivery/approvals.md` **when they happen**: the orchestrator records sign-off; the
    Scribe records gate confirmations and waivers. Gate, sign-off, deploy and resume checks read
-   `delivery/approvals.md`.
+   `delivery/approvals.md`. **Every entry comes from a real human turn**: the three-approver
+   sign-off, a human's confirmation of a contract-mode external gate (its id and digest), or a human
+   waiver, each with the verbatim quote or reference. Agent gate results never go there: they live
+   in `state.json` (`gateResults`) and in `delivery/results/`.
 3. **Results and release records are committed:** results in `delivery/results/`; the release plan,
    rollback plan and deploy evidence in `delivery/release/`, written by `ait-devops` as it works.
 4. **Human-only files are never written by the team:** `specs/ui/ACCEPTED.md`,
