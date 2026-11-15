@@ -72,7 +72,7 @@ When `review.independence` is `warn` or `required`:
    family, and say which families qualify. Do not select or invoke reviewers yourself.
 4. Report `independence: met | not_met | unknown`. With `warn`, the critic gate may pass with
    the warning. With `required`, the critic gate fails unless independence is `met`, or a human
-   waiver for this artifact version is recorded in `decisions.md`.
+   waiver for this artifact version is recorded in `delivery/approvals.md`.
 
 ## Guardrails
 - Report only high-confidence issues; do not pad with speculative concerns.

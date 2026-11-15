@@ -79,7 +79,7 @@ digest: <digest of the accepted artifact, computed as in SKILL.md §13>
 ```
 
 A gate is met only when the receipt exists, says `status: accepted`, its `digest` equals the
-artifact's **current** digest, **and** `decisions.md` holds the human's confirmation of that gate
+artifact's **current** digest, **and** `delivery/approvals.md` holds the human's confirmation of that gate
 id and digest. Record that confirmation the first time the human gives it, for example:
 
 ```markdown

@@ -401,10 +401,12 @@ Per run, `.copilot-tracking/<YYYY-MM-DD-slug>/`:
 |---|---|
 | `state.json` | Machine‑readable run state — **canonical** source of truth (tasks, gates, sign‑off) |
 | `plan.md` | Phases/tasks as `[ ]/[x]` checkboxes — human‑readable projection of `state.json` |
-| `tasks.md` | Atomic tasks: `id`, `owner`, `phase`, `deps`, `acceptance`, `requiredGates`, `gateResults`, `status` |
-| `changes.md` | Append‑only change log (Scribe‑merged) |
-| `decisions.md` | Scribe‑merged decisions/ADRs (from per‑agent inbox writes) |
-| `inbox/` | Isolated per‑agent write files (`inbox/processed/` once consolidated) |
+| `inbox/` | Isolated per‑agent handoffs that summarize and link committed artifacts (`inbox/processed/` once processed) |
+| Path-check baselines | Contract mode's before/after hashes |
+
+Agent state only, never an artifact: from 1.1.1 a run creates no `tasks.md`, `changes.md` or
+`decisions.md` here (they exist only in runs started before 1.1.1); the plan, decisions, approvals
+and results are committed where the `ait-artifact-layout` skill puts them.
 
 **Resume =** read `state.json` (canonical), skip `done`, re‑run any `in_progress`, continue at the
 first ready task — no finished work redone.

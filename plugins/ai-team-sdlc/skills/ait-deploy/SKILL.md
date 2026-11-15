@@ -32,20 +32,25 @@ Follow the `ait-conventions` skill.
 | tracking path | no | `.copilot-tracking/<run-id>/` for inbox handoff when running under the orchestrator. |
 
 ## Procedure
-1. Verify mandatory human sign-off is present and all required prior gates passed.
+1. Verify mandatory human sign-off is present (the three-approver record in `delivery/approvals.md`
+   and `state.json.signoff`), that the working tree still matches the release candidate
+   (`state.json.signoff.artifact`) apart from new records (`ait-artifact-layout` › Rules, 6), and
+   that all required prior gates passed.
 2. Read existing CI/CD workflows, runbooks, environment docs, IaC, release notes, and rollback procedures.
 3. Prepare the release plan: artifact/version, target environment, rollout order, smoke checks, monitoring,
-   rollback trigger, rollback steps, owners, and communication notes.
+   rollback trigger, rollback steps, owners, and communication notes. Write the release plan and the
+   rollback plan as new files in `delivery/release/` (see `ait-artifact-layout`).
 4. Surface destructive actions, data migrations, irreversible changes, or production-impacting operations for
    explicit human approval before execution.
 5. Execute only existing deployment tooling, scripts, workflows, or documented manual steps. Never invent a
    deployment mechanism.
 6. Run deploy-relevant gates through the `ait-quality-gates` skill: pre-deploy verification, smoke/health checks,
    and rollback readiness where configured.
-7. Capture evidence: command/workflow names, environment, version, health checks, monitoring links if available,
+7. Capture evidence in a new file in `delivery/release/`: command/workflow names, environment, version, health checks, monitoring links if available,
    and rollback status.
 8. Write exactly one `inbox/<ts>-ait-devops-<task-id>.md` file (`<ts>` = `YYYYMMDDTHHMMSSZ`, no colons)
-   with release, rollback, and gate results.
+   that summarizes and links the release plan, rollback plan and evidence in `delivery/release/`,
+   with gate results.
 9. Return the standard Result block.
 
 ## Output
@@ -62,13 +67,15 @@ Follow the `ait-conventions` skill.
 Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
 When a `release-acceptance` gate is configured, also verify that it is met for the approved
 release candidate (`ait-contract-mode` §7, §13) before deploying. Sign-off verification is
-unchanged: the three-approver record in `decisions.md` and `state.json.signoff` are still required.
+unchanged: the three-approver record in `delivery/approvals.md` and `state.json.signoff` are still required.
 Otherwise ignore this section.
 
 ## Guardrails
-- Never deploy without documented human sign-off recorded in `state.json.signoff` (status `approved`).
+- Never deploy without documented human sign-off recorded in `state.json.signoff` (status `approved`)
+  and in `delivery/approvals.md`.
 - Deploy the **approved artifact/version only**. If any file, artifact, or gate result changes after
-  sign-off, approval is void — reset `signoff` to `pending` and loop back to Build before deploying.
+  sign-off (measured against the release candidate; only new records, such as new files in
+  `delivery/release/`, are exempt), approval is void — reset `signoff` to `pending` and loop back to Build before deploying.
 - Never run destructive or irreversible actions without explicit approval.
 - Do not edit orchestrator-owned tracking files directly.
 - Prefer staged/ring deployments and observable smoke checks when the repo supports them.

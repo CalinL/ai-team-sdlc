@@ -184,7 +184,7 @@ copilot -p "Use the ait-sdlc-orchestrate skill. Resume run .copilot-tracking/202
 copilot -p "Use the ait-product-design skill to shape UX flows for ./specs/checkout.md"
 copilot -p "Use the ait-product-prototype skill to build and verify a clickable prototype from ./specs/checkout.md"
 copilot -p "Use the ait-tech-specs skill to turn the approved prototype into API contracts + acceptance criteria"
-copilot -p "Use the ait-implementation skill to build task T-003 from .copilot-tracking/<run>/tasks.md"
+copilot -p "Use the ait-implementation skill to build task 001-3 from specs/features/001-checkout/tasks.md"
 copilot -p "Use the ait-qa-validation skill to verify acceptance criteria for the checkout feature"
 
 # Optional: wire the plugin into a fresh repo (settings + AGENTS.md pointer + gitignored tracking)

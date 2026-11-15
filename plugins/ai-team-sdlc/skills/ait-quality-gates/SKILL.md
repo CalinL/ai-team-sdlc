@@ -9,7 +9,7 @@ license: Apache-2.0
 A shared, stack‑agnostic library of gates. Agent‑authored code passes the **same** gates as human
 code. Only run tooling that **already exists** in the target repo — never invent or install new
 tooling to satisfy a gate. If a required gate's tooling is absent, record it as `skipped` — a
-skipped **required** gate **blocks** the task unless a human waiver is recorded in `decisions.md`.
+skipped **required** gate **blocks** the task unless a human waiver is recorded in `delivery/approvals.md`.
 
 Follow the `ait-conventions` skill.
 
@@ -92,7 +92,7 @@ core block:
 - acceptance: passed | failed | skipped
 - critic:     passed | failed | skipped
 - security:   passed | failed | skipped
-Verdict: PASS | FAIL  (FAIL if any required gate is failed, or skipped without a waiver in decisions.md)
+Verdict: PASS | FAIL  (FAIL if any required gate is failed, or skipped without a waiver in delivery/approvals.md)
 ```
 When reviewer independence is enabled, add to the critic line:
 `(independence: met | not_met | unknown; reviewer: <model id>; lineage: <families or "incomplete">)`

@@ -7,7 +7,7 @@ agents: ['ait-product-designer', 'ait-product-owner', 'ait-architect', 'ait-back
 handoffs:
   - label: 'Consolidate decisions'
     agent: ait-scribe
-    prompt: 'Consolidate inbox/*.md into decisions.md and changes.md for the current run.'
+    prompt: 'Process inbox/*.md into decision records and delivery/approvals.md for the current run.'
     send: false
 ---
 

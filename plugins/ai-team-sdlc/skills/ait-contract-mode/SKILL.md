@@ -70,7 +70,7 @@ point to its numbered sections (e.g. "`ait-contract-mode` §7").
 - Defaults: `stages.design` = `true`; `stages.prototype` = `spike`.
 - `decisions.dir` is treated as **protected**, except for adding new Proposed records (§8, §10).
 - The safety floors in `ait-conventions` always apply. Contract mode never weakens sign-off,
-  required gates, waivers or the `decisions.md` sign-off record.
+  required gates, waivers or the `delivery/approvals.md` sign-off record.
 
 ### 2. The brief
 - `contract.brief` is the run's **specs source** (it replaces the orchestrator's "specs source"
@@ -139,7 +139,7 @@ Task kinds, in this order (each task records its `kind` in `state.json`):
   2. the receipt has `status: accepted` (schema: `references/config-and-receipts.md`);
   3. its `digest` equals the **current** digest (§13) of the artifact it accepts (for
      `release-acceptance`, the release candidate SHA);
-  4. `decisions.md` holds the human's **confirmation** of that gate id and digest: a verbatim
+  4. `delivery/approvals.md` holds the human's **confirmation** of that gate id and digest: a verbatim
      quote or reference, recorded the first time the human confirms, as for sign-off. The
      confirmation is persisted, so it survives resume.
 - **Not met** → the task and its dependents are `blocked` with `blockedBy: external:<id>`, and
@@ -157,8 +157,8 @@ Task kinds, in this order (each task records its `kind` in `state.json`):
 - Specialists **never** edit existing records and never set `accepted_status`; only humans do.
 - The Scribe (or the orchestrator inline in the CLI) **adds** one line to `decisions.md` per
   record: `[<id>](<path>) — <status> — <one-line summary>`.
-- **Everything `decisions.md` already holds stays**: the full sign-off record, gate
-  confirmations (§7) and waivers, exactly as the safety floors require.
+- **Everything `delivery/approvals.md` already holds stays**: the full sign-off record, gate
+  confirmations (§7) and waivers, append-only, exactly as the safety floors require.
 - If `decisions` is unset, decisions go to `decisions.md` as in default mode.
 
 ### 9. Change requests
