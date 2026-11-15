@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Review implemented changes using the ait-review-critic skill.'
 agent: ait-code-reviewer
 ---

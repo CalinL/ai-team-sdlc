@@ -380,6 +380,7 @@ flowchart TB
 | 6 | Shared conventions (contract) | `plugins/ai-team-sdlc/skills/ait-conventions/SKILL.md` | Skill | ✅ |
 | 6b | Repo setup (optional) | `plugins/ai-team-sdlc/skills/ait-init/SKILL.md` | Skill | ✅ |
 | 6c | Contract mode (opt-in, via `.github/ai-sdlc.yml`) | `plugins/ai-team-sdlc/skills/ait-contract-mode/SKILL.md` + `references/` | Skill | ✅ |
+| 6d | Artifact layout (where every work product goes) | `plugins/ai-team-sdlc/skills/ait-artifact-layout/SKILL.md` | Skill | ✅ |
 | 7 | Portable onboarding / CLI entry | `AGENTS.md` | Doc | ✅ CLI |
 | 8 | Usage doc | `docs/ai-sdlc-usage.md` | Doc | ✅ |
 | 9 | Runtime tracking store | `.copilot-tracking/<run>/` (git‑ignored) | State | ✅ |
@@ -401,10 +402,12 @@ Per run, `.copilot-tracking/<YYYY-MM-DD-slug>/`:
 |---|---|
 | `state.json` | Machine‑readable run state — **canonical** source of truth (tasks, gates, sign‑off) |
 | `plan.md` | Phases/tasks as `[ ]/[x]` checkboxes — human‑readable projection of `state.json` |
-| `tasks.md` | Atomic tasks: `id`, `owner`, `phase`, `deps`, `acceptance`, `requiredGates`, `gateResults`, `status` |
-| `changes.md` | Append‑only change log (Scribe‑merged) |
-| `decisions.md` | Scribe‑merged decisions/ADRs (from per‑agent inbox writes) |
-| `inbox/` | Isolated per‑agent write files (`inbox/processed/` once consolidated) |
+| `inbox/` | Isolated per‑agent handoffs that summarize and link committed artifacts (`inbox/processed/` once processed) |
+| Path-check baselines | Contract mode's before/after hashes |
+
+Agent state only, never an artifact: from 1.1.1 a run creates no `tasks.md`, `changes.md` or
+`decisions.md` here (they exist only in runs started before 1.1.1); the plan, decisions, approvals
+and results are committed where the `ait-artifact-layout` skill puts them.
 
 **Resume =** read `state.json` (canonical), skip `done`, re‑run any `in_progress`, continue at the
 first ready task — no finished work redone.
@@ -446,7 +449,7 @@ docs/
 .copilot-tracking/                # runtime state (add to .gitignore)
 ```
 
-**Roster:** 11 commands · 19 skills (16 namespaced core + 3 unprefixed vendored) · 11 agents · 1 instructions · `AGENTS.md` · usage doc, organized into 5 phases (Plan · Build · Test · Sign-off · Deploy) + Orchestrator.
+**Roster:** 11 commands · 21 skills (18 namespaced core + 3 unprefixed vendored) · 11 agents · 1 instructions · `AGENTS.md` · usage doc, organized into 5 phases (Plan · Build · Test · Sign-off · Deploy) + Orchestrator.
 
 ---
 

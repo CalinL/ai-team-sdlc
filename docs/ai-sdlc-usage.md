@@ -61,7 +61,7 @@ shared contract, so no repo-level instructions file is required.
 |---|---|---|
 | 1. Initialize or resume | Orchestrator reads a spec/idea or existing `.copilot-tracking\<run-id>\`. | Tracking store created or resumed. |
 | 2. Plan | Ideation, prototyping (UI work), PRD, and tech specs shape the work. | Design direction, verified clickable prototype, PRD, specs, acceptance criteria, decisions. |
-| 3. Decompose | Orchestrator breaks work into atomic tasks with owners, deps, gates, and status. | `tasks.md`, `plan.md`, `state.json`. |
+| 3. Decompose | Orchestrator breaks work into atomic tasks with owners, deps, gates, and status. | The committed feature `tasks.md` imported into `state.json`; `plan.md`. |
 | 4. Build/Test loop | Ready tasks are dispatched to implementation, QA, review, and security specialists. | Code changes, inbox handoffs, gate evidence. |
 | 5. Human sign-off | Product Owner, Security Team, and Tech Lead approve or request changes. | Approval to deploy, or follow-up tasks. |
 | 6. Deploy | DevOps performs release work and rollback planning after approval. | Deployment result and rollback notes. |
@@ -76,10 +76,13 @@ Each run writes runtime state to `.copilot-tracking\<run-id>\`, where
 |---|---|---|
 | `state.json` | **Canonical** run state (tasks, `requiredGates`/`gateResults`, `signoff`). | Orchestrator |
 | `plan.md` | Checkbox plan — projection of `state.json`; `[x]` items skipped on resume. | Orchestrator |
-| `tasks.md` | Atomic task table: id, owner, phase, deps, acceptance, requiredGates, gateResults, status. | Orchestrator |
-| `changes.md` | Append-only file-change log. | Scribe consolidates |
-| `decisions.md` | Consolidated decisions/ADRs. | Scribe consolidates |
-| `inbox\*.md` | One isolated handoff file per specialist task (`inbox\processed\` once merged). | Specialists |
+| `inbox\*.md` | One isolated handoff file per specialist task, summarizing and linking its committed artifacts (`inbox\processed\` once processed). | Specialists |
+| Path-check baselines | Contract mode's before/after hashes. | Orchestrator |
+
+The tracking store is agent state only, never an artifact. A run started on 1.1.1 creates nothing
+else there: decisions go to the committed decision log (`architecture/adr/`), approvals to
+`delivery/approvals.md`, the task plan to each feature's committed `tasks.md`, and file history
+to Git. `decisions.md`, `changes.md` and `tasks.md` exist only in runs started before 1.1.1.
 
 On restart with an existing `run-id`, `/product-run` reads `state.json` (canonical), skips `done`
 tasks, re-runs any `in_progress` task (crash recovery), and continues from the first ready task
@@ -111,6 +114,15 @@ surface what was built, gate results, key decisions, risks, and the exact artifa
 is persisted in `state.json.signoff` so a resumed run can prove it. Any change after approval voids
 sign-off and loops back to Build. Deploy ships the approved artifact only.
 
+## Where the team writes
+
+Work products are committed in spec-driven folders: the PRD, design, prototype and one folder per
+feature (stories, spec, task plan) under `specs/`; decision records in `architecture/adr/`;
+results, `approvals.md` and release records in `delivery/`; showcase and idea material in
+`showcase/`. `docs/` is documentation only, and `.copilot-tracking/` holds agent state only. An
+explicit output folder, the contract paths and your repo's rules come first; existing files are
+never moved. The rules live in the `ait-artifact-layout` skill.
+
 ## Contract mode
 
 Use contract mode when your organization already owns the requirements and the architecture, and
@@ -122,46 +134,36 @@ nothing changes. The full rules live in the `ait-contract-mode` skill.
 ### Turn it on
 
 Add `.github/ai-sdlc.yml` to the host repository. Only `contract.brief` is required; every path is
-your choice, relative to the repo root.
+your choice, relative to the repo root. On a new run, unset paths default to the committed folders
+shown below.
 
 ```yaml
-# .github/ai-sdlc.yml  (all paths are the host repo's choice)
+# .github/ai-sdlc.yml
 contract:
-  brief: docs/delivery/brief.md        # REQUIRED. The run's spec (owned outside this team)
-  requirements: docs/requirements.md   # OPTIONAL. An existing PRD: slice it, never rewrite it
-  stages:
-    design: false                      # OPTIONAL, default true. false = skip design/ideation
-    prototype: ui-spec                 # OPTIONAL, default spike. ui-spec = keep as the UI spec
-  paths:                               # OPTIONAL. Where deliverables go (tracked)
-    stories: docs/delivery/stories.md
-    prototype: docs/delivery/prototype/
-    specs: docs/delivery/specs/
-    results: docs/delivery/results/
-  decisions:                           # OPTIONAL. An external decision log
-    dir: docs/adr/
-    proposed_status: Proposed          # specialists may only ADD new records with this status
-    accepted_status: Accepted          # only humans set this
-  protected: [docs/architecture/]      # OPTIONAL. Never edited by the team
-  frozen: [tests/contract/]            # OPTIONAL. Never edited (e.g. an agreed evaluation set)
-  path_check: scripts/check-paths.sh   # OPTIONAL. Extra check command; non-zero exit = fail
-  external_gates:                      # OPTIONAL. Human acceptance files (schema below)
-    - id: prototype-accepted
-      before: specs                    # one of: stories | prototype | specs | build | signoff
-      file: docs/delivery/prototype/ACCEPTED.md
-    - id: spec-conformance
-      before: build
-      file: docs/delivery/conformance/{spec}.md
-    - id: release-acceptance
-      before: signoff
-      file: docs/delivery/results/acceptance-{version}.md
-review:                                # OPTIONAL (G4); works with or without contract
-  independence: off                    # off | warn | required
+  brief: delivery/brief.md                  # REQUIRED. The run's brief, owned outside this team
+  requirements: specs/prd.md                # OPTIONAL. An existing PRD: slice it, never rewrite it
+  stages: { design: false, prototype: ui-spec }
+  paths:                                    # OPTIONAL. Defaults shown (runs started on 1.1.1)
+    stories: "specs/features/{feature}/stories.md"   # {feature} = the feature folder's name
+    prototype: specs/ui/
+    specs: specs/features/
+    results: delivery/results/
+  decisions: { dir: architecture/adr/, proposed_status: Proposed, accepted_status: Accepted }
+  protected: [architecture/]                # the decisions.dir exception below still lets the team add a new Proposed record
+  frozen: []                                # add the evaluation set when it is accepted; frozen binds every agent
+  external_gates:
+    - { id: prototype-accepted, before: specs, file: "specs/ui/ACCEPTED.md" }
+    - { id: spec-conformance, before: build, file: "delivery/conformance/{spec}.md" }
+    - { id: release-acceptance, before: signoff, file: "delivery/results/acceptance-{version}.md" }
+review:
+  independence: required
 ```
 
 If the file exists, it is validated before anything runs. Invalid YAML, a missing `brief`, a path
-with `..`, an unknown `before`, `ui-spec` without `paths.prototype`, duplicate gate ids or a bad
-`review.independence` **stop the run** with every error listed; there is no silent fallback to
-default mode. Unknown keys only produce a warning.
+with `..`, an unknown `before`, `{feature}` outside `paths.stories` or not under `paths.specs`,
+duplicate gate ids or a bad `review.independence` **stop the run** with every error listed; there is
+no silent fallback to default mode. Unknown keys only produce a warning. (An omitted
+`paths.prototype` with `ui-spec` now means `specs/ui/` on a new run.)
 
 ### The flow
 
@@ -172,7 +174,7 @@ default mode. Unknown keys only produce a warning.
 | 3. Prototype (UI work) | With `ui-spec`, the prototype defines canonical `data-testid` attributes and, once accepted, is kept as the UI specification (never shipped). | `paths.prototype` |
 | 4. Specs | The Architect writes implementation specs against the stories and the accepted prototype; it does not dispatch other agents. | `paths.specs` |
 | 5. Build / Test | Implementation reuses the prototype's selectors; QA re-runs those flows against the build. | Code, tests, `paths.results` |
-| 6. Sign-off | The usual three-approver human sign-off, plus `release-acceptance` when configured. | `decisions.md` sign-off record |
+| 6. Sign-off | The usual three-approver human sign-off, plus `release-acceptance` when configured. | `delivery/approvals.md` sign-off record |
 | 7. Deploy | Unchanged: ships the approved artifact only. | Release evidence |
 
 ### The gates
@@ -195,12 +197,14 @@ default mode. Unknown keys only produce a warning.
   for a folder (receipts excluded), or the release candidate's commit SHA. Any later change (for
   example a new `-v<N+1>` prototype) makes the acceptance **stale**. The gate is met only when the
   receipt is accepted, the digest is current, and you have confirmed it once in the chat (recorded
-  in `decisions.md`). Commands to compute digests are in the skill's
+  in `delivery/approvals.md`). Commands to compute digests are in the skill's
   `references/path-check-and-digests.md`.
 - **`path-check`** runs after every task: it fails if the task changed anything under `frozen`,
   `protected` or `decisions.dir` (adding a new `Proposed` decision record is the one exception), and
-  it also runs your `path_check` command when set.
-- **Sign-off** is unchanged: Product Owner, Security Team and Tech Lead, recorded in `decisions.md`.
+  it also runs your `path_check` command when set. It also fails if the task changed the brief, the
+  requirements, an acceptance receipt or `.github/ai-sdlc.yml`, whether or not those files are
+  listed under `protected`, tracked or gitignored.
+- **Sign-off** is unchanged: Product Owner, Security Team and Tech Lead, recorded in `delivery/approvals.md`.
 
 ### Pause and resume
 
@@ -215,7 +219,7 @@ copilot -p "Use the ait-sdlc-orchestrate skill. Resume run-id 2026-11-07-checkou
 ```
 
 Blocked tasks are re-checked on every loop and every resume; confirmations persist in
-`decisions.md`, so they survive a new session.
+`delivery/approvals.md`, so they survive a new session.
 
 ## Reviewer independence
 
@@ -236,5 +240,5 @@ review:
   never picks models itself. Lineage with `unknown`, `auto` or a router such as `fusion` is
   **incomplete**, so independence is `unknown`.
 - With `warn`, the critic gate can pass with a warning. With `required`, it fails unless
-  independence is `met` or a human waiver for that artifact version is recorded in `decisions.md`.
+  independence is `met` or a human waiver for that artifact version is recorded in `delivery/approvals.md`.
 - Without the setting (or with `off`), the critic review is exactly as before.

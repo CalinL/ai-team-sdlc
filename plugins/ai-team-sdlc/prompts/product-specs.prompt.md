@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Turn approved product direction into technical specs using the ait-tech-specs skill.'
 agent: ait-architect
 ---
@@ -6,10 +7,12 @@ agent: ait-architect
 # Product specs
 
 Apply the `ait-tech-specs` skill and route the work to the `ait-product-owner` and `ait-architect` agent
-personas: the **Product Owner** first turns the input into a PRD (requirements + acceptance
-criteria), then the **Architect** turns that PRD into architecture, API contracts, and data
-models. Both stages are gated by `spec-review`. If a PRD already exists, skip straight to the
-architecture step.
+personas: the **Product Owner** first turns the input into a PRD (`specs/prd.md`: requirements +
+acceptance criteria) and slices it into feature folders (`specs/features/<NNN-slug>/stories.md`),
+then the **Architect** writes each feature's implementation spec (`<NNN-slug>.md`: architecture,
+API contracts, data models) and its static `tasks.md`, and adds Proposed decision records in
+`architecture/adr/`. Both stages are gated by `spec-review`. If a PRD already exists, skip straight
+to the slicing and architecture steps. Paths follow the `ait-artifact-layout` skill.
 
 Use this command when the user has a validated prototype, product idea, PRD, or design direction and
 needs product requirements and/or technical specifications, acceptance criteria, or architectural

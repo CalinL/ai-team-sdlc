@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-review-critic
 description: 'Critical code review phase for the AI-SDLC system. Use when reviewing implemented changes for correctness, security-adjacent risks, maintainability, regressions, and blocking defects before sign-off. Do not use for style-only reviews, writing code, QA execution, dedicated security scanning, or deployment.'
 license: Apache-2.0
@@ -40,7 +41,9 @@ Follow the `ait-conventions` skill.
 5. Run the critic review gate through the `ait-quality-gates` skill. The gate passes only when no blocking
    correctness/security/maintainability issues remain.
 6. For each blocking issue, include file, location, impact, evidence, and the smallest suggested fix.
-7. Write exactly one `inbox/<ts>-ait-code-reviewer-<task-id>.md` file with findings and gate results.
+7. Write the findings and gate results to `delivery/results/` (or `paths.results`; see
+   `ait-artifact-layout`), then exactly one `inbox/<ts>-ait-code-reviewer-<task-id>.md` file that
+   summarizes them and links that path.
 8. Return the standard Result block.
 
 ## Output
@@ -70,7 +73,7 @@ When `review.independence` is `warn` or `required`:
    family, and say which families qualify. Do not select or invoke reviewers yourself.
 4. Report `independence: met | not_met | unknown`. With `warn`, the critic gate may pass with
    the warning. With `required`, the critic gate fails unless independence is `met`, or a human
-   waiver for this artifact version is recorded in `decisions.md`.
+   waiver for this artifact version is recorded in `delivery/approvals.md`.
 
 ## Guardrails
 - Report only high-confidence issues; do not pad with speculative concerns.

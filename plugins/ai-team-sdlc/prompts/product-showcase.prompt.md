@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Build a polished, executive-ready showcase prototype from a spec/brief using the ait-product-showcase skill: generate the UI from text specs or reproduce an existing visual design, with user-supplied or mock data, two-critic peer review, spec-fidelity validation, and a voice-narrated demo.'
 agent: ait-product-designer
 ---
@@ -23,7 +24,7 @@ visual design faithfully via `ait-wireframe-to-frontend`. It applies craft (`fro
 mandatory two-critic peer review and spec-fidelity validation, and adds the executive
 `Simulate` demo before the `prototype-review` gate.
 Companion extras (expanded discovery, portfolio/agentic enhancements, or a business case)
-run only when explicitly requested. Deliverables go to `docs/` (prototype `docs/<product>-v1.html`,
+run only when explicitly requested. Deliverables go to `showcase/<use-case>/` (prototype `showcase/<use-case>/v1.html`,
 extras as markdown); only the user starts a new version.
 
 Hold the bar at executive readiness: a very-high-visibility audience, a *wow* moment, and no

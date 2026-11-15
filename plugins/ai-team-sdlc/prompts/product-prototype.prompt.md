@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Build and verify a clickable prototype from approved design direction using the ait-product-prototype skill.'
 agent: ait-product-designer
 ---

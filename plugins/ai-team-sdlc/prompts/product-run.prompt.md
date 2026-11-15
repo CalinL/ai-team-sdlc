@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Run or resume the full AI-SDLC lifecycle end-to-end using the orchestrator skill.'
 agent: ait-sdlc-orchestrator
 ---

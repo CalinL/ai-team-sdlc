@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-product-design
 description: 'Ideation and UX design phase for the AI-SDLC system. Use when turning a product idea, PRD, or task into user journeys, UX flows, wireframes, design direction, design tokens, and acceptance-ready UX notes. Do not use to build or verify a runnable/clickable prototype (that is ait-product-prototype), or when architecture, implementation, QA, code review, security, or deployment is the primary work.'
 license: Apache-2.0
@@ -58,7 +59,8 @@ opt-in) and its browser verification (via `ait-prototype-testing`), hand off to 
 3. Map the critical UX flows, including happy paths, empty states, loading states, errors, and edge cases.
 4. Produce the lightest useful design artifact: journey map, flow outline, wireframe, design-direction
    notes, token proposal, or annotated UI states. Prefer portable Markdown or existing repo-native
-   design formats. Use `frontend-design` for visual craft and `theme-factory` for design tokens.
+   design formats, written to `specs/design/` (see `ait-artifact-layout`). Use `frontend-design`
+   for visual craft and `theme-factory` for design tokens.
    Do not build the runnable prototype here — hand that to `ait-product-prototype`.
 5. Define accessibility, responsive behavior, content, telemetry, and design-token requirements needed for
    prototyping, implementation, and QA.
@@ -67,8 +69,8 @@ opt-in) and its browser verification (via `ait-prototype-testing`), hand off to 
 7. Run the **`design-review`** gate through the `ait-quality-gates` skill (design artifacts complete,
    acceptance‑ready, and internally consistent).
    Use only existing repo checks or documented review criteria; do not invent tooling.
-8. Write exactly one `inbox/<ts>-ait-product-designer-<task-id>.md` file summarizing artifacts,
-   decisions, assumptions, risks, and gate results.
+8. Write exactly one `inbox/<ts>-ait-product-designer-<task-id>.md` file summarizing the artifacts in
+   `specs/design/` (with links), decisions, assumptions, risks, and gate results.
 9. Return the standard Result block.
 
 ## Output

@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-conventions
 description: 'Authoritative shared contract for the AI-SDLC agentic team (ait- agents and skills): tracking store, task schema, handoff/result contract, quality gates, resumability, difficulty gating, and human sign-off. Read and follow this whenever you act as any ait- specialist, orchestrator, or scribe.'
 ---
@@ -13,8 +14,8 @@ is a short pointer to this skill; `docs/ai-sdlc-design.md` holds the design rati
 
 ## Roles & ownership
 - **Orchestrator** (`ait-sdlc-orchestrate`): decomposes specs → tasks, dispatches to specialists,
-  enforces gates, owns `plan.md` / `tasks.md` / `state.json`, reports `DONE`.
-- **Scribe**: consolidates `inbox/*.md` into `decisions.md` and `changes.md`; keeps history tidy.
+  enforces gates, owns `plan.md` / `state.json`, reports `DONE`.
+- **Scribe**: processes `inbox/*.md` into committed decision records and `delivery/approvals.md`; keeps history tidy.
 - **Specialists**: do the work for their phase, run their gate, write **one** `inbox/` file,
   return the result summary. They never edit orchestrator‑owned files directly.
 
@@ -49,24 +50,30 @@ Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` 
 The lifecycle DAG, the prototype's role and where decisions are recorded follow
 `ait-contract-mode` §4 (Flow), §5 (Prototype as UI spec) and §8 (Decisions): stories from the
 existing requirements instead of a PRD, an optional design stage, a prototype that may be kept as
-the UI spec, and an optional external decision log. The safety floors still apply.
+the UI spec, and a decision log (default `architecture/adr/`). The safety floors still apply.
 Otherwise ignore this section.
 
 ## Tracking store — `.copilot-tracking/<run-id>/`
 `run-id = <YYYY-MM-DD>-<kebab-slug>` (append a numeric suffix if the slug already exists).
-- `state.json` — machine‑readable run state; **canonical** source of truth.
-- `plan.md` — phases & tasks as `[ ]/[x]` checkboxes; human‑readable projection of `state.json`.
-- `tasks.md` — atomic task table; projection of `state.json`.
-- `changes.md` — append‑only file‑change log (written by Scribe from `inbox/`).
-- `decisions.md` — consolidated decisions/ADRs (written by Scribe from `inbox/`).
-- `inbox/<ts>-<agent>-<taskid>.md` — isolated per‑agent writes; `<ts>` = `YYYYMMDDTHHMMSSZ`
-  (filesystem‑safe UTC, no colons — valid on Windows).
-- `inbox/processed/` — inbox files already consolidated by Scribe.
+A run started on 1.1.1 creates and writes only:
 
-`.copilot-tracking/` is runtime state and should be git‑ignored by consuming projects.
-When `plan.md`/`tasks.md` disagree with `state.json`, `state.json` wins.
+| Kept | Why |
+|---|---|
+| `state.json` | Canonical run state: tasks, status, gate results, lineage, `layout`, `signoff` |
+| `plan.md` | Phases & tasks as `[ ]/[x]` checkboxes; the one human‑readable projection of `state.json` |
+| `inbox/<ts>-<agent>-<taskid>.md` and `inbox/processed/` | Handoffs that summarize an artifact and link its committed path; `<ts>` = `YYYYMMDDTHHMMSSZ` (filesystem‑safe UTC, no colons — valid on Windows); processed files move to `inbox/processed/` |
+| Path-check baselines | Contract mode's before/after hashes |
 
-### Task schema (`tasks.md`, projected from `state.json`)
+| No longer created or written (present only in runs started before 1.1.1) | Replaced by |
+|---|---|
+| `decisions.md` | The decision log (`architecture/adr/`), `delivery/approvals.md`, the specs' `## Decisions` sections |
+| `changes.md` | Git history, plus each task's `files` in `state.json` (authorship lineage) |
+| `tasks.md` (the projection) | The committed `specs/features/<NNN-slug>/tasks.md` (the plan) plus `state.json` and `plan.md` (status) |
+
+`.copilot-tracking/` is agent state only, never an artifact; git‑ignored by consuming projects.
+When `plan.md` disagrees with `state.json`, `state.json` wins.
+
+### Task schema (`state.json`; the static plan is the committed feature `tasks.md`)
 `| id | title | owner | phase | deps | acceptance | requiredGates | gateResults | status |`
 - `id` grammar: `T-001`, `T-002`, … (zero‑padded).
 - `owner` = specialist agent slug (e.g. `ait-backend-dev`).
@@ -79,7 +86,7 @@ When `plan.md`/`tasks.md` disagree with `state.json`, `state.json` wins.
 ### `state.json`
 Canonical run state: `runId`, `spec`, `status`, `currentPhase`, `updatedAt`, `signoff`, and the
 `tasks` array (each with `retries`, `requiredGates`, `gateResults`). Keep it in sync whenever a
-task status or gate result changes; regenerate `plan.md`/`tasks.md` from it.
+task status or gate result changes; regenerate `plan.md` (the only projection) from it.
 
 ## Handoff / result contract
 Every specialist ends with exactly one `inbox/` file and returns:
@@ -111,7 +118,7 @@ consistent), **pre-deploy** (release + rollback plan ready), **smoke** (post‑d
 Use the smallest command that covers the change; escalate to full‑suite only when needed. Only
 run gates that already exist in the target repo — never invent tooling. A required gate whose
 tooling is absent is `skipped` and **blocks** the task unless a human waiver is recorded in
-`decisions.md`. A task is `done` only when every required gate is `passed`. Agent‑authored code
+`delivery/approvals.md`. A task is `done` only when every required gate is `passed`. Agent‑authored code
 passes the **same** gates as human code.
 
 ## Resume‑on‑failure
@@ -132,10 +139,11 @@ Resume an existing run **only** when its `run-id` is supplied; otherwise start a
   request changes. Agents pause and ask; they never self‑approve a deploy. Sign‑off is
   **persisted** in `state.json.signoff` (all three approvers, artifact/version, timestamp) so a
   resumed run can prove approval. Each approver entry MUST be sourced from a real human turn and
-  backed by an append‑only `decisions.md` sign‑off record capturing the approver's identity and a
+  backed by an append‑only sign‑off record in `delivery/approvals.md` capturing the approver's identity and a
   verbatim quote/reference of the approval; agents must never populate approvers themselves. Deploy
   validates that record, not just the mutable `state.json` fields. Any change to files, artifact, or
-  gate results **after** approval resets `signoff.status` to `pending` and loops back to Build.
+  gate results **after** approval (measured against the release candidate; only new records are
+  exempt, `ait-artifact-layout` › Rules, 6) resets `signoff.status` to `pending` and loops back to Build.
   Deploy ships the approved artifact only.
 - Surface risky/destructive actions (data migrations, infra changes) for explicit approval.
 
@@ -150,13 +158,28 @@ At the start of any task, if the host repository has `AGENTS.md` or
 details (paths, naming, stack, process), but never these **safety floors**:
 1. Deploy only after human sign-off by **all three approvers** (Product Owner, Security Team,
    Tech Lead), each sourced from a real human turn; agents never self-approve.
-2. The append-only **sign-off record in `decisions.md`** (approver identities, verbatim approval
+2. The append-only **sign-off record in `delivery/approvals.md`** (approver identities, verbatim approval
    quote or reference, artifact/version, timestamp), and `state.json.signoff`, stay as defined above.
 3. Required quality gates run. A skipped required gate blocks unless a human waiver is recorded
-   **in `decisions.md`**.
-4. Any change after approval voids sign-off; deploy ships the approved artifact only.
+   **in `delivery/approvals.md`**.
+4. Any change after approval voids sign-off, measured against the release candidate; only new
+   records are exempt (`ait-artifact-layout` › Rules, 6). Deploy ships the approved artifact only.
 5. No secrets in code or tracking files.
 If a host rule conflicts with a floor, follow the floor and report the conflict in the Result.
+
+## Where things live
+Every work product (PRD, design, prototype, feature stories, specs and task plans, decision records,
+results, approvals, release records, showcase and idea material) goes where the
+**`ait-artifact-layout`** skill puts it: an explicit output folder, the contract paths and the host
+rules first, then its committed defaults (`specs/`, `architecture/adr/`, `delivery/`, `showcase/`;
+`docs/` is documentation only). Never invent a folder; if no row fits, write nothing and ask.
+`.copilot-tracking/<run-id>/` is **agent state only**: a run started on 1.1.1 creates and writes
+only `state.json`, `plan.md`, `inbox/` (with `inbox/processed/`) and, in contract mode, the
+`path-check` baselines. It never creates `decisions.md`, `changes.md` or a `tasks.md` projection,
+and no artifact's only copy may live there: deleting the folder, or cloning the repo elsewhere,
+loses no requirement, spec, decision, result, approval or release record. `delivery/approvals.md`
+holds only human-sourced records (sign-off, human gate confirmations, human waivers); agent gate
+results stay in `state.json` and `delivery/results/`.
 
 ## Authorship lineage (all modes)
 For each task, `state.json` may hold:

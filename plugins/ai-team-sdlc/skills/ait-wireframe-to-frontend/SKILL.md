@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-wireframe-to-frontend
 description: Convert an existing visual design (wireframes, mockups, a prototype PDF, screenshots, or a Figma export) into a faithful, clickable frontend built with mock data. Use this whenever the user provides a source design and wants it turned into a working frontend, a clickable prototype, or a high-fidelity HTML reproduction. Covers design-token and component extraction, screen scaffolding, faithful reproduction, and Playwright validation with screenshot comparison. Do NOT use for backend, API, or database work, or for greenfield UI with no source design to reproduce.
 license: Apache-2.0

@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-product-showcase
 description: 'Executive-grade showcase prototyping for the AI-SDLC system. Use to turn a spec/brief into a polished, self-contained frontend prototype (user-supplied or mock data), mandatory two-critic peer review, spec-fidelity validation, and a voice-narrated demo simulation for leadership. Opt-in extras on request: market discovery, portfolio/agentic enhancements, and a companion business case. Generates the UI from text specs, or delegates to ait-wireframe-to-frontend to faithfully reproduce an existing visual design. Do not use for the lightweight design-phase clickable prototype (that is ait-product-prototype), UX ideation (ait-product-design), technical specs, production implementation, QA of the built product, review, security, or deployment.'
 license: Apache-2.0
@@ -83,7 +84,7 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
 | voice narration | no | Whether to add the `Simulate` voice-narrated demo (default: on; off only when the user opts out). |
 | showcase extras | no | Opt-in only; **default none**. Any of: `discovery` (market scan + proposed demo scope), `portfolio` / `agentic` (product enhancements beyond the source — generate path only), `business-case` (companion md + html). Enable only on explicit user request; never infer them. See [`references/optional-extras.md`](references/optional-extras.md). |
 | constraints | no | Brand, platform, accessibility, device, or design-system constraints. |
-| output folder | no | Default `docs/` at the workspace root. All deliverables go here (see **Output files**). |
+| output folder | no | Default `showcase/<use-case>/` (resolved by `ait-artifact-layout`). All deliverables go here (see **Output files**). |
 | tracking path | no | `.copilot-tracking/<run-id>/` for inbox handoff under the orchestrator. |
 | task-id | no | Required for orchestrated task handoff. |
 
@@ -93,7 +94,7 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    fall back to OCR only for scanned/image pages. If a source is inaccessible (locked Figma,
    unreadable scan, missing fonts/assets), request the missing material rather than guessing. Do a
    deep-dive into the domain — the problem, user pain points, and comparable tools — to make the mock
-   data and flows realistic, and save a summary to `docs/<product>-research.md` so later versions
+   data and flows realistic, and save a summary to `showcase/<use-case>/research.md` so later versions
    and reviewers can reuse it (it sits next to the prototype, so treat it as being as shareable as
    the prototype itself).
 2. **Pick the path based on the source:**
@@ -222,24 +223,29 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
 > `ait-init` when the user explicitly asks to adopt/configure the plugin — it is not a prototype step.
 
 ## Output files
-All deliverables go in the **output folder** (default `docs/`). `<product>` is a kebab-case slug of
-the product or feature name.
+All deliverables go in the **output folder** (default `showcase/<use-case>/`, resolved by
+`ait-artifact-layout`). `<use-case>` is a kebab-case slug of the business case, prefixed with the company when one is
+known (`acme-expense-approvals`; `expense-approvals` without a company), so a showcase never needs a
+company name.
 | Artifact | Path |
 |---|---|
-| Showcase prototype | `docs/<product>-v<N>.html` (starts at `-v1`) — one self-contained file. If the reproduce path's engine must emit several files, put them in `docs/<product>-v<N>/` with `index.html` as the entry. |
-| Each enabled extra | A markdown file in `docs/` — see [`references/optional-extras.md`](references/optional-extras.md) for names. |
-| Domain research | `docs/<product>-research.md` (step 1). |
-| Version proposal + change summary | `docs/<product>-v<N>-changes.md` — for `-v2` onward: the pre-build proposal, then what this version adds or changes versus the previous one, written for the audience. |
-| Verification evidence | Screenshots under `docs/<product>-v<N>-evidence/` (optional). |
+| Showcase prototype | `showcase/<use-case>/v<N>.html` (starts at `-v1`) — one self-contained file. If the reproduce path's engine must emit several files, put them in `showcase/<use-case>/v<N>/` with `index.html` as the entry. |
+| Each enabled extra | A markdown file in `showcase/<use-case>/` — see [`references/optional-extras.md`](references/optional-extras.md) for names. |
+| Domain research | `showcase/<use-case>/research.md` (step 1). |
+| Version proposal + change summary | `showcase/<use-case>/v<N>-changes.md` — for `-v2` onward: the pre-build proposal, then what this version adds or changes versus the previous one, written for the audience. |
+| Verification evidence | Screenshots under `showcase/<use-case>/v<N>-evidence/` (optional). |
 
 **Versioning.** Start at `-v1`. All iteration in a run — fixes, review rounds, Simulate, extras —
 updates the **current** version in place. Never create `-v2` (or copy a version) on your own: the
 **user** decides when to start a new version by copying the previous one. When the user points at an
 existing version (e.g. `-v2`), work on that file and leave earlier versions untouched. Under the
 orchestrator, a resumed run keeps the same version path; the version never comes from the task-id.
+When no output folder, contract path or host rule names a destination and the repo already has a
+1.1.0 showcase series (`ait-artifact-layout` › 1.1.0 locations), write the next version beside it
+and say so in the result (`ait-artifact-layout` › Resolution order); never move it.
 
 **A new version is a superset.** When the user starts a new version from feedback, first write a
-short change proposal at the top of `docs/<product>-v<N>-changes.md` (the feedback, the planned
+short change proposal at the top of `showcase/<use-case>/v<N>-changes.md` (the feedback, the planned
 changes, and what stays). Have one fresh critic review it once before you change the prototype; if
 blocking or major findings remain unresolved, mark the task blocked and do not change the
 prototype until the user resolves or accepts them. This pre-build check

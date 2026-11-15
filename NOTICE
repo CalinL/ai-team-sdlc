@@ -1,0 +1,8 @@
+ai-team-sdlc.
+Copyright 2026 Calin Lupas.
+
+Created by Calin Lupas, Sr Cloud Solution Architect, with AI assistance: the human guides and decides; AI drafts, critiques and executes.
+
+Licensed under the Apache License 2.0 (LICENSE).
+
+Includes skills vendored or adapted from Anthropic's agent-skills under the Apache License 2.0; see plugins/ai-team-sdlc/skills/NOTICE.md.

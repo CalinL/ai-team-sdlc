@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 description: 'Find high-impact business use cases for a company from its website using the ait-idea skill: deep research, ranked ideas, one-page HTML use cases, and build-ready prototype briefs for an executive demo.'
 ---
 
@@ -14,7 +15,7 @@ Input may come from the text after the command, `${selection}`, or the current `
 company name, website, number of use cases (default 3), audience, demo context, and any focus or
 exclusions.
 
-The skill produces the following, by default in `docs/`:
+The skill produces the following, by default in `showcase/<company>/`:
 - a cited research dossier;
 - a self-contained one-page HTML per use case;
 - a markdown prototype brief per use case, covering screens, sample data, acceptance criteria and

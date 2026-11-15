@@ -45,7 +45,7 @@ from <https://www.company.com>.
 
 ```text
 Use the ait-product-showcase skill to build an executive showcase prototype
-from use case 01 in docs. Use its brief as the product requirements, with
+from use case 01 in showcase/<company>/. Use its brief as the product requirements, with
 its one-pager and research as narrative, brand and evidence context—not
 a UI to reproduce.
 ```
@@ -63,11 +63,11 @@ after completing setup. It connects the two skills without restating their workf
 
 ## What you will have
 
-In **your own workspace's `docs` folder**, not this repository's documentation:
+In **your own workspace's `showcase/<company>/` and `showcase/<use-case>/` folders**, not this repository's documentation:
 
 - A cited research dossier with company context, evidence classes, brand guidance, and ranked ideas.
 - Two company-styled HTML one-pagers and two Markdown prototype briefs.
-- One self-contained `<product>-v1.html` showcase with realistic simulated data,
+- One self-contained `showcase/<use-case>/v1.html` showcase with realistic simulated data,
   working interactions, and a Simulate tour with narration, transcript, and controls.
 - Verification and review findings, with an honest **READY** or **BLOCKED** outcome.
 

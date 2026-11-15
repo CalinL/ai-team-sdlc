@@ -1,4 +1,5 @@
 ---
+# Adapted by Calin Lupas with AI assistance from Anthropic's webapp-testing (Apache-2.0). Credits: skills/NOTICE.md.
 name: ait-prototype-testing
 description: 'Prototype testing phase for the AI-SDLC system. Use in the plan/prototype stage to verify the design-phase prototype — static HTML, a clickable prototype, or a bundled web artifact — by driving it in a real browser via the Playwright MCP: checking flows, interaction states, console errors, responsive layout, and accessibility smoke. Do not use to validate the production product built from spec (that is ait-qa-validation).'
 license: Apache-2.0 (adapted from Anthropic webapp-testing; see LICENSE.txt)

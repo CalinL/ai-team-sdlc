@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-init
 description: 'Optional one-time bootstrap for a repository/workspace adopting the ai-team-sdlc plugin. Wires the plugin in (enables it declaratively, seeds a thin AGENTS.md pointer, creates and git-ignores the runtime tracking store) WITHOUT copying agents, skills, or the contract. The team already works right after plugin install because the orchestrator auto-creates the tracking store, so this only makes adoption explicit and tidy. Do not use to run the lifecycle (that is ait-sdlc-orchestrate) or to author primitives.'
 ---
@@ -49,7 +50,10 @@ Perform each step idempotently — detect existing state and merge rather than o
 4. **Create the runtime tracking store.** Ensure `.copilot-tracking/` exists (add a `.gitkeep`) and
    add `.copilot-tracking/` to `.gitignore` if not already ignored. This directory is per-run state,
    never committed.
-5. **Report** what was wired and the exact next command to start work
+5. **Optionally scaffold the layout** (`ait-artifact-layout`). With consent, create
+   `specs/README.md` from that skill's template and an empty `architecture/adr/` (add a `.gitkeep`).
+   Never overwrite either if it exists. Print the default layout so the team knows where work goes.
+6. **Report** what was wired and the exact next command to start work
    (`/product-run` or "Use the ait-sdlc-orchestrate skill").
 
 ## Templates

@@ -14,6 +14,8 @@ It is **portable** across VS Code Copilot and the Copilot CLI. The team ships as
 agents and skills; their shared operating contract travels with them in the `ait-conventions`
 skill, so the system behaves identically in any repo that installs the plugin.
 
+Created by **Calin Lupas, Sr Cloud Solution Architect**, with AI assistance: the human guides and decides; AI drafts, critiques and executes. See [NOTICE](NOTICE).
+
 ## The Art of the Possible: Bring Business Ideas to Life with GitHub Copilot
 
 **What if your next executive conversation started with an interactive experience—not a slide deck?**
@@ -184,7 +186,7 @@ copilot -p "Use the ait-sdlc-orchestrate skill. Resume run .copilot-tracking/202
 copilot -p "Use the ait-product-design skill to shape UX flows for ./specs/checkout.md"
 copilot -p "Use the ait-product-prototype skill to build and verify a clickable prototype from ./specs/checkout.md"
 copilot -p "Use the ait-tech-specs skill to turn the approved prototype into API contracts + acceptance criteria"
-copilot -p "Use the ait-implementation skill to build task T-003 from .copilot-tracking/<run>/tasks.md"
+copilot -p "Use the ait-implementation skill to build task 001-3 from specs/features/001-checkout/tasks.md"
 copilot -p "Use the ait-qa-validation skill to verify acceptance criteria for the checkout feature"
 
 # Optional: wire the plugin into a fresh repo (settings + AGENTS.md pointer + gitignored tracking)
@@ -238,12 +240,27 @@ agentic lifecycle. It is published to **GitHub Pages** and linked at the top of 
 > and publishes `docs/` on every push to `main`. If your org blocks automatic enablement, set
 > **Settings → Pages → Source: GitHub Actions** once, then re-run the workflow from the **Actions** tab.
 
+## Folder layout
+
+The team writes its work products to committed, spec-driven folders, never to `docs/`
+(documentation only) or the git-ignored `.copilot-tracking/` (agent state only):
+
+| Folder | What goes there |
+|---|---|
+| `specs/` | The PRD (`prd.md`), design, the prototype (`ui/`), one folder per feature (`features/<NNN-slug>/`: stories, spec, task plan) |
+| `architecture/adr/` | Decision records (proposed by the team, accepted by humans) |
+| `delivery/` | Results, `approvals.md` (human records only: sign-off, gate confirmations, waivers), release records |
+| `showcase/` | Showcase and idea material |
+
+An explicit output folder, the contract paths and your repo's rules come first, and existing files
+are never moved. Full rules: [`ait-artifact-layout`](plugins/ai-team-sdlc/skills/ait-artifact-layout/SKILL.md).
+
 ## Repo layout
 
 | Path | What |
 |---|---|
 | `plugins/ai-team-sdlc/plugin.json` | Plugin manifest |
-| `plugins/ai-team-sdlc/skills/` | 20 skills, incl. `ait-conventions` (the contract) and `ait-init` (setup) |
+| `plugins/ai-team-sdlc/skills/` | 21 skills, incl. `ait-conventions` (the contract) and `ait-init` (setup) |
 | `plugins/ai-team-sdlc/agents/` | 11 specialist agent personas |
 | `plugins/ai-team-sdlc/prompts/` | `/product-*` slash commands (VS Code convenience) |
 | `.github/plugin/marketplace.json` | Marketplace registration |
@@ -255,6 +272,15 @@ agentic lifecycle. It is published to **GitHub Pages** and linked at the top of 
 
 See `docs/ai-sdlc-design.md` for the full design and diagrams, and `docs/ai-sdlc-usage.md`
 for command usage.
+
+## Authors and credits
+
+- **Author:** Calin Lupas, Sr Cloud Solution Architect. He guided and decided the design and every
+  release.
+- **AI assistance:** AI tools drafted, critiqued and executed the work under his direction.
+- **Vendored skills:** `frontend-design`, `theme-factory` and `web-artifacts-builder` are vendored,
+  and `ait-prototype-testing` is adapted, from Anthropic's agent-skills under the Apache License
+  2.0; see [`plugins/ai-team-sdlc/skills/NOTICE.md`](plugins/ai-team-sdlc/skills/NOTICE.md).
 
 ## License
 

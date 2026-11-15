@@ -1,4 +1,5 @@
 ---
+# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-sdlc-orchestrate
 description: 'Master AI‑SDLC orchestrator. Use when asked to implement a spec/PRD/idea end‑to‑end, run the full software delivery lifecycle, or resume a previous run. Decomposes specs into verifiable tasks, dispatches each to the right specialist agent, enforces quality gates, tracks progress for resumability, and reports DONE only when every task passes its gate. Do not use for a single isolated phase — use the matching phase skill instead.'
 license: Apache-2.0
@@ -34,10 +35,20 @@ Do not duplicate those rules; apply them.
 
 ### 0. Initialize or resume
 1. **Resume only when an existing `run-id` is supplied** → read `state.json` (canonical), reconcile
-   `plan.md`, skip `done` tasks, and re‑run any task left `in_progress` (crash recovery).
+   `plan.md`, skip `done` tasks, and re‑run any task left `in_progress` (crash recovery). Write
+   artifacts to the paths in `state.json.layout.paths`; a run without `layout` (started on 1.1.0)
+   keeps its 1.1.0 output locations (`ait-artifact-layout` › Resolution order). On its first resume
+   under 1.1.1, carry its approval record over once: append the sign-off record, gate confirmations
+   and waivers from its `decisions.md` to `delivery/approvals.md`, verbatim and marked "carried over
+   from `.copilot-tracking/<run-id>/decisions.md`", commit that file, then read and write only
+   `delivery/approvals.md`. An earlier sign-off stays valid only if `signoff.artifact` is a commit SHA
+   and the working tree still matches it apart from new records; otherwise reset `signoff` to
+   `pending` and ask for a fresh three-approver sign-off. Its old `decisions.md`, `changes.md` and
+   `tasks.md` stay in place, read-only, and are no longer written.
 2. Otherwise create `run-id = <YYYY-MM-DD>-<slug>` (append a numeric suffix if the slug already
-   exists so repeated demos never resume stale state). Scaffold the tracking store from
-   `references/tracking-templates/` and **create `inbox/` and `inbox/processed/`**.
+   exists so repeated demos never resume stale state). Scaffold only `state.json` and `plan.md` from
+   `references/tracking-templates/`, **create `inbox/` and `inbox/processed/`**, and record the
+   resolved artifact destinations in `state.json.layout` (`ait-artifact-layout`).
 3. Detect and validate the mode (`ait-conventions` › Modes); record it in `state.json`.
 
 ### 1. Research & decompose (Plan)
@@ -52,8 +63,12 @@ Do not duplicate those rules; apply them.
    PRD. **Re‑decompose** the build/test tasks once design, prototype, and spec exist, so
    implementation is never finalized before requirements.
 4. Use `references/decompose.md` to produce **atomic tasks**: each has an `id` (`T-001`…), `owner`,
-   single `phase`, `deps`, `acceptance`, and `requiredGates`. Write to `state.json` (canonical),
-   then project `tasks.md` and `plan.md` checkboxes.
+   single `phase`, `deps`, `acceptance`, and `requiredGates`. Build tasks come from the committed
+   feature folders: import each `<feature root>/<NNN-slug>/tasks.md` row, where the feature root is
+   the resolved destination recorded in `state.json.layout.paths` (`contract.paths.specs`, the
+   host's rules, else `specs/features/`; `ait-artifact-layout` › Resolution order, Features,
+   stories and tasks). Write to `state.json` (canonical),
+   then project `plan.md` checkboxes.
 5. Confirm the plan with the user when the work is non‑trivial (see Human‑in‑the‑loop).
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
@@ -73,13 +88,19 @@ Repeat until no ready tasks remain:
 3. Independent ready tasks (no shared files/deps) may be dispatched **in parallel**.
 4. When the specialist returns, **run the required quality gates** (`ait-quality-gates` skill).
    - All required gates **passed** → mark task `done`/`[x]`, set `gateResults`; update
-     `state.json` then project `tasks.md`/`plan.md`.
+     `state.json` then project `plan.md`.
    - Any gate **failed/skipped‑required** → keep task open, capture the failure in the inbox,
      re‑dispatch with the failure context (bump `retries`; after 2, mark `blocked` and surface).
-5. After each batch, consolidate `inbox/*.md` into `decisions.md`/`changes.md` — invoke the
-   **Scribe** agent in VS Code, or (CLI, no agent available) do the consolidation inline yourself
-   using the Scribe conventions, then move processed files to `inbox/processed/`.
+5. After each batch, process `inbox/*.md` into committed decision records and
+   `delivery/approvals.md` (human gate confirmations and waivers only; agent gate results stay in
+   `state.json` and `delivery/results/`) — invoke the
+   **Scribe** agent in VS Code, or (CLI, no agent available) do it inline yourself
+   using the Scribe conventions, then move processed files to `inbox/processed/`. No run writes
+   `decisions.md` or `changes.md` any more (a run resumed from 1.1.0 keeps them read-only).
 6. Record the task's `files` and `authorModels` (see `ait-conventions` › Authorship lineage).
+7. Commit the batch's artifacts at their committed paths (`ait-artifact-layout` › What
+   `.copilot-tracking/` may hold), unless the host's rules leave commits to people, in which case
+   ask.
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
 Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
@@ -91,20 +112,25 @@ Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` 
 Otherwise ignore this section.
 
 ### 3. Sign‑off (mandatory human gate)
-When Build + Test are green, **pause** and request human sign‑off (Product Owner + Security
+When Build + Test are green, make sure every artifact of the run is committed, record the release
+candidate's commit SHA in `state.json.signoff.artifact`, then **pause** and request human sign‑off (Product Owner + Security
 Team + Tech Lead). Present: what was built, gate results, key decisions, risks, and the exact
 artifact/version being approved.
 - Approved → record `state.json.signoff` (all three approvers, artifact/version, timestamp,
   `status: approved`) and proceed to Deploy. Each approver entry MUST be sourced from a real
   human turn: capture the approver's identity and a verbatim quote/reference of their approval
-  in an append‑only `decisions.md` sign‑off record. Never self‑populate approvers; if any human
+  in an append‑only sign‑off record appended to `delivery/approvals.md` (then commit that file).
+  Never self‑populate approvers; if any human
   approval is missing, keep `status: pending` and pause.
 - Changes requested → set `signoff.status: changes_requested`, create follow‑up tasks, loop to Build.
-- Any change to files/artifact/gate results **after** approval resets `signoff` to `pending`.
+- Any change to files/artifact/gate results **after** approval resets `signoff` to `pending`. It is
+  measured against the release candidate; only new records are exempt (`ait-artifact-layout` ›
+  Rules, 6).
 
 ### 4. Deploy
-Only after `signoff.status == approved` **and** the append‑only `decisions.md` sign‑off record
-(with all three human approvers' identities) is present: dispatch the `ait-deploy` skill/DevOps
+Only after `signoff.status == approved` **and** the append‑only `delivery/approvals.md` sign‑off record
+(with all three human approvers' identities) is present, and the working tree still matches the
+release candidate apart from new records (re-checked on every resume): dispatch the `ait-deploy` skill/DevOps
 agent to ship the **approved artifact** (gates `pre-deploy` → `smoke` → `rollback-ready`). Never
 deploy without sign‑off. Surface destructive/infra actions for explicit approval.
 
@@ -112,7 +138,7 @@ deploy without sign‑off. Surface destructive/infra actions for explicit approv
 Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
 Sign-off also requires the `release-acceptance` gate when it is configured: record the release
 candidate commit SHA in `state.json.signoff.artifact` as soon as Build and Test are green, then
-check the gate (`ait-contract-mode` §7, §13). The sign-off record in `decisions.md`, the three
+check the gate (`ait-contract-mode` §7, §13). The sign-off record in `delivery/approvals.md`, the three
 human approvers and the deploy preconditions above are unchanged (§8).
 Otherwise ignore this section.
 
@@ -132,5 +158,5 @@ After each dispatch batch: emit one compact line per task (id + outcome + gate),
 
 ## References
 - `references/decompose.md` — spec → atomic tasks procedure & template.
-- `references/tracking-templates/` — `plan.md`, `tasks.md`, `changes.md`, `decisions.md`, `state.json` starters.
+- `references/tracking-templates/` — `state.json` and `plan.md` starters; `tasks.md`, `changes.md` and `decisions.md` only for runs started before 1.1.1.
 - `.github/skills/ait-quality-gates/SKILL.md` — the gate library.

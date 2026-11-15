@@ -29,11 +29,11 @@ tree or cloud sandbox. Paste the same prompt below into the project's agent sess
 Run on autopilot: use the ait-idea skill to find 2 business use cases for
 <Company> from <https://www.company.com>. Once ideation is READY, use the
 ait-product-showcase skill to build an executive showcase from use case 01
-in docs. Use its brief as the product requirements, with its one-pager
+in showcase/<company>/. Use its brief as the product requirements, with its one-pager
 and research as narrative, brand and evidence context—not a UI to reproduce.
 ```
 
-Both skills use `docs` by default. The brief drives the product experience; the one-pager
+By default the idea skill writes to `showcase/<company>/` and the showcase skill to `showcase/<use-case>/`. The brief drives the product experience; the one-pager
 is the pitch, not a screen design. The skills own file naming, review and stop conditions;
 a NOT READY discovery must not be treated as an approved build input.
 
@@ -79,7 +79,7 @@ The showcase skill still owns verification, review, and readiness.
 
 ```text
 Use the ait-product-showcase skill to build an executive showcase from
-use case <NN> in docs. Use its brief as the product requirements, with
+use case <NN> in showcase/<company>/. Use its brief as the product requirements, with
 its one-pager and research as narrative, brand and evidence context—not
 a UI to reproduce.
 ```
@@ -105,7 +105,7 @@ passed, what remains, and any blockers.
 
 ### 5. Inspect, refine, replay
 
-Open the generated `docs/<product>-v1.html` in a browser. Start **Simulate** with a click.
+Open the generated `showcase/<use-case>/v1.html` in a browser. Start **Simulate** with a click.
 Read the bottom transcript, test the controls actually supplied, and inspect the critical
 flows yourself. Speech availability depends on the browser; missing narration must leave
 the transcript and manual walkthrough usable.
