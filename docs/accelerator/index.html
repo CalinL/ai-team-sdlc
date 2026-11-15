@@ -333,11 +333,11 @@ existing prototype within its brief and update Simulate.
 <p>For the unattended chain, use the <a href="#run-fast-track-one-prompt">autopilot prompt</a>
 after completing setup. It connects the two skills without restating their workflows.</p>
 <h2 id="overview-what-you-will-have">What you will have</h2>
-<p>In <strong>your own workspace's <code>showcase/&lt;company&gt;/</code> and <code>showcase/&lt;product&gt;/</code> folders</strong>, not this repository's documentation:</p>
+<p>In <strong>your own workspace's <code>showcase/&lt;company&gt;/</code> and <code>showcase/&lt;use-case&gt;/</code> folders</strong>, not this repository's documentation:</p>
 <ul>
 <li>A cited research dossier with company context, evidence classes, brand guidance, and ranked ideas.</li>
 <li>Two company-styled HTML one-pagers and two Markdown prototype briefs.</li>
-<li>One self-contained <code>&lt;product&gt;-v1.html</code> showcase with realistic simulated data,
+<li>One self-contained <code>showcase/&lt;use-case&gt;/v1.html</code> showcase with realistic simulated data,
   working interactions, and a Simulate tour with narration, transcript, and controls.</li>
 <li>Verification and review findings, with an honest <strong>READY</strong> or <strong>BLOCKED</strong> outcome.</li>
 </ul>
@@ -586,7 +586,7 @@ ait-product-showcase skill to build an executive showcase from use case 01
 in showcase/&lt;company&gt;/. Use its brief as the product requirements, with its one-pager
 and research as narrative, brand and evidence context—not a UI to reproduce.
 </code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
-<p>By default the idea skill writes to <code>showcase/&lt;company&gt;/</code> and the showcase skill to <code>showcase/&lt;product&gt;/</code>. The brief drives the product experience; the one-pager
+<p>By default the idea skill writes to <code>showcase/&lt;company&gt;/</code> and the showcase skill to <code>showcase/&lt;use-case&gt;/</code>. The brief drives the product experience; the one-pager
 is the pitch, not a screen design. The skills own file naming, review and stop conditions;
 a NOT READY discovery must not be treated as an approved build input.</p>
 <p><strong>Your job while it runs:</strong> open the one-pagers and brief as they appear, understand the
@@ -636,7 +636,7 @@ Do not start a second build in the same workspace or send duplicate build reques
 passed, what remains, and any blockers.
 </code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
 <h3 id="run-5-inspect-refine-replay">5. Inspect, refine, replay</h3>
-<p>Open the generated <code>showcase/&lt;product&gt;/v1.html</code> in a browser. Start <strong>Simulate</strong> with a click.
+<p>Open the generated <code>showcase/&lt;use-case&gt;/v1.html</code> in a browser. Start <strong>Simulate</strong> with a click.
 Read the bottom transcript, test the controls actually supplied, and inspect the critical
 flows yourself. Speech availability depends on the browser; missing narration must leave
 the transcript and manual walkthrough usable.</p>
@@ -868,7 +868,7 @@ installation process; do not bypass policy.</p>
 <div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Use the pdf skill to create a concise executive leave-behind from the
 reviewed showcase and its brief, one-pager and research: the problem,
 the business reveal, supporting evidence, simulated capabilities and
-next validation steps. Save it in showcase/&lt;product&gt;/ without changing the prototype.
+next validation steps. Save it in showcase/&lt;use-case&gt;/ without changing the prototype.
 </code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
 <h2 id="export-a-three-slide-powerpoint">A three-slide PowerPoint</h2>
 <div class="prompt-block"><span class="snippet-label">Paste into Copilot</span><pre><code class="language-text">Use the pptx skill to create a three-slide executive leave-behind from
@@ -876,7 +876,7 @@ the reviewed showcase and its brief, one-pager and research:
 1. The business problem and evidence.
 2. The experience and decisive business reveal.
 3. Assumptions, simulated capabilities and next validation steps.
-Use the established brand guidance and save it in showcase/&lt;product&gt;/ without changing
+Use the established brand guidance and save it in showcase/&lt;use-case&gt;/ without changing
 the prototype.
 </code></pre><button class="copy-button" type="button" hidden>Copy</button></div>
 <p>An exported document needs its own layout/content verification. Do not claim the HTML

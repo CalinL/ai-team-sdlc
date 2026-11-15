@@ -33,7 +33,7 @@ The shape follows spec-driven tools: GitHub Spec Kit commits one folder per feat
 | Sign-off record, gate confirmations, waivers | `delivery/approvals.md` (append-only), written when each happens | the orchestrator (sign-off); `ait-scribe` (the rest) |
 | Release plan, rollback plan, deploy evidence | `delivery/release/` | `ait-devops` |
 | Brief, conformance receipts (contract) | `delivery/brief.md`, `delivery/conformance/<spec>.md` | the architecture owner, outside this team |
-| Showcase | `showcase/<product>/`: `v<N>.html` (or `v<N>/index.html`), `research.md`, `v<N>-changes.md`, `<extra>.md`, `v<N>-evidence/` | `ait-product-showcase` |
+| Showcase | `showcase/<use-case>/`: `v<N>.html` (or `v<N>/index.html`), `research.md`, `v<N>-changes.md`, `<extra>.md`, `v<N>-evidence/` | `ait-product-showcase` |
 | Idea material | `showcase/<company>/`: the current file names, `<company>-` prefix kept | `ait-idea` |
 | Frontend reproduction | caller's folder → repo's frontend convention → `apps/frontend/` | `ait-wireframe-to-frontend` |
 | Other code, tests, infrastructure | the host's existing layout | developers, `ait-qa-test`, `ait-devops` |
@@ -42,7 +42,10 @@ The shape follows spec-driven tools: GitHub Spec Kit commits one folder per feat
 
 Code, tests and infrastructure stay in the host's existing layout. Decision records sit with the
 architecture (`architecture/adr/`) in both modes, so a team that later adopts contract mode never
-moves its log; `decisions.dir` can move it anywhere.
+moves its log; `decisions.dir` can move it anywhere. In `showcase/`, `<company>/` holds one `ait-idea`
+run (its use cases share one research dossier) and `<use-case>/` holds one showcase: `<use-case>` is a kebab-case slug of the business case, prefixed with the company when one is
+known (`acme-expense-approvals`; `expense-approvals` without a company), so a showcase never needs a
+company name.
 
 ## Features, stories and tasks
 1. **One slicing owner.** The product owner slices the PRD (default mode) or `contract.requirements`

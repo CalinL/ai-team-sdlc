@@ -63,11 +63,11 @@ after completing setup. It connects the two skills without restating their workf
 
 ## What you will have
 
-In **your own workspace's `showcase/<company>/` and `showcase/<product>/` folders**, not this repository's documentation:
+In **your own workspace's `showcase/<company>/` and `showcase/<use-case>/` folders**, not this repository's documentation:
 
 - A cited research dossier with company context, evidence classes, brand guidance, and ranked ideas.
 - Two company-styled HTML one-pagers and two Markdown prototype briefs.
-- One self-contained `<product>-v1.html` showcase with realistic simulated data,
+- One self-contained `showcase/<use-case>/v1.html` showcase with realistic simulated data,
   working interactions, and a Simulate tour with narration, transcript, and controls.
 - Verification and review findings, with an honest **READY** or **BLOCKED** outcome.
 

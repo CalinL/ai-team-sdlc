@@ -8,12 +8,12 @@ build them regardless.
 
 | Extra | Path | Produces |
 |---|---|---|
-| `discovery` | both | `showcase/<product>/discovery.md`: market scan + **proposed** demo scope |
-| `portfolio` | generate only | Multi-record information architecture in the prototype + `showcase/<product>/portfolio.md` (rationale and IA) |
-| `agentic` | generate only | Visible, simulated AI-agent layer in the prototype + `showcase/<product>/agentic.md` (where agents add value) |
-| `business-case` | both | `showcase/<product>/business-case.md` + a self-contained `showcase/<product>/business-case.html` render |
+| `discovery` | both | `showcase/<use-case>/discovery.md`: market scan + **proposed** demo scope |
+| `portfolio` | generate only | Multi-record information architecture in the prototype + `showcase/<use-case>/portfolio.md` (rationale and IA) |
+| `agentic` | generate only | Visible, simulated AI-agent layer in the prototype + `showcase/<use-case>/agentic.md` (where agents add value) |
+| `business-case` | both | `showcase/<use-case>/business-case.md` + a self-contained `showcase/<use-case>/business-case.html` render |
 
-Every extra writes markdown into the same output folder as the prototype (default `showcase/<product>/`; see
+Every extra writes markdown into the same output folder as the prototype (default `showcase/<use-case>/`; see
 SKILL.md **Output files**). Extras are documents, not versions: update them in place, and when the
 user starts a new prototype version, keep them in sync with it.
 
@@ -69,7 +69,7 @@ Label the agents as simulated. Production agent architecture belongs to `ait-tec
 
 ## `business-case`: companion document
 This is presentation support. It is **not** an approved PRD, roadmap, acceptance specification or
-production architecture; the PRD supersedes it. Write it to `showcase/<product>/business-case.md`
+production architecture; the PRD supersedes it. Write it to `showcase/<use-case>/business-case.md`
 unless the user asks otherwise. Adapt this outline rather than padding it:
 
 ```
