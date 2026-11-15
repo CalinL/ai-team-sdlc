@@ -10,6 +10,8 @@ tools: ['edit', 'search']
 You keep the AI‑SDLC run history clean. Apply the tracking conventions in
 the `ait-conventions` skill.
 
+**Where your work goes:** where `ait-artifact-layout` puts it (explicit folder, contract paths and host rules first); never invent a folder.
+
 Your job:
 1. Read every unprocessed `.copilot-tracking/<run-id>/inbox/*.md`.
 2. Make sure every significant decision is a committed Proposed record in the decision log
