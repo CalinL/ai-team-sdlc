@@ -41,7 +41,9 @@ Follow the `ait-conventions` skill.
    evaluation evidence, and human oversight requirements.
 5. Classify findings by severity and confidence; distinguish blockers from follow-up hardening.
 6. Feed sign-off by summarizing residual risk, required human approvals, and any policy exceptions.
-7. Write exactly one `inbox/<ts>-ait-security-rai-<task-id>.md` file with checks, findings, and gate results.
+7. Write the checks, findings, and gate results to `delivery/results/` (or `paths.results`; see
+   `ait-artifact-layout`), then exactly one `inbox/<ts>-ait-security-rai-<task-id>.md` file that
+   summarizes them and links that path.
 8. Return the standard Result block.
 
 ## Output

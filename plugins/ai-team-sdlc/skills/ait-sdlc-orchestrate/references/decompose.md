@@ -3,7 +3,9 @@
 Turn a spec/PRD/idea into a set of **atomic, verifiable tasks** the orchestrator can dispatch.
 
 ## Procedure
-1. **Extract intent** — read the spec; list the user‑visible outcomes and constraints.
+1. **Extract intent** — read the spec; list the user‑visible outcomes and constraints. Once the
+   product owner has sliced the PRD (or `contract.requirements`), read the committed feature folders
+   `specs/features/<NNN-slug>/` (`ait-artifact-layout`).
 2. **Follow the lifecycle DAG** — plan (design/ideation → prototype → PRD → spec) precedes build;
    re‑decompose build/test tasks once design, prototype, and spec exist. Group work into
    `plan → build → test → signoff → deploy` (one phase per task).
@@ -18,7 +20,9 @@ Turn a spec/PRD/idea into a set of **atomic, verifiable tasks** the orchestrator
 4. **Assign owners** — pick the specialist whose domain matches (see table below).
 5. **Wire dependencies** — set `deps` so shared files/contracts are built before consumers.
 6. **Choose gates** — set `requiredGates` from the `ait-quality-gates` catalog ids.
-7. **Emit** — write `state.json` (canonical), then project `tasks.md` + `plan.md` checkboxes.
+7. **Emit** — import each committed feature `tasks.md` row into `state.json` (canonical) under a
+   runtime id (`T-001`, `T-002`, …), storing its `ref`, `feature` and `story` and rewriting its `deps` from refs
+   to runtime ids; then project `plan.md` checkboxes only.
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
 Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
@@ -44,11 +48,13 @@ Otherwise ignore this section.
 **Plan‑phase gate assignment:** ideation task → `design-review`; prototype task → `prototype-review`;
 PRD task and spec task → `spec-review` (the PRD's acceptance criteria are validated as part of
 `spec-review`). There is no separate PRD gate.
-## Task template (one row of `tasks.md`)
+## Task template (one row of a feature's committed `tasks.md`)
 ```
-| id    | title                       | owner       | phase | deps  | acceptance                                                        | requiredGates            | gateResults | status  |
-| T-003 | Implement POST /orders API  | ait-backend-dev | build | T-002 | Returns 201 + persists order; 400 on invalid body; unit tests cover happy+error | build,lint,unit | not_run     | pending |
+| ref   | story  | title                       | owner           | phase | deps  | acceptance                                                                       | requiredGates   |
+| 001-3 | S001-2 | Implement POST /orders API  | ait-backend-dev | build | 001-2 | Returns 201 + persists order; 400 on invalid body; unit tests cover happy+error | build,lint,unit |
 ```
+Status and gate results never go in this file; they live in `state.json` (and its `plan.md`
+projection) under the runtime id.
 
 ## Sizing heuristics
 - If a task touches > ~5 files or two specialists, split it.

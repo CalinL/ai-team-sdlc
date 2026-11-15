@@ -45,7 +45,7 @@ Ask only for what you cannot infer. Otherwise proceed and state the defaults you
   "prototype demo".
 - **Focus or exclusions**, and any **supplied material** (treat it as confidential unless told
   otherwise).
-- **Output folder:** the user's stated folder. Otherwise use `docs/` in a repository, or else the
+- **Output folder:** the user's stated folder. Otherwise use `showcase/<company>/` in a repository, or else the
   current working or outputs folder. Report absolute paths.
 
 **Research needs web access.** If you cannot fetch pages or search, say so before you start and ask

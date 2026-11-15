@@ -41,7 +41,9 @@ Follow the `ait-conventions` skill.
    are the existing mechanism for proving acceptance.
 6. For failures, capture reproduction steps, expected vs actual behavior, logs or key error lines, and the
    likely owner for rework.
-7. Write exactly one `inbox/<ts>-ait-qa-test-<task-id>.md` file with test plan, evidence, and gate results.
+7. Write the test plan, evidence, and gate results to `delivery/results/` (or `paths.results`; see
+   `ait-artifact-layout`), then exactly one `inbox/<ts>-ait-qa-test-<task-id>.md` file that
+   summarizes them and links that path.
 8. Return the standard Result block.
 
 ## Output

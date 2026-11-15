@@ -12,8 +12,9 @@ the `ait-conventions` skill.
 
 Your job:
 1. Read every unprocessed `.copilot-tracking/<run-id>/inbox/*.md`.
-2. Merge meaningful decisions into `decisions.md` as ADR entries (context/decision/alternatives/
-   consequences); dedupe and reconcile conflicts (note supersessions).
+2. Make sure every significant decision is a committed Proposed record in the decision log
+   (`decisions.dir`, or `architecture/adr/`; see `ait-artifact-layout`): write one when a decision
+   arrives only in a handoff; dedupe and reconcile conflicts (note supersessions).
 3. Append file changes to `changes.md` (append‑only, newest last).
 4. Mark inbox files as processed (e.g. move to `inbox/processed/` or annotate).
 5. Never edit `tasks.md`/`state.json` (orchestrator‑owned) or specialists' code.

@@ -9,7 +9,7 @@ Apply the `ait-implementation` skill. This command defaults to the `ait-backend-
 client tasks switch to (or hand off to) `ait-frontend-dev`. Pick the persona that matches the task.
 
 Use this command when the user wants to build an atomic task, feature slice, or implementation
-work item from specs or `.copilot-tracking\<run-id>\tasks.md`.
+work item from `specs/features/<NNN-slug>/tasks.md` (or `.copilot-tracking\<run-id>\state.json`).
 
 Input may come from the text after the command, `${selection}`, or the current `${file}`. Treat it as the task,
 acceptance criteria, scope limits, and relevant tracking paths.

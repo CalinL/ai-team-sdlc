@@ -23,7 +23,7 @@ visual design faithfully via `ait-wireframe-to-frontend`. It applies craft (`fro
 mandatory two-critic peer review and spec-fidelity validation, and adds the executive
 `Simulate` demo before the `prototype-review` gate.
 Companion extras (expanded discovery, portfolio/agentic enhancements, or a business case)
-run only when explicitly requested. Deliverables go to `docs/` (prototype `docs/<product>-v1.html`,
+run only when explicitly requested. Deliverables go to `showcase/<product>/` (prototype `showcase/<product>/v1.html`,
 extras as markdown); only the user starts a new version.
 
 Hold the bar at executive readiness: a very-high-visibility audience, a *wow* moment, and no

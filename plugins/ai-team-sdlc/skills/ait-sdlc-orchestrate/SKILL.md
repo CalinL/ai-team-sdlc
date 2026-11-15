@@ -34,10 +34,13 @@ Do not duplicate those rules; apply them.
 
 ### 0. Initialize or resume
 1. **Resume only when an existing `run-id` is supplied** → read `state.json` (canonical), reconcile
-   `plan.md`, skip `done` tasks, and re‑run any task left `in_progress` (crash recovery).
+   `plan.md`, skip `done` tasks, and re‑run any task left `in_progress` (crash recovery). Write
+   artifacts to the paths in `state.json.layout.paths`; a run without `layout` (started on 1.1.0)
+   keeps its 1.1.0 output locations (`ait-artifact-layout` › Resolution order).
 2. Otherwise create `run-id = <YYYY-MM-DD>-<slug>` (append a numeric suffix if the slug already
-   exists so repeated demos never resume stale state). Scaffold the tracking store from
-   `references/tracking-templates/` and **create `inbox/` and `inbox/processed/`**.
+   exists so repeated demos never resume stale state). Scaffold only `state.json` and `plan.md` from
+   `references/tracking-templates/`, **create `inbox/` and `inbox/processed/`**, and record the
+   resolved artifact destinations in `state.json.layout` (`ait-artifact-layout`).
 3. Detect and validate the mode (`ait-conventions` › Modes); record it in `state.json`.
 
 ### 1. Research & decompose (Plan)
@@ -52,8 +55,10 @@ Do not duplicate those rules; apply them.
    PRD. **Re‑decompose** the build/test tasks once design, prototype, and spec exist, so
    implementation is never finalized before requirements.
 4. Use `references/decompose.md` to produce **atomic tasks**: each has an `id` (`T-001`…), `owner`,
-   single `phase`, `deps`, `acceptance`, and `requiredGates`. Write to `state.json` (canonical),
-   then project `tasks.md` and `plan.md` checkboxes.
+   single `phase`, `deps`, `acceptance`, and `requiredGates`. Build tasks come from the committed
+   feature folders: import each `specs/features/<NNN-slug>/tasks.md` row (`ait-artifact-layout` ›
+   Features, stories and tasks). Write to `state.json` (canonical),
+   then project `plan.md` checkboxes.
 5. Confirm the plan with the user when the work is non‑trivial (see Human‑in‑the‑loop).
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
@@ -73,13 +78,16 @@ Repeat until no ready tasks remain:
 3. Independent ready tasks (no shared files/deps) may be dispatched **in parallel**.
 4. When the specialist returns, **run the required quality gates** (`ait-quality-gates` skill).
    - All required gates **passed** → mark task `done`/`[x]`, set `gateResults`; update
-     `state.json` then project `tasks.md`/`plan.md`.
+     `state.json` then project `plan.md`.
    - Any gate **failed/skipped‑required** → keep task open, capture the failure in the inbox,
      re‑dispatch with the failure context (bump `retries`; after 2, mark `blocked` and surface).
 5. After each batch, consolidate `inbox/*.md` into `decisions.md`/`changes.md` — invoke the
    **Scribe** agent in VS Code, or (CLI, no agent available) do the consolidation inline yourself
    using the Scribe conventions, then move processed files to `inbox/processed/`.
 6. Record the task's `files` and `authorModels` (see `ait-conventions` › Authorship lineage).
+7. Commit the batch's artifacts at their committed paths (`ait-artifact-layout` › What
+   `.copilot-tracking/` may hold), unless the host's rules leave commits to people, in which case
+   ask.
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
 Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.

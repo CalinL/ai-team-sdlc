@@ -35,14 +35,23 @@ Follow the `ait-conventions` skill.
 1. Read the PRD/spec/design and relevant existing architecture or conventions.
 2. Clarify scope, assumptions, dependencies, non-goals, and open questions; batch only essential questions.
 3. Define the solution shape: components, data flow, interfaces, APIs, persistence, configuration, and rollout.
-4. Capture key decisions as concise ADR-style notes, referencing existing patterns where possible.
+4. Capture key decisions as new Proposed decision records in `architecture/adr/` (see
+   `ait-artifact-layout`), referencing existing patterns where possible; a small implementation
+   choice goes in the feature spec's `## Decisions` section.
 5. Produce implementation-ready acceptance criteria and backlog slices with clear dependencies and gates.
+   In default mode, as `ait-product-owner`: write the PRD to `specs/prd.md`, slice it into feature
+   folders `specs/features/<NNN-slug>/` with one `stories.md` each, and add each folder to the
+   `specs/README.md` index (create it from the `ait-artifact-layout` template if it is absent). As
+   `ait-architect`: write each feature's implementation spec `<NNN-slug>.md` and its static
+   `tasks.md` in that folder.
 6. Identify risks: migrations, compatibility, observability, security/privacy, Responsible AI, and operations.
 7. Run the **`spec-review`** gate through the `ait-quality-gates` skill: completeness, consistency,
    feasibility, and traceability
    to product/design requirements. Use only existing repo checks or documented review criteria.
 8. Write exactly one `inbox/<ts>-ait-architect-<task-id>.md` or
-   `inbox/<ts>-ait-product-owner-<task-id>.md` file with specs, ADRs, assumptions, and gate results.
+   `inbox/<ts>-ait-product-owner-<task-id>.md` file that summarizes the PRD, stories, specs, task
+   plans and decision records and links their committed paths (not their content), with
+   assumptions and gate results.
 9. Return the standard Result block.
 
 ## Output

@@ -62,7 +62,7 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 | fidelity | no | Low/mid/high; default to the lowest fidelity that lets stakeholders validate the flow. |
 | constraints | no | Brand, platform, accessibility, device, or design-system constraints. |
 | opt-ins | no | **Default none.** Enable only on explicit user request: `simulate` (narrated guided tour) and/or `peer-review` (one round of critic review). |
-| output folder | no | Default `docs/` at the workspace root (see **Output files**). |
+| output folder | no | Default `specs/ui/` (resolved by `ait-artifact-layout`; see **Output files**). |
 | tracking path | no | `.copilot-tracking/<run-id>/` for inbox handoff when running under the orchestrator. |
 | task-id | no | Required for orchestrated task handoff. |
 
@@ -108,18 +108,19 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 10. Return the standard Result block.
 
 ## Output files
-All deliverables go in the **output folder** (default `docs/`); `<product>` is a kebab-case slug of
-the product or feature name.
+All deliverables go in the **output folder** (default `specs/ui/`, resolved by `ait-artifact-layout`).
 | Artifact | Path |
 |---|---|
-| Prototype | `docs/<product>-prototype-v<N>.html` (starts at `-v1`) — one self-contained file |
-| Spec-ready notes | `docs/<product>-prototype-notes.md` |
-| Verification evidence | Screenshots under `docs/<product>-prototype-v<N>-evidence/` (optional) |
+| Prototype | `specs/ui/prototype-v<N>.html` (starts at `-v1`) — one self-contained file |
+| Spec-ready notes | `specs/ui/notes.md` |
+| Verification evidence | Screenshots under `specs/ui/v<N>-evidence/` (optional) |
 
 **Versioning.** Start at `-v1` and iterate on the **current** version in place. Never create `-v2`
 (or copy a version) on your own: the **user** decides when to start a new version by copying the
 previous one. When the user points at an existing version, work on that file and leave earlier
-versions untouched.
+versions untouched. When no output folder, contract path or host rule names a destination and the
+repo already has a 1.1.0 prototype series (`ait-artifact-layout` › 1.1.0 locations), write the next
+version beside it and say so in the result (`ait-artifact-layout` › Resolution order); never move it.
 
 ## Output
 ```

@@ -49,7 +49,10 @@ Perform each step idempotently — detect existing state and merge rather than o
 4. **Create the runtime tracking store.** Ensure `.copilot-tracking/` exists (add a `.gitkeep`) and
    add `.copilot-tracking/` to `.gitignore` if not already ignored. This directory is per-run state,
    never committed.
-5. **Report** what was wired and the exact next command to start work
+5. **Optionally scaffold the layout** (`ait-artifact-layout`). With consent, create
+   `specs/README.md` from that skill's template and an empty `architecture/adr/` (add a `.gitkeep`).
+   Never overwrite either if it exists. Print the default layout so the team knows where work goes.
+6. **Report** what was wired and the exact next command to start work
    (`/product-run` or "Use the ait-sdlc-orchestrate skill").
 
 ## Templates
