@@ -1,7 +1,7 @@
 ---
 # Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 name: ait-artifact-layout
-description: 'Where every AI-SDLC work product goes and who writes it: the spec-driven default layout (specs/, architecture/adr/, delivery/, showcase/; docs/ for documentation only), the resolution order (explicit folder, contract paths, host rules, a resumed run''s recorded paths, existing version series, defaults), human-only files, the approval and release records, .copilot-tracking/ as agent state only, and the 1.1.0 locations for resumed runs. Read it whenever you write a deliverable. Not for run state (see ait-conventions).'
+description: 'Where every AI-SDLC work product goes and who writes it: the spec-driven default layout (specs/, architecture/adr/, delivery/, showcase/; docs/ for documentation only), the resolution order (explicit folder, contract paths, host rules, a resumed run''s recorded paths, existing version series, defaults), human-only files, the approval and release records, .copilot-tracking/ as agent state only, and the 1.1.0 locations for resumed runs. Read it whenever you write a deliverable; an artifact with no row is written nowhere (return it and ask where it goes). Not for run state (see ait-conventions).'
 license: Apache-2.0
 ---
 
@@ -9,6 +9,11 @@ license: Apache-2.0
 
 Where every AI-SDLC work product goes, and who writes it. Read this skill whenever you write a
 deliverable, and never invent a folder. Run state (tasks, gates, resume) is in `ait-conventions`.
+
+> **Before writing any file, find its row in the Default layout table.** No row → write **nothing**
+> (not in `docs/`, not in `delivery/`, not in the tracking store): put the content in your reply and
+> ask the human where it should go. This holds even when you were told not to ask questions during
+> the work: ask at the end, in your reply.
 
 ## Why
 `docs/` is documentation (guides, how-tos, runbooks, design rationale). Requirements, specifications, decisions, approvals and delivery records are work products, each with a committed home; `.copilot-tracking/` is the agents' local state and may summarize and link an artifact, never hold one.
@@ -39,6 +44,13 @@ The shape follows spec-driven tools: GitHub Spec Kit commits one folder per feat
 | Other code, tests, infrastructure | the host's existing layout | developers, `ait-qa-test`, `ait-devops` |
 | Documentation | `docs/` | humans; an agent only when asked for documentation |
 | Agent state (never an artifact) | `.copilot-tracking/<run-id>/` (gitignored) | the orchestrator, `ait-scribe`, specialists' handoffs |
+
+**Only the rows above have a home.** The folders are not categories: `delivery/` holds only the
+delivery records named above (results, approvals, release records, brief, receipts), `specs/` only the
+specification rows, `showcase/` only showcase and idea material, `docs/` only documentation (guides,
+how-tos, runbooks) a human explicitly asked for. An artifact that matches no row (for example a sales deck, meeting notes or a newsletter)
+is **written nowhere**: return its content in your reply and ask the human where it goes
+(Rules, 5).
 
 Code, tests and infrastructure stay in the host's existing layout. Decision records sit with the
 architecture (`architecture/adr/`) in both modes, so a team that later adopts contract mode never
