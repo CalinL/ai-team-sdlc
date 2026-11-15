@@ -62,12 +62,27 @@ point to its numbered sections (e.g. "`ait-contract-mode` §7").
   - When `contract:` exists: `brief` is present and readable; every listed path (`brief`,
     `requirements`, `paths.*`, `decisions.dir`, `protected`, `frozen`, `path_check`,
     `external_gates[].file`) is relative to the repo root and contains no `..`;
-    `stages.prototype` ∈ {`spike`, `ui-spec`}, and `paths.prototype` is **required** when it is
-    `ui-spec`; every `external_gates[].before` ∈ {`stories`, `prototype`, `specs`, `build`,
-    `signoff`}; gate `id`s are unique.
+    `stages.prototype` ∈ {`spike`, `ui-spec`}; with `ui-spec`, `paths.prototype` may be omitted on a
+    new run (it then means `specs/ui/`) and is **required** for a resumed run started on 1.1.0;
+    `{feature}` is allowed only in `paths.stories`, and a `paths.stories` with `{feature}` must
+    resolve under the effective `paths.specs`; every `external_gates[].before` ∈ {`stories`,
+    `prototype`, `specs`, `build`, `signoff`}; gate `id`s are unique.
   - When `review:` exists: `independence` ∈ {`off`, `warn`, `required`}.
   - Unknown keys → a warning, then ignored.
-- Defaults: `stages.design` = `true`; `stages.prototype` = `spike`.
+- Defaults: `stages.design` = `true`; `stages.prototype` = `spike`. Unset keys (a set key is
+  always honored exactly):
+
+  | Unset key | New run (started on 1.1.1) | Resumed run started on 1.1.0 |
+  |---|---|---|
+  | `paths.specs` / `paths.results` | `specs/features/`, `delivery/results/` | Inbox handoffs (1.1.0) |
+  | `paths.stories` | `"<paths.specs>/{feature}/stories.md"`, derived from the effective `paths.specs` | Inbox handoffs (1.1.0) |
+  | `decisions` | `architecture/adr/` (`Proposed`/`Accepted`) | Existing `decisions.md` kept read-only; new decisions → `architecture/adr/` |
+  | `paths.prototype` with `ui-spec` | `specs/ui/` | Validation error (1.1.0, unchanged for that run) |
+
+  `paths.stories` without `{feature}` keeps the 1.1.0 conventions (one stories file, flat
+  `paths.specs`, `{spec}` = the implemented file's name); with `{feature}`, one `stories.md`
+  per feature folder and folder-named specs (`ait-artifact-layout` › Features, stories and tasks).
+  The orchestrator records the resolved paths in `state.json.layout.paths`.
 - `decisions.dir` is treated as **protected**, except for adding new Proposed records (§8, §10).
 - The safety floors in `ait-conventions` always apply. Contract mode never weakens sign-off,
   required gates, waivers or the `delivery/approvals.md` sign-off record.
@@ -80,13 +95,15 @@ point to its numbered sections (e.g. "`ait-contract-mode` §7").
 
 ### 3. Requirements and stories
 - If `requirements` is set, `ait-product-owner` **slices it into stories** written to
-  `paths.stories` (default: the tracking store). Each story cites the requirement ID(s) it
+  `paths.stories` (default per §1). With `{feature}`, it writes one `stories.md` per feature
+  folder under `paths.specs`. Each story cites the requirement ID(s) it
   delivers and any decision record it implements, and carries testable acceptance criteria.
 - **No new PRD.** If `requirements` is unset, write the stories from the brief, still with no PRD.
 - If `requirements` is set but the file is missing or unreadable, stop and ask the human.
 - The stories task's `spec-review` gate checks **traceability** (every story cites its source;
   every requirement in scope is covered) and **testability** (every story has verifiable
-  acceptance criteria).
+  acceptance criteria); with `{feature}`, it also checks that every feature folder has a
+  `stories.md`.
 
 ### 4. Flow (architecture-first)
 Task kinds, in this order (each task records its `kind` in `state.json`):
@@ -124,7 +141,8 @@ Task kinds, in this order (each task records its `kind` in `state.json`):
 ### 6. Implementation specs
 - `ait-architect` writes the implementation specs to `paths.specs`, against the stories and the
   accepted prototype. Each spec notes the prototype digest it was written against, so §5 can flag
-  it when that digest goes stale.
+  it when that digest goes stale. With `{feature}` in `paths.stories`, the architect writes
+  `<NNN-slug>/<NNN-slug>.md` and `<NNN-slug>/tasks.md` under `paths.specs`.
 - Specs respect everything under `protected` (e.g. the host's architecture docs) and accepted
   decision records; a needed change to them is a change request (§9).
 - In contract mode `ait-architect` **does not dispatch** other agents (even where its agent
@@ -152,14 +170,15 @@ Task kinds, in this order (each task records its `kind` in `state.json`):
 - External gates are preconditions, not post-task gates: they never appear in `requiredGates`.
 
 ### 8. Decisions
-- If `decisions` is set, each new decision is a **new** record file in `decisions.dir` with
-  status `proposed_status`.
+- Each new decision is a **new** record file in the decision log (`decisions.dir`, default per §1)
+  with status `proposed_status`; any specialist may add one.
 - Specialists **never** edit existing records and never set `accepted_status`; only humans do.
-- The Scribe (or the orchestrator inline in the CLI) **adds** one line to `decisions.md` per
-  record: `[<id>](<path>) — <status> — <one-line summary>`.
+- Runs started before 1.1.1 only: the Scribe (or the orchestrator inline in the CLI) **adds** one
+  line to `decisions.md` per record: `[<id>](<path>) — <status> — <one-line summary>`.
 - **Everything `delivery/approvals.md` already holds stays**: the full sign-off record, gate
   confirmations (§7) and waivers, append-only, exactly as the safety floors require.
-- If `decisions` is unset, decisions go to `decisions.md` as in default mode.
+- If `decisions` is unset, the decision log defaults per §1 (`architecture/adr/` with
+  `Proposed`/`Accepted`).
 
 ### 9. Change requests
 - A change to anything under `protected`, or to an **accepted** decision record, is never made
@@ -171,23 +190,37 @@ Task kinds, in this order (each task records its `kind` in `state.json`):
 Added to every task's `requiredGates` in contract mode.
 - **Before each dispatch**, record a baseline in the tracking store: the `HEAD` commit,
   `git status --porcelain=v1 -uall`, and a SHA-256 of every path that is changed or untracked
-  at that moment.
+  at that moment. Also record the SHA-256 (or "absent") of `contract.brief`,
+  `contract.requirements`, `.github/ai-sdlc.yml`, `delivery/approvals.md` and every existing
+  file matching an `external_gates[].file` pattern (`{spec}` and `{version}` read as `*`),
+  **whether or not Git tracks or ignores them**.
 - **After the task**, candidates = `git diff --name-only <baseline HEAD>` ∪ the untracked paths
-  now ∪ the baseline's changed paths (renames: both names). Committed changes count.
+  now ∪ the baseline's changed paths (renames: both names), plus those inputs whose hash changed,
+  appeared or disappeared, and any new file matching a gate pattern (found on disk, not only
+  through Git). Committed changes count.
 - A candidate **was changed by the task** only if its current content (or absence) differs from
   its baseline content: the recorded hash for paths changed at baseline, otherwise the blob at
   `<baseline HEAD>`. Pre-existing dirty files the task left alone don't count.
-- **Fail** if a task-changed path is under `frozen` (no exception), under `protected`, or in
-  `decisions.dir`. The one exception: a **new** file in `decisions.dir`, not under `frozen`,
-  whose status is `proposed_status`.
-- If `contract.path_check` is set, run that command too; a non-zero exit fails. Both must pass.
+- **Per changed path, in order** (the first match decides):
+  1. under `frozen` → **fail**;
+  2. `contract.brief`, `contract.requirements`, `.github/ai-sdlc.yml`, `delivery/approvals.md`,
+     or a file matching an `external_gates[].file` pattern → **fail** (no exception, even inside
+     `decisions.dir`);
+  3. a **new** file in `decisions.dir` whose status is `proposed_status` → allowed;
+  4. under `protected` or in `decisions.dir` → **fail**;
+  5. anything else → allowed.
+- **Then, once per task, even when no path changed:** if `contract.path_check` is set, run it; a
+  non-zero exit fails. `path-check` passes only when no path fails and that command (if any)
+  exits 0.
 - Specialists still add their own unit and integration tests, outside `frozen`.
 - Command recipes: `references/path-check-and-digests.md`.
 
 ### 11. Deliverables
 - Specialists write deliverables to `contract.paths` where set (stories, prototype, specs,
-  results); the `inbox/` file keeps a short pointer to them.
-- `.copilot-tracking/` stays the trace; `state.json` stays canonical for tasks and resumption.
+  results), otherwise where `ait-artifact-layout` puts them; the `inbox/` file keeps a short
+  pointer to them.
+- `.copilot-tracking/` is agent state only (`ait-artifact-layout`); `state.json` stays canonical
+  for tasks and resumption.
 
 ### 12. Result
 Return the standard Result block from `ait-conventions`, plus one line:
@@ -207,7 +240,10 @@ Acceptance binds to **content**, not to a label.
 - Any change to the content gives a new digest, so an earlier acceptance becomes **stale**.
 - Placeholders in `external_gates[].file`: `{spec}` = the file name, without extension, of the
   implementation spec a build task implements; `{version}` = the release candidate's commit SHA
-  (short form allowed).
+  (short form allowed). With `{feature}` in `paths.stories`, `{spec}` is only the file named
+  after its folder under `paths.specs` (`<NNN-slug>/<NNN-slug>.md` → `<NNN-slug>`), never
+  `stories.md` or `tasks.md`; `spec-conformance` uses the **file** digest of that file.
+  Without `{feature}`: unchanged.
 
 ## Output
 ```
@@ -232,5 +268,5 @@ Acceptance binds to **content**, not to a label.
 
 ## References
 - `references/config-and-receipts.md` — annotated `.github/ai-sdlc.yml` example, validation
-  checklist, receipt schema, `decisions.md` link-line format.
+  checklist, receipt schema, `decisions.md` link-line format (runs started before 1.1.1 only).
 - `references/path-check-and-digests.md` — commands for digests (§13) and `path-check` (§10).
