@@ -174,8 +174,10 @@ Task kinds, in this order (each task records its `kind` in `state.json`):
 - Each new decision is a **new** record file in the decision log (`decisions.dir`, default per §1)
   with status `proposed_status`; any specialist may add one.
 - Specialists **never** edit existing records and never set `accepted_status`; only humans do.
-- Runs started before 1.1.1 only: the Scribe (or the orchestrator inline in the CLI) **adds** one
-  line to `decisions.md` per record: `[<id>](<path>) — <status> — <one-line summary>`.
+- Historical format only: under 1.1.0, the Scribe (or the orchestrator inline in the CLI) added one
+  line to `decisions.md` per record: `[<id>](<path>) — <status> — <one-line summary>`. From 1.1.1
+  on, nothing is appended to `decisions.md`, including on a resumed 1.1.0 run (that file stays
+  read-only); the decision log itself is the record.
 - **Everything `delivery/approvals.md` already holds stays**: the full sign-off record, gate
   confirmations (§7) and waivers, append-only, exactly as the safety floors require.
 - If `decisions` is unset, the decision log defaults per §1 (`architecture/adr/` with
@@ -269,5 +271,5 @@ Acceptance binds to **content**, not to a label.
 
 ## References
 - `references/config-and-receipts.md` — annotated `.github/ai-sdlc.yml` example, validation
-  checklist, receipt schema, `decisions.md` link-line format (runs started before 1.1.1 only).
+  checklist, receipt schema, the historical `decisions.md` link-line format (1.1.0).
 - `references/path-check-and-digests.md` — commands for digests (§13) and `path-check` (§10).

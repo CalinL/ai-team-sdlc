@@ -78,9 +78,10 @@ id and digest. Record that confirmation the first time the human gives it, for e
 - Quote: "<verbatim confirmation from the human turn>"
 ```
 
-## `decisions.md` link lines (§8; runs started before 1.1.1 only)
-A run started before 1.1.1 adds one line per record in `decisions.dir` to its `decisions.md`,
-without removing anything already there (a run started on 1.1.1 has no `decisions.md`):
+## `decisions.md` link lines (§8; historical, 1.1.0)
+Under 1.1.0, one line per record in `decisions.dir` was added to the run's `decisions.md`. From
+1.1.1 on, nothing is appended: a resumed 1.1.0 run keeps that file read-only, and a run started on
+1.1.1 has no `decisions.md`. The format, for reading older runs:
 
 ```
 [ADR-012](architecture/adr/ADR-012-cache-layer.md) — Proposed — Add a read-through cache for catalog queries

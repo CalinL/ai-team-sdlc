@@ -64,8 +64,10 @@ Do not duplicate those rules; apply them.
    implementation is never finalized before requirements.
 4. Use `references/decompose.md` to produce **atomic tasks**: each has an `id` (`T-001`…), `owner`,
    single `phase`, `deps`, `acceptance`, and `requiredGates`. Build tasks come from the committed
-   feature folders: import each `specs/features/<NNN-slug>/tasks.md` row (`ait-artifact-layout` ›
-   Features, stories and tasks). Write to `state.json` (canonical),
+   feature folders: import each `<feature root>/<NNN-slug>/tasks.md` row, where the feature root is
+   the resolved destination recorded in `state.json.layout.paths` (`contract.paths.specs`, the
+   host's rules, else `specs/features/`; `ait-artifact-layout` › Resolution order, Features,
+   stories and tasks). Write to `state.json` (canonical),
    then project `plan.md` checkboxes.
 5. Confirm the plan with the user when the work is non‑trivial (see Human‑in‑the‑loop).
 
@@ -92,8 +94,8 @@ Repeat until no ready tasks remain:
 5. After each batch, process `inbox/*.md` into committed decision records and
    `delivery/approvals.md` (gate confirmations, waivers) — invoke the
    **Scribe** agent in VS Code, or (CLI, no agent available) do it inline yourself
-   using the Scribe conventions, then move processed files to `inbox/processed/`. A run started on
-   1.1.1 writes no `decisions.md` or `changes.md`.
+   using the Scribe conventions, then move processed files to `inbox/processed/`. No run writes
+   `decisions.md` or `changes.md` any more (a run resumed from 1.1.0 keeps them read-only).
 6. Record the task's `files` and `authorModels` (see `ait-conventions` › Authorship lineage).
 7. Commit the batch's artifacts at their committed paths (`ait-artifact-layout` › What
    `.copilot-tracking/` may hold), unless the host's rules leave commits to people, in which case

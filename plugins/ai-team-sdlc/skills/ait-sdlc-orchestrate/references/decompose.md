@@ -5,7 +5,8 @@ Turn a spec/PRD/idea into a set of **atomic, verifiable tasks** the orchestrator
 ## Procedure
 1. **Extract intent** — read the spec; list the user‑visible outcomes and constraints. Once the
    product owner has sliced the PRD (or `contract.requirements`), read the committed feature folders
-   `specs/features/<NNN-slug>/` (`ait-artifact-layout`).
+   `<feature root>/<NNN-slug>/`: the feature root recorded in `state.json.layout.paths`
+   (`contract.paths.specs`, the host's rules, else `specs/features/`; `ait-artifact-layout`).
 2. **Follow the lifecycle DAG** — plan (design/ideation → prototype → PRD → spec) precedes build;
    re‑decompose build/test tasks once design, prototype, and spec exist. Group work into
    `plan → build → test → signoff → deploy` (one phase per task).

@@ -23,7 +23,7 @@ Your job:
 4. Mark inbox files as processed (e.g. move to `inbox/processed/` or annotate).
 5. Never edit `state.json`/`plan.md` (orchestrator‑owned) or specialists' code.
 
-For runs started on 1.1.1, never create or write `decisions.md` or `changes.md`.
+Never create or write `decisions.md` or `changes.md` (a run resumed from 1.1.0 keeps them read-only).
 
 Return a one‑line summary: how many inbox items processed, decision records added, approvals recorded.
 Keep entries terse and skimmable — no narration.

@@ -81,9 +81,10 @@ them**, so a gitignored brief or a new receipt is still seen.
 path_check() {
   local cmd=$1 out=$2; shift 2
   _h() { if [ -e "$1" ]; then sha256sum -- "$1" | cut -d' ' -f1; else echo absent; fi; }
+  _np() { local x=${1//\\//}; while [[ $x == ./* ]]; do x=${x#./}; done; while [[ $x == *//* ]]; do x=${x//\/\//\/}; done; printf '%s' "$x"; }
   _watch() {   # literal watch paths as given; globs expanded on disk (tracked, untracked or ignored)
-    ( shopt -s nullglob globstar dotglob
-      for w in "$@"; do
+    ( shopt -s nullglob dotglob; shopt -s globstar 2>/dev/null; IFS=   # IFS= : no word splitting, so spaces survive
+      for w in "$@"; do w=$(_np "$w")
         case $w in *[*?[]*) for m in $w; do [ -f "$m" ] && printf '%s\n' "$m"; done ;;
                     *) printf '%s\n' "$w" ;; esac
       done ) | LC_ALL=C sort -u
@@ -127,27 +128,31 @@ path_check() {
 # Invoke-PathCheck -Mode changed  -Dir <dir> [-Watch <paths/globs>]   — after the task
 function Invoke-PathCheck([ValidateSet('baseline', 'changed')][string]$Mode, [string]$Dir, [string[]]$Watch = @()) {
   function HashOf($p) { if (Test-Path -LiteralPath $p -PathType Leaf) { (Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash.ToLower() } else { 'absent' } }
+  function NormPath($p) { $x = $p.Replace('\', '/'); while ($x.StartsWith('./')) { $x = $x.Substring(2) }; $x -replace '/{2,}', '/' }
   function WatchList {   # literal watch paths as given; globs expanded on disk (tracked, untracked or ignored)
     $root = (Get-Location).Path
-    $Watch | ForEach-Object {
+    $Watch | ForEach-Object { NormPath $_ } | ForEach-Object {
       if ($_ -match '[*?\[]') { Get-ChildItem -Path $_ -File -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName.Substring($root.Length + 1).Replace('\', '/') } }
       else { $_ }
     } | Sort-Object -Unique -CaseSensitive
   }
   function ReadMap($file) {
     $m = New-Object 'System.Collections.Generic.Dictionary[string,string]'
-    Get-Content -LiteralPath $file -Encoding utf8 | Where-Object { $_ } | ForEach-Object { $k = $_ -split "`t", 2; $m[$k[1]] = $k[0] }
+    if (Test-Path -LiteralPath $file) {
+      Get-Content -LiteralPath $file -Encoding utf8 | Where-Object { $_ } | ForEach-Object { $k = $_ -split "`t", 2; $m[$k[1]] = $k[0] }
+    }
     $m
   }
   $git = { git -c core.quotePath=false @args }
   if ($Mode -eq 'baseline') {
     New-Item -ItemType Directory -Force -Path $Dir | Out-Null
-    & $git rev-parse HEAD | Set-Content -LiteralPath "$Dir/head" -Encoding utf8
-    & $git status --porcelain=v1 -uall | Set-Content -LiteralPath "$Dir/status" -Encoding utf8
-    @(& $git diff --no-renames --name-only HEAD) + @(& $git ls-files --others --exclude-standard) |
-      Where-Object { $_ } | Sort-Object -Unique -CaseSensitive | ForEach-Object { "$(HashOf $_)`t$_" } |
-      Set-Content -LiteralPath "$Dir/hashes" -Encoding utf8
-    @(WatchList) | ForEach-Object { "$(HashOf $_)`t$_" } | Set-Content -LiteralPath "$Dir/watch" -Encoding utf8
+    # -Value (not the pipeline), so each file is created or truncated even when the list is empty
+    Set-Content -LiteralPath "$Dir/head" -Value @(& $git rev-parse HEAD) -Encoding utf8
+    Set-Content -LiteralPath "$Dir/status" -Value @(& $git status --porcelain=v1 -uall) -Encoding utf8
+    $dirty = @(@(& $git diff --no-renames --name-only HEAD) + @(& $git ls-files --others --exclude-standard) |
+      Where-Object { $_ } | Sort-Object -Unique -CaseSensitive | ForEach-Object { "$(HashOf $_)`t$_" })
+    Set-Content -LiteralPath "$Dir/hashes" -Value $dirty -Encoding utf8
+    Set-Content -LiteralPath "$Dir/watch" -Value @(@(WatchList) | ForEach-Object { "$(HashOf $_)`t$_" }) -Encoding utf8
     return
   }
   $head = (Get-Content -LiteralPath "$Dir/head" -Encoding utf8 | Select-Object -First 1).Trim()
@@ -193,6 +198,11 @@ Then classify each reported path (paths in `ai-sdlc.yml` are prefixes relative t
 non-zero exit → **fail**. `path-check` passes only when no path fails and that command (if any)
 exits 0.
 
+Paths are compared after normalization (`\` → `/`, leading `./` and doubled `/` removed), and
+case-insensitively when the repo has `core.ignorecase=true` (Windows and macOS defaults), so an alias
+such as `./architecture/` or `Architecture/` cannot slip past a rule. A record's status is compared
+literally (case-insensitive), never as a pattern.
+
 ```bash
 # path_check changed <dir> [watch ...] | path_check_classify <dir>
 # Prints "<pass|FAIL> <rule> <path>" per path (and "<pass|FAIL> command"); returns 1 on failure.
@@ -201,14 +211,22 @@ exits 0.
 #   PC_INPUTS   brief, requirements, .github/ai-sdlc.yml, delivery/approvals.md
 #   PC_GATES    external_gates[].file with {spec}/{version} → *     PC_COMMAND  contract.path_check
 path_check_classify() {
-  local out=$1 head fail=0 p
-  head=$(cat "$out/head")
-  _under() { local x; while IFS= read -r x; do [ -n "$x" ] || continue
-    case $1 in "${x%/}"|"${x%/}"/*) return 0 ;; esac; done <<< "$2"; return 1; }
-  _input() { local x; while IFS= read -r x; do [ -n "$x" ] && [ "$1" = "$x" ] && return 0; done <<< "$PC_INPUTS"; return 1; }
-  _gate()  { local g; while IFS= read -r g; do [ -n "$g" ] && [[ $1 == $g ]] && return 0; done <<< "$PC_GATES"; return 1; }
+  local out=$1 head fail=0 p ic
+  head=$(cat "$out/head"); ic=$(git config --bool core.ignorecase 2>/dev/null)
+  _k() { local x=${1//\\//}; while [[ $x == ./* ]]; do x=${x#./}; done; while [[ $x == *//* ]]; do x=${x//\/\//\/}; done
+         x=${x%/}; [ "$ic" = true ] && x=$(printf '%s' "$x" | tr '[:upper:]' '[:lower:]'); printf '%s' "$x"; }
+  _under() { local k x; k=$(_k "$1"); while IFS= read -r x; do [ -n "$x" ] || continue; x=$(_k "$x")
+    case $k in "$x"|"$x"/*) return 0 ;; esac; done <<< "$2"; return 1; }
+  _input() { local k x; k=$(_k "$1"); while IFS= read -r x; do [ -n "$x" ] && [ "$k" = "$(_k "$x")" ] && return 0; done <<< "$PC_INPUTS"; return 1; }
+  _gate()  { local k g; k=$(_k "$1"); while IFS= read -r g; do [ -n "$g" ] || continue; g=$(_k "$g"); [[ $k == $g ]] && return 0; done <<< "$PC_GATES"; return 1; }
   _new()   { ! awk -F'\t' -v p="$1" '$2==p {f=1} END {exit !f}' "$out/hashes" && ! git cat-file -e "$head:$1" 2>/dev/null; }
-  _proposed() { [ -f "$1" ] && grep -Eiq "^[[:space:]]*[-*]?[[:space:]]*(\*\*)?status(\*\*)?[[:space:]]*:[[:space:]]*(\*\*)?${PC_PROPOSED}(\*\*)?[[:space:]]*$" "$1"; }
+  _proposed() { [ -f "$1" ] && awk -v want="$PC_PROPOSED" '
+      BEGIN { w = tolower(want) }
+      { l = $0; sub(/\r$/, "", l); sub(/^[ \t]*[-*]?[ \t]*(\*\*)?/, "", l)
+        if (tolower(substr(l, 1, 6)) != "status") next
+        l = substr(l, 7); sub(/^(\*\*)?[ \t]*:[ \t]*(\*\*)?/, "", l); sub(/(\*\*)?[ \t]*$/, "", l)
+        if (tolower(l) == w) { f = 1; exit } }
+      END { exit !f }' "$1"; }
   while IFS= read -r p; do
     [ -n "$p" ] || continue
     if   _under "$p" "$PC_FROZEN";                 then echo "FAIL 1-frozen $p"; fail=1
@@ -236,9 +254,14 @@ function Test-PathCheck {
         [string]$DecisionsDir = '', [string]$Proposed = 'Proposed', [string[]]$Inputs = @(), [string[]]$Gates = @(), [string]$Command = '')
   begin {
     $head = (Get-Content -LiteralPath "$Dir/head" -Encoding utf8 | Select-Object -First 1).Trim()
-    $base = @(Get-Content -LiteralPath "$Dir/hashes" -Encoding utf8 | Where-Object { $_ } | ForEach-Object { ($_ -split "`t", 2)[1] })
-    function Under($p, $list) { foreach ($x in $list) { if ($x) { $x = $x.TrimEnd('/')
-      if ($p -ceq $x -or $p.StartsWith("$x/", [StringComparison]::Ordinal)) { return $true } } }; $false }
+    $base = @(if (Test-Path -LiteralPath "$Dir/hashes") { Get-Content -LiteralPath "$Dir/hashes" -Encoding utf8 | Where-Object { $_ } | ForEach-Object { ($_ -split "`t", 2)[1] } })
+    $ic = (git config --bool core.ignorecase 2>$null) -eq 'true'
+    $cmp = if ($ic) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+    function Key($p) { $x = $p.Replace('\', '/'); while ($x.StartsWith('./')) { $x = $x.Substring(2) }; ($x -replace '/{2,}', '/').TrimEnd('/') }
+    function Under($p, $list) { $k = Key $p; foreach ($x in $list) { if ($x) { $x = Key $x
+      if ([string]::Equals($k, $x, $cmp) -or $k.StartsWith("$x/", $cmp)) { return $true } } }; $false }
+    function IsInput($p) { $k = Key $p; foreach ($x in $Inputs) { if ($x -and [string]::Equals($k, (Key $x), $cmp)) { return $true } }; $false }
+    function IsGate($p) { $k = Key $p; foreach ($g in $Gates) { if ($g) { $g = Key $g; if (($ic -and $k -like $g) -or (-not $ic -and $k -clike $g)) { return $true } } }; $false }
     function InHead($p) { git cat-file -e "${head}:$p" 2>$null; $LASTEXITCODE -eq 0 }
     $statusRx = '^\s*[-*]?\s*(\*\*)?status(\*\*)?\s*:\s*(\*\*)?' + [regex]::Escape($Proposed) + '(\*\*)?\s*$'
   }
@@ -246,7 +269,7 @@ function Test-PathCheck {
     if (-not $Path) { return }
     $inDec = $DecisionsDir -and (Under $Path @($DecisionsDir))
     $r = if (Under $Path $Frozen) { 1, $false }
-      elseif (($Inputs -ccontains $Path) -or @($Gates | Where-Object { $Path -clike $_ }).Count) { 2, $false }
+      elseif ((IsInput $Path) -or (IsGate $Path)) { 2, $false }
       elseif ($inDec -and ($base -cnotcontains $Path) -and -not (InHead $Path) -and (Test-Path -LiteralPath $Path) -and
               (Select-String -LiteralPath $Path -Pattern $statusRx -Quiet)) { 3, $true }
       elseif ((Under $Path $Protected) -or $inDec) { 4, $false }
