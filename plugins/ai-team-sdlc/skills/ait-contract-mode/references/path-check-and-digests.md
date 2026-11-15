@@ -81,9 +81,10 @@ them**, so a gitignored brief or a new receipt is still seen.
 path_check() {
   local cmd=$1 out=$2; shift 2
   _h() { if [ -e "$1" ]; then sha256sum -- "$1" | cut -d' ' -f1; else echo absent; fi; }
-  _np() { local x=${1//\\//}; while [[ $x == ./* ]]; do x=${x#./}; done; while [[ $x == *//* ]]; do x=${x//\/\//\/}; done; printf '%s' "$x"; }
+  _np() { local x=${1//\\//} y; while :; do y=$x; x=${x//\/\//\/}; x=${x//\/.\//\/}; x=${x#./}; [ "$x" = "$y" ] && break; done; printf '%s' "$x"; }
   _watch() {   # literal watch paths as given; globs expanded on disk (tracked, untracked or ignored)
     ( shopt -s nullglob dotglob; shopt -s globstar 2>/dev/null; IFS=   # IFS= : no word splitting, so spaces survive
+      [ "$(git config --bool core.ignorecase 2>/dev/null)" = true ] && shopt -s nocaseglob
       for w in "$@"; do w=$(_np "$w")
         case $w in *[*?[]*) for m in $w; do [ -f "$m" ] && printf '%s\n' "$m"; done ;;
                     *) printf '%s\n' "$w" ;; esac
@@ -128,7 +129,7 @@ path_check() {
 # Invoke-PathCheck -Mode changed  -Dir <dir> [-Watch <paths/globs>]   — after the task
 function Invoke-PathCheck([ValidateSet('baseline', 'changed')][string]$Mode, [string]$Dir, [string[]]$Watch = @()) {
   function HashOf($p) { if (Test-Path -LiteralPath $p -PathType Leaf) { (Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash.ToLower() } else { 'absent' } }
-  function NormPath($p) { $x = $p.Replace('\', '/'); while ($x.StartsWith('./')) { $x = $x.Substring(2) }; $x -replace '/{2,}', '/' }
+  function NormPath($p) { $x = $p.Replace('\', '/'); do { $y = $x; $x = $x -replace '/{2,}', '/' -replace '/\./', '/'; if ($x.StartsWith('./')) { $x = $x.Substring(2) } } while ($x -ne $y); $x }
   function WatchList {   # literal watch paths as given; globs expanded on disk (tracked, untracked or ignored)
     $root = (Get-Location).Path
     $Watch | ForEach-Object { NormPath $_ } | ForEach-Object {
@@ -198,8 +199,9 @@ Then classify each reported path (paths in `ai-sdlc.yml` are prefixes relative t
 non-zero exit → **fail**. `path-check` passes only when no path fails and that command (if any)
 exits 0.
 
-Paths are compared after normalization (`\` → `/`, leading `./` and doubled `/` removed), and
-case-insensitively when the repo has `core.ignorecase=true` (Windows and macOS defaults), so an alias
+Paths are compared after normalization (`\` → `/`, then doubled `/`, `/./` and leading `./` removed
+until stable), and case-insensitively (globs included) when the repo has `core.ignorecase=true`
+(Windows and macOS defaults), so an alias
 such as `./architecture/` or `Architecture/` cannot slip past a rule. A record's status is compared
 literally (case-insensitive), never as a pattern.
 
@@ -213,7 +215,7 @@ literally (case-insensitive), never as a pattern.
 path_check_classify() {
   local out=$1 head fail=0 p ic
   head=$(cat "$out/head"); ic=$(git config --bool core.ignorecase 2>/dev/null)
-  _k() { local x=${1//\\//}; while [[ $x == ./* ]]; do x=${x#./}; done; while [[ $x == *//* ]]; do x=${x//\/\//\/}; done
+  _k() { local x=${1//\\//} y; while :; do y=$x; x=${x//\/\//\/}; x=${x//\/.\//\/}; x=${x#./}; [ "$x" = "$y" ] && break; done
          x=${x%/}; [ "$ic" = true ] && x=$(printf '%s' "$x" | tr '[:upper:]' '[:lower:]'); printf '%s' "$x"; }
   _under() { local k x; k=$(_k "$1"); while IFS= read -r x; do [ -n "$x" ] || continue; x=$(_k "$x")
     case $k in "$x"|"$x"/*) return 0 ;; esac; done <<< "$2"; return 1; }
@@ -224,7 +226,7 @@ path_check_classify() {
       BEGIN { w = tolower(want) }
       { l = $0; sub(/\r$/, "", l); sub(/^[ \t]*[-*]?[ \t]*(\*\*)?/, "", l)
         if (tolower(substr(l, 1, 6)) != "status") next
-        l = substr(l, 7); sub(/^(\*\*)?[ \t]*:[ \t]*(\*\*)?/, "", l); sub(/(\*\*)?[ \t]*$/, "", l)
+        l = substr(l, 7); if (!sub(/^(\*\*)?[ \t]*:[ \t]*(\*\*)?/, "", l)) next; sub(/(\*\*)?[ \t]*$/, "", l)
         if (tolower(l) == w) { f = 1; exit } }
       END { exit !f }' "$1"; }
   while IFS= read -r p; do
@@ -257,7 +259,7 @@ function Test-PathCheck {
     $base = @(if (Test-Path -LiteralPath "$Dir/hashes") { Get-Content -LiteralPath "$Dir/hashes" -Encoding utf8 | Where-Object { $_ } | ForEach-Object { ($_ -split "`t", 2)[1] } })
     $ic = (git config --bool core.ignorecase 2>$null) -eq 'true'
     $cmp = if ($ic) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
-    function Key($p) { $x = $p.Replace('\', '/'); while ($x.StartsWith('./')) { $x = $x.Substring(2) }; ($x -replace '/{2,}', '/').TrimEnd('/') }
+    function Key($p) { $x = $p.Replace('\', '/'); do { $y = $x; $x = $x -replace '/{2,}', '/' -replace '/\./', '/'; if ($x.StartsWith('./')) { $x = $x.Substring(2) } } while ($x -ne $y); $x.TrimEnd('/') }
     function Under($p, $list) { $k = Key $p; foreach ($x in $list) { if ($x) { $x = Key $x
       if ([string]::Equals($k, $x, $cmp) -or $k.StartsWith("$x/", $cmp)) { return $true } } }; $false }
     function IsInput($p) { $k = Key $p; foreach ($x in $Inputs) { if ($x -and [string]::Equals($k, (Key $x), $cmp)) { return $true } }; $false }
