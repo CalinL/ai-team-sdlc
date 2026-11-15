@@ -240,12 +240,27 @@ agentic lifecycle. It is published to **GitHub Pages** and linked at the top of 
 > and publishes `docs/` on every push to `main`. If your org blocks automatic enablement, set
 > **Settings → Pages → Source: GitHub Actions** once, then re-run the workflow from the **Actions** tab.
 
+## Folder layout
+
+The team writes its work products to committed, spec-driven folders, never to `docs/`
+(documentation only) or the git-ignored `.copilot-tracking/` (agent state only):
+
+| Folder | What goes there |
+|---|---|
+| `specs/` | The PRD (`prd.md`), design, the prototype (`ui/`), one folder per feature (`features/<NNN-slug>/`: stories, spec, task plan) |
+| `architecture/adr/` | Decision records (proposed by the team, accepted by humans) |
+| `delivery/` | Results, `approvals.md` (sign-off, gate confirmations, waivers), release records |
+| `showcase/` | Showcase and idea material |
+
+An explicit output folder, the contract paths and your repo's rules come first, and existing files
+are never moved. Full rules: [`ait-artifact-layout`](plugins/ai-team-sdlc/skills/ait-artifact-layout/SKILL.md).
+
 ## Repo layout
 
 | Path | What |
 |---|---|
 | `plugins/ai-team-sdlc/plugin.json` | Plugin manifest |
-| `plugins/ai-team-sdlc/skills/` | 20 skills, incl. `ait-conventions` (the contract) and `ait-init` (setup) |
+| `plugins/ai-team-sdlc/skills/` | 21 skills, incl. `ait-conventions` (the contract) and `ait-init` (setup) |
 | `plugins/ai-team-sdlc/agents/` | 11 specialist agent personas |
 | `plugins/ai-team-sdlc/prompts/` | `/product-*` slash commands (VS Code convenience) |
 | `.github/plugin/marketplace.json` | Marketplace registration |

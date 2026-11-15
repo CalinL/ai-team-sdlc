@@ -380,6 +380,7 @@ flowchart TB
 | 6 | Shared conventions (contract) | `plugins/ai-team-sdlc/skills/ait-conventions/SKILL.md` | Skill | ✅ |
 | 6b | Repo setup (optional) | `plugins/ai-team-sdlc/skills/ait-init/SKILL.md` | Skill | ✅ |
 | 6c | Contract mode (opt-in, via `.github/ai-sdlc.yml`) | `plugins/ai-team-sdlc/skills/ait-contract-mode/SKILL.md` + `references/` | Skill | ✅ |
+| 6d | Artifact layout (where every work product goes) | `plugins/ai-team-sdlc/skills/ait-artifact-layout/SKILL.md` | Skill | ✅ |
 | 7 | Portable onboarding / CLI entry | `AGENTS.md` | Doc | ✅ CLI |
 | 8 | Usage doc | `docs/ai-sdlc-usage.md` | Doc | ✅ |
 | 9 | Runtime tracking store | `.copilot-tracking/<run>/` (git‑ignored) | State | ✅ |
@@ -448,7 +449,7 @@ docs/
 .copilot-tracking/                # runtime state (add to .gitignore)
 ```
 
-**Roster:** 11 commands · 19 skills (16 namespaced core + 3 unprefixed vendored) · 11 agents · 1 instructions · `AGENTS.md` · usage doc, organized into 5 phases (Plan · Build · Test · Sign-off · Deploy) + Orchestrator.
+**Roster:** 11 commands · 21 skills (18 namespaced core + 3 unprefixed vendored) · 11 agents · 1 instructions · `AGENTS.md` · usage doc, organized into 5 phases (Plan · Build · Test · Sign-off · Deploy) + Orchestrator.
 
 ---
 

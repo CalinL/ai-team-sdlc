@@ -201,6 +201,11 @@ independence. If the file exists it is validated, and any error stops the run. C
 defined entirely in the **`ait-contract-mode`** skill
 (`plugins/ai-team-sdlc/skills/ait-contract-mode/SKILL.md`).
 
+### 9. Where work products live
+Requirements, specs, decisions, approvals, results and release records are committed in their own folders: `specs/` (PRD, design, prototype, one folder per feature), `architecture/adr/` (decision records), `delivery/` (results, `approvals.md`, release records) and `showcase/` (showcase and idea material).
+`docs/` is documentation only, and `.copilot-tracking/` is agent state only, never an artifact; an explicit output folder, the contract paths and the host's rules come first, and nothing existing is ever moved.
+The rules are in the **`ait-artifact-layout`** skill (`plugins/ai-team-sdlc/skills/ait-artifact-layout/SKILL.md`).
+
 ---
 
 ## Conventions for contributing agents

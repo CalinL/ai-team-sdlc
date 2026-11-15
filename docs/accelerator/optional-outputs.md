@@ -38,7 +38,7 @@ installation process; do not bypass policy.
 Use the pdf skill to create a concise executive leave-behind from the
 reviewed showcase and its brief, one-pager and research: the problem,
 the business reveal, supporting evidence, simulated capabilities and
-next validation steps. Save it in docs without changing the prototype.
+next validation steps. Save it in showcase/<product>/ without changing the prototype.
 ```
 
 ## A three-slide PowerPoint
@@ -49,7 +49,7 @@ the reviewed showcase and its brief, one-pager and research:
 1. The business problem and evidence.
 2. The experience and decisive business reveal.
 3. Assumptions, simulated capabilities and next validation steps.
-Use the established brand guidance and save it in docs without changing
+Use the established brand guidance and save it in showcase/<product>/ without changing
 the prototype.
 ```
 

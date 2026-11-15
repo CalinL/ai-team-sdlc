@@ -55,13 +55,13 @@ Restart the session if new tools or skills do not appear.
 Create a fresh folder outside the plugin repository using your file manager.
 Initialize it as a Git repository by running `git init` in a terminal opened in that
 folder. Git is already a prerequisite; this does not require Copilot CLI or PowerShell 7.
-The repository makes ideation's default `docs` output match the showcase handoff.
+The repository makes ideation's default `showcase/<company>/` output match the showcase handoff.
 
 In the App, use the add-project control beside **Projects**, choose
 **Local folder or repository**, and select that folder.
 
 Below the prompt field, choose execution in the **local repository**, not a new
-working tree or cloud sandbox, so the documented `docs` path stays in your chosen folder.
+working tree or cloud sandbox, so the documented `showcase/` paths stay in your chosen folder.
 Choose **Interactive** initially and a capable model. Run the
 [shared setup check](#4-prove-the-core-path-works) in that project's agent session,
 not in a general Chat.
@@ -162,7 +162,7 @@ git init
 copilot
 ```
 
-Confirm that Copilot is working in this folder. All generated files go in its `docs` subfolder.
+Confirm that Copilot is working in this folder. All generated files go in its `showcase/` subfolder.
 `ait-init` is not required for direct skill use; do not configure adoption unless you intend to.
 
 **A folder is not a sandbox.** For the guided route, leave ordinary permissions in place and
