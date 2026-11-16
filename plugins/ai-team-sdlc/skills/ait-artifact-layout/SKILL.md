@@ -147,6 +147,8 @@ each batch, unless the host leaves commits to people, in which case it asks. A s
 artifact before the handoff that links it. Before recording the release candidate, the orchestrator
 makes sure every artifact of the run is in a commit. The approval and release records are committed
 after the candidate, in commits that touch only those paths.
+Every commit lands on the run's feature branch and stages only its own paths (`ait-conventions` ›
+Branches and pull requests).
 
 ## Resolution order
 For each artifact, the first rule that gives a path wins. Rule 4 applies **only to a resumed run**;

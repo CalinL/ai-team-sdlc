@@ -123,6 +123,7 @@ process it. This avoids write conflicts when agents run in parallel.
     "approvers": { "product_owner": null, "security_team": null, "tech_lead": null },
     "grantedAt": null
   },
+  "branch": "ait/2026-07-22-checkout-feature",
   "tasks": [
     { "id": "T-001", "title": "...", "owner": "ait-backend-dev", "phase": "build",
       "deps": [], "status": "done", "retries": 0,
@@ -205,6 +206,12 @@ defined entirely in the **`ait-contract-mode`** skill
 Requirements, specs, decisions, approvals, results and release records are committed in their own folders: `specs/` (PRD, design, prototype, one folder per feature), `architecture/adr/` (decision records), `delivery/` (results, `approvals.md`, release records) and `showcase/` (showcase and idea material).
 `docs/` is documentation only, and `.copilot-tracking/` is agent state only, never an artifact; an explicit output folder, the contract paths and the host's rules come first, and nothing existing is ever moved.
 The rules are in the **`ait-artifact-layout`** skill (`plugins/ai-team-sdlc/skills/ait-artifact-layout/SKILL.md`).
+
+### 10. Branches and pull requests
+The team commits only on a feature branch: a run that starts on the default branch (`main`, `master` or the remote's default) or a detached `HEAD` creates `ait/<run-id>` and records it in `state.json.branch`.
+It stages and commits only its own paths (never `git add -A`), so your staged and uncommitted work stays yours; it never updates the default branch, merges, force-pushes or bypasses branch protection (a safety floor), and pushes or opens a pull request only when you ask or your repo's rules say so.
+Pull-request approval lets people merge; it is never a gate and never the three-approver release sign-off, which stays bound to the release-candidate commit.
+The rules are in the **`ait-conventions`** skill, "Branches and pull requests (all modes)".
 
 ---
 

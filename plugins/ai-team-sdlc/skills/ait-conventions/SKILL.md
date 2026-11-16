@@ -165,7 +165,57 @@ details (paths, naming, stack, process), but never these **safety floors**:
 4. Any change after approval voids sign-off, measured against the release candidate; only new
    records are exempt (`ait-artifact-layout` › Rules, 6). Deploy ships the approved artifact only.
 5. No secrets in code or tracking files.
+6. Never update the default branch, merge, force-push, rewrite a pushed commit or the release
+   candidate, or bypass branch protection (Branches and pull requests, 3).
 If a host rule conflicts with a floor, follow the floor and report the conflict in the Result.
+
+## Branches and pull requests (all modes)
+Applies whenever the team commits: every orchestrator commit in a run (the step 0 carry-over, each
+batch in step 2, the sign-off and release records; specialists dispatched in a run never commit), or
+a phase skill run on its own that commits its own output. When the host's rules leave commits to people, the team makes no commit and creates no
+branch.
+1. **Branch.** Commit only on a feature branch, resolved before the first commit and, on resume,
+   before anything reads or compares the working tree.
+   - The **default branch** is `main`, `master`, or the remote's default: the output of
+     `git symbolic-ref -q --short refs/remotes/origin/HEAD` without its `origin/` prefix, else the
+     branch on the `ref:` line of `git ls-remote --symref origin HEAD` without its `refs/heads/`
+     prefix. If the repository has a
+     remote, neither command names its default, and the current branch is not `main` or `master`,
+     ask before the first commit whether the current branch is a feature branch.
+   - On the default branch or a detached `HEAD`, create and switch to `ait/<run-id>`
+     (`git switch -c ait/<run-id>`; a phase skill on its own uses `ait/<YYYY-MM-DD>-<slug>`). If
+     that branch already exists, stop and ask; never `git switch -C`, `git checkout -B` or reset it.
+   - Already on `ait/<run-id>`: use it. On another run's `ait/` branch: ask whether to continue on
+     it or to branch from the default branch. On any other branch: use it.
+   - In a run, the orchestrator records the branch in `state.json.branch`, and the run stays on it
+     until it ends; a phase skill on its own names the branch in its Result. On resume, check out
+     the recorded branch first; a run without `branch` (started before 1.1.2) applies this rule. If
+     the recorded branch is missing, or the checkout would overwrite uncommitted changes, stop and
+     ask: never stash, reset or discard the human's work.
+2. **Staging and committing.** Every commit stages only its own paths (`git add -- <path>…`) and
+   commits only them (`git commit -m "<message>" -- <path>…`), so files the human already staged stay staged and
+   uncommitted. Never `git add -A`, `git add --all`, `git add .`, `git commit -a` or
+   `git commit -am`: they sweep in the human's work.
+3. **Never** (a safety floor: Host repository rules, 6) update the default branch, locally or on the
+   remote (including a push with a `HEAD:main` refspec); merge; run `gh pr merge` or enable
+   auto-merge; force-push (`--force` or `--force-with-lease`); amend or rebase a pushed commit or
+   the release candidate; or bypass branch protection. If the host's rules or deploy steps call for
+   one of these, stop and ask a human to do it; that refusal changes nothing about sign-off.
+4. **Publishing.** Push the branch and open or update its pull request only when the human asks or
+   the host's rules say so. In contract mode, only when `path-check` has passed for every task whose
+   changes are on the branch; a failed or unchecked task's commits block publishing.
+5. **Three different approvals.**
+   - A **gate** is met by its own evidence: a contract-mode external gate by its human receipt and
+     the human's confirmation (`ait-contract-mode` §7).
+   - **Release sign-off** approves the release-candidate commit: three approvers, each from a real
+     human turn (Human-in-the-loop). If they approve in pull-request comments, the human relays the
+     quote or the link in the session; that comment is not the pull request's approving review. The
+     orchestrator records sign-off, with the quote or link, in `delivery/approvals.md`.
+   - **Pull-request approval** lets people merge the branch's final head, after the approval and
+     release records are pushed. It is never a gate and never a sign-off.
+   - A stale review dismissed because the record commits were pushed is not a change to the
+     release: don't reset sign-off. A squash or merge gives the default branch a different commit;
+     sign-off stays bound to the release candidate.
 
 ## Where things live
 Every work product (PRD, design, prototype, feature stories, specs and task plans, decision records,

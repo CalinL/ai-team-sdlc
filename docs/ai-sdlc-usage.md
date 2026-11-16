@@ -123,6 +123,20 @@ results, `approvals.md` and release records in `delivery/`; showcase and idea ma
 explicit output folder, the contract paths and your repo's rules come first; existing files are
 never moved. The rules live in the `ait-artifact-layout` skill.
 
+## Branches and pull requests
+
+The team commits only on a feature branch. If a run starts on the default branch (or a detached
+`HEAD`), it creates `ait/<run-id>` before its first commit and records it in `state.json.branch`;
+on an existing feature branch it uses that branch, and a resumed run checks its branch out again.
+It stages and commits only the files of each batch, never `git add -A`, so your staged and
+uncommitted work stays yours.
+It never updates the default branch, merges, force-pushes or bypasses branch protection (a safety
+floor your repo's rules can't lift), and it
+pushes or opens a pull request only when you ask or your repo's rules say so. Pull-request approval
+lets people merge; it is not a gate and not the release sign-off. If approvers sign off in
+pull-request comments, relay the quote or link in the session so the orchestrator can record it in
+`delivery/approvals.md`. The rules live in the `ait-conventions` skill.
+
 ## Contract mode
 
 Use contract mode when your organization already owns the requirements and the architecture, and
