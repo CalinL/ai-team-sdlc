@@ -40,7 +40,11 @@ Use-PluginUnderTest {
   $plan = Read-Text $repo "$fdir/tasks.md"
   Check $R 'p1: the feature folder has stories.md and a static tasks.md (ref/story table, no status columns)' (($files -contains "$fdir/stories.md") -and $plan -match '\|\s*ref\s*\|\s*story\s*\|' -and $plan -notmatch '(?i)\|\s*(status|gateResults)\s*\|')
   Check $R 'p1: code and tests were written' (@($files | Where-Object { $_ -match '\.(c|m)?js$' -and $_ -notmatch '^(node_modules|specs|architecture|delivery|\.copilot-tracking)/' }).Count -ge 2)
-  Check $R 'p1: a Proposed decision record in architecture/adr/' (@($files | Where-Object { $_ -match '^architecture/adr/\d{3,}-[a-z0-9-]+\.md$' -and (Read-Text $repo $_) -match 'Proposed' }).Count -ge 1)
+  # ait-artifact-layout Rules, 1: decisions live in Proposed records in architecture/adr/ or, for small
+  # implementation choices, in the feature spec's ## Decisions section; which one is the model's judgment.
+  $adrs = @($files | Where-Object { $_ -match '^architecture/adr/\d{3,}-[a-z0-9-]+\.md$' -and (Read-Text $repo $_) -match 'Proposed' })
+  $specDecisions = @($feature | Where-Object { (Read-Text $repo $_) -match '(?m)^#+\s.*Decisions' })
+  Check $R "p1: decisions are recorded (ADRs: $($adrs.Count); spec Decisions sections: $($specDecisions.Count))" ($adrs.Count + $specDecisions.Count -ge 1)
   Check $R 'p1: results in delivery/results/' (@($files | Where-Object { $_ -match '^delivery/results/.+' }).Count -ge 1)
   Check $R 'p1: nothing written to docs/' (-not @($files | Where-Object { $_ -match '^docs/' }).Count)
   Check-TrackingStore $R $repo $state 'p1'
@@ -87,7 +91,7 @@ Use-PluginUnderTest {
   Check-CandidateBound $R $repo $sha '^(delivery/approvals\.md|delivery/release/.+)$' 'p2'
   Check-TrackingStore $R $repo $state 'p2'
   Check-ApprovalsHumanOnly $R $repo 'p2'
-  Check-FreshClone $R $repo @('specs/prd.md', 'delivery/approvals.md') @('^architecture/adr/', '^delivery/release/', '^delivery/results/')
+  Check-FreshClone $R $repo (@('specs/prd.md', 'delivery/approvals.md') + $adrs + $specDecisions) @('^delivery/release/', '^delivery/results/')
 }
 
 Save-Report $R "$out/report.md"
