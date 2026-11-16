@@ -10,7 +10,7 @@ import os
 import re
 import sys
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOT = os.path.abspath(os.environ.get("AIT_REPO_ROOT") or os.path.join(os.path.dirname(__file__), "..", ".."))  # AIT_REPO_ROOT: check another checkout
 REF = os.path.join(ROOT, "plugins", "ai-team-sdlc", "skills", "ait-contract-mode", "references", "path-check-and-digests.md")
 WANT = {
     "bash": ["folder_digest()", "path_check()", "path_check_classify()"],

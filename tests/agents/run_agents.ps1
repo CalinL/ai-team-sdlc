@@ -15,11 +15,16 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'Harness.psm1') -Force
+$Case = @($Case | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim(" '`"") } | Where-Object { $_ })   # pwsh -File passes a list as one string
 
 $cases = foreach ($f in Get-ChildItem (Join-Path $PSScriptRoot 'cases') -Filter '*.ps1' | Sort-Object Name) {
   foreach ($c in @(& $f.FullName)) { $c.File = $f.Name; $c }
 }
 $cases = @($cases | Where-Object { $n = $_.Name; @($Case | Where-Object { $n -like $_ }).Count })
+$pluginVersion = [version](Get-Content (Join-Path (Get-PluginDir) 'plugin.json') -Raw | ConvertFrom-Json).version
+$skipped = @($cases | Where-Object { -not $DryRun -and $_.Since -and [version]$_.Since -gt $pluginVersion })   # cases for a newer plugin
+if ($skipped.Count) { Write-Host "Skipping $($skipped.Count) case(s) newer than plugin $pluginVersion`: $($skipped.Name -join ', ')" -ForegroundColor DarkGray }
+$cases = @($cases | Where-Object { $_ -notin $skipped })
 if ($List -or -not $cases.Count) {
   $cases | ForEach-Object { '{0,-34} {1,-18} runs={2} pass>={3}  {4}' -f $_.Name, $_.Model, $_.Runs, $_.Pass, $_.Covers }
   if (-not $cases.Count) { Write-Warning "No case matches '$($Case -join ', ')'."; exit 1 }

@@ -14,7 +14,7 @@ import sys
 
 import yaml
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOT = os.path.abspath(os.environ.get("AIT_REPO_ROOT") or os.path.join(os.path.dirname(__file__), "..", ".."))  # AIT_REPO_ROOT: check another checkout
 PLUGIN = os.path.join(ROOT, "plugins", "ai-team-sdlc")
 VENDORED = ("frontend-design", "theme-factory", "web-artifacts-builder")
 HEADER = "# Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE."

@@ -4,10 +4,11 @@
 # transcripts go to tests/out/agents/<stamp>/.
 $ErrorActionPreference = 'Stop'
 $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
-$script:PluginDir = Join-Path $script:RepoRoot 'plugins/ai-team-sdlc'
+$script:PluginDir = if ($env:AIT_PLUGIN_DIR) { (Resolve-Path $env:AIT_PLUGIN_DIR).Path } else { Join-Path $script:RepoRoot 'plugins/ai-team-sdlc' }   # AIT_PLUGIN_DIR: test another worktree's plugin
 $script:InstalledId = 'ai-team-sdlc@ai-team-sdlc'
 
 function Get-RepoRoot { $script:RepoRoot }
+function Get-PluginDir { $script:PluginDir }
 
 # The installed copy of the plugin would shadow the one under test, so it is disabled for the session
 # and re-enabled only if it was enabled before. A named mutex stops two sessions toggling it at once.
