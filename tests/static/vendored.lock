@@ -1,0 +1,22 @@
+# Pinned blob ids of the vendored Anthropic skills (see plugins/ai-team-sdlc/skills/NOTICE.md).
+# Regenerate only for a deliberate upstream update: git ls-files -s plugins/ai-team-sdlc/skills/{frontend-design,theme-factory,web-artifacts-builder}
+f433b1a53f5b830a205fd2df78e2b34974656c7b plugins/ai-team-sdlc/skills/frontend-design/LICENSE.txt
+decdff43d05908b4c1fc2cfd2d80fc5743440934 plugins/ai-team-sdlc/skills/frontend-design/SKILL.md
+4f881c52d1f72f4cfb720e339e2d35c3058d01a9 plugins/ai-team-sdlc/skills/theme-factory/LICENSE.txt
+90dfceaf2ecdc191a4dcfb0069768a9560638998 plugins/ai-team-sdlc/skills/theme-factory/SKILL.md
+24495d145c95917aba3a3445f7105444b6f7cfcc plugins/ai-team-sdlc/skills/theme-factory/theme-showcase.pdf
+e9f1eb0574e377ec8be59a71a1c206958f8b253e plugins/ai-team-sdlc/skills/theme-factory/themes/arctic-frost.md
+0c95bf7349c26996c7d43d6c0276a285287a9ffe plugins/ai-team-sdlc/skills/theme-factory/themes/botanical-garden.md
+ea7c74eb80794fe15f870e12c5588b2a988f77a1 plugins/ai-team-sdlc/skills/theme-factory/themes/desert-rose.md
+90c2b26518d8d7ff1d58981def5e93e2eca01780 plugins/ai-team-sdlc/skills/theme-factory/themes/forest-canopy.md
+ed8fc256f4e9b2dfffd46e82fdc451c32f87dbb1 plugins/ai-team-sdlc/skills/theme-factory/themes/golden-hour.md
+97e1c5f380eba51cd8956ec96114629c6540b76e plugins/ai-team-sdlc/skills/theme-factory/themes/midnight-galaxy.md
+6bd26a29beb09e663a1c049f5f8ec86189ae2db2 plugins/ai-team-sdlc/skills/theme-factory/themes/modern-minimalist.md
+b675126f53c49af7b6c3e00793a6d4773fb77af6 plugins/ai-team-sdlc/skills/theme-factory/themes/ocean-depths.md
+df799a0cc0e61c9226e52725afb45a1c6388f242 plugins/ai-team-sdlc/skills/theme-factory/themes/sunset-boulevard.md
+e029a435fb02647e6fd0b440618ae21f326d35e1 plugins/ai-team-sdlc/skills/theme-factory/themes/tech-innovation.md
+4f881c52d1f72f4cfb720e339e2d35c3058d01a9 plugins/ai-team-sdlc/skills/web-artifacts-builder/LICENSE.txt
+125cfe63fb1be57ffb36711ba02475d281a4cf92 plugins/ai-team-sdlc/skills/web-artifacts-builder/SKILL.md
+c13d229e0523623a23f979771ccf99ac149c8bfb plugins/ai-team-sdlc/skills/web-artifacts-builder/scripts/bundle-artifact.sh
+7d1022d88bec529f00ef385e10ed6084601d710b plugins/ai-team-sdlc/skills/web-artifacts-builder/scripts/init-artifact.sh
+cdbe7cdd1e724a7c9840387e17a6a7f26d3477e1 plugins/ai-team-sdlc/skills/web-artifacts-builder/scripts/shadcn-components.tar.gz
