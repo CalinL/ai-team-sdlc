@@ -18,3 +18,4 @@ Thumbs.db
 
 # Test-suite output (transcripts, scratch repos, extracted recipes)
 tests/out/
+__pycache__/
