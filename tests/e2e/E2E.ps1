@@ -64,11 +64,11 @@ function Check-CandidateBound($R, [string]$Repo, [string]$Sha, [string]$Allowed,
 
 # Every plan/build/test task is done and no required gate is failed or unrun (before sign-off).
 # A human waiver: one approvals.md line naming the task and gate, with a quoted human grant ("... waive ...")
-# and no refusal or pending wording (a denied or merely requested waiver doesn't count).
+# and no refusal or pending wording about the waiver itself (a denied or merely requested waiver doesn't count).
 function Test-HumanWaiver([string]$Approvals, [string]$Task, [string]$Gate) {
   [bool](($Approvals -split "`r?`n") | Where-Object {
       $_ -match [regex]::Escape($Task) -and $_ -match "(?i)\b$([regex]::Escape($Gate))\b" -and $_ -match '(?i)"[^"]*\bwaiv(e|es|ed|ing)\b[^"]*"' -and
-      $_ -notmatch "(?i)\b(not|n't|no|never|deny|denied|declin\w*|reject\w*|request\w*|pending|awaiting)\b" })
+      $_ -notmatch "(?i)(\bnot|n't|\bnever|\bno longer)\s+(\w+\s+){0,2}waiv|\b(deny|denies|denied|declin\w*|reject\w*|request\w*|refus\w*)\s+(\w+\s+){0,3}waiv|\bwaiv\w*\s+(is\s+|was\s+)?(denied|declined|rejected|refused|requested|pending)|\bawaiting\b" })
 }
 # A gate counts only when passed, or skipped with a human waiver for that task and gate in approvals.md.
 function Check-TasksComplete($R, $State, [string]$Tag, [string]$Repo = '') {
