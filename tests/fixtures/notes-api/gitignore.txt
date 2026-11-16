@@ -1,0 +1,2 @@
+.copilot-tracking/
+node_modules/

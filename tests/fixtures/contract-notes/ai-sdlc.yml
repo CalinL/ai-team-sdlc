@@ -1,0 +1,8 @@
+contract:
+  brief: delivery/brief.md
+  requirements: specs/prd.md
+  stages: { design: false, prototype: spike }
+  protected: [architecture/]
+  external_gates:
+    - { id: spec-conformance, before: build, file: "delivery/conformance/{spec}.md" }
+    - { id: release-acceptance, before: signoff, file: "delivery/results/acceptance-{version}.md" }
