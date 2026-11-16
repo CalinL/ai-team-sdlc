@@ -23,6 +23,7 @@ $seedRun = {
   if ($Case.Dirty) {
     Write-RepoFile $Repo 'notes/human-todo.txt' "my own notes, not for the team`n"
     Add-Content -LiteralPath (Join-Path $Repo 'README.md') -Value 'Unsaved human edit.'
+    Write-RepoFile $Repo 'notes/staged.txt' "staged by the human, not for this batch`n"; Invoke-Git $Repo @('add', '--', 'notes/staged.txt')
   }
   New-RunState -Root $Repo -RunId $id -Phase 'build' -Extra $extra `
     -Signoff @{ status = 'pending'; artifact = $null; approvers = @{ product_owner = $null; security_team = $null; tech_lead = $null }; grantedAt = $null } `
@@ -53,8 +54,9 @@ $checkBuild = {
   if ($Case.Dirty) {
     Expect ($paths -notcontains 'notes/human-todo.txt' -and $paths -notcontains 'README.md') "the human's uncommitted files were committed: $(($paths | Where-Object { $_ -in 'notes/human-todo.txt', 'README.md' }) -join ', ')"
     Expect ((Read-Text $Repo 'notes/human-todo.txt') -match 'my own notes' -and (Read-Text $Repo 'README.md') -match 'Unsaved human edit\.') "the human's uncommitted work was discarded"
-    Push-Location $Repo; try { $st = @(git status --porcelain -- README.md notes/human-todo.txt) } finally { Pop-Location }
+    Push-Location $Repo; try { $st = @(git status --porcelain -- README.md notes/human-todo.txt); $staged = @(git diff --cached --name-only -- notes/staged.txt) } finally { Pop-Location }
     Expect ($st.Count -eq 2) "the human's files are no longer uncommitted changes: $($st -join '; ')"
+    Expect ($staged.Count -eq 1 -and $paths -notcontains 'notes/staged.txt') "the human's already-staged file was committed or unstaged"
   }
 }
 
@@ -63,7 +65,7 @@ $build = @(
   @{ Name = 'branch-from-detached-head'; Covers = '1.1.2 §5.2 #2: detached HEAD → ait/<run-id>'; Start = 'detached' }
   @{ Name = 'branch-existing-feature'; Covers = '1.1.2 §5.2 #3: an existing feature branch is used, no ait/ branch'; Start = 'feature'; Branch = 'feature/x' }
   @{ Name = 'branch-resume-checkout'; Covers = '1.1.2 §5.2 #4: resume checks the recorded branch out'; Start = 'resume' }
-  @{ Name = 'branch-staging-only-batch'; Covers = '1.1.2 §5.2 #5: only the batch is staged; human files stay uncommitted'; Start = 'main'; Dirty = $true }
+  @{ Name = 'branch-staging-only-batch'; Covers = '1.1.2 §5.2 #5: only the batch is committed; untracked, unstaged and already-staged human files stay as they were'; Start = 'main'; Dirty = $true }
 ) | ForEach-Object { $_ + @{ Since = '1.1.2'; Model = 'gpt-5.6-sol'; Runs = 1; Pass = 1; Setup = $seedRun; Prompt = $buildPrompt; Check = $checkBuild } }
 
 # Sign-off cases: a run at sign-off on ait/<run-id> with the release candidate recorded.
