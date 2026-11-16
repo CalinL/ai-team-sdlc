@@ -13,7 +13,9 @@ deliverable, and never invent a folder. Run state (tasks, gates, resume) is in `
 > **Before writing any file, find its row in the Default layout table.** No row → write **nothing**
 > (not in `docs/`, not in `delivery/`, not in the tracking store): put the content in your reply and
 > ask the human where it should go. This holds even when you were told not to ask questions during
-> the work: ask at the end, in your reply.
+> the work: ask at the end, in your reply. Release communications (a launch announcement, a customer
+> email, a newsletter) have no row either: `delivery/release/` holds only the release plan, rollback
+> plan and deploy evidence.
 
 ## Why
 `docs/` is documentation (guides, how-tos, runbooks, design rationale). Requirements, specifications, decisions, approvals and delivery records are work products, each with a committed home; `.copilot-tracking/` is the agents' local state and may summarize and link an artifact, never hold one.
