@@ -25,6 +25,13 @@ $seed = @{
   '.gitignore'              = [IO.File]::ReadAllText("$fx/notes-api/gitignore.txt")
 }
 New-ScratchRepo $repo $seed
+$seedMain = Get-HeadSha $repo
+$pluginVersion = [version](Get-Content (Join-Path (Get-PluginDir) 'plugin.json') -Raw | ConvertFrom-Json).version
+function Test-BranchRule([string]$Tag, $State) {   # spec 1.1.2 §5.2 #1 and #6, in contract mode
+  if ($pluginVersion -lt [version]'1.1.2') { return }
+  Push-Location $repo; try { $main = (git rev-parse main).Trim(); $head = (git branch --show-current).Trim() } finally { Pop-Location }
+  Check $R "${Tag}: main did not move; the run works on ait/<run-id>" ($main -eq $seedMain -and $State.branch -eq "ait/$($State.runId)" -and $head -eq $State.branch)
+}
 $inputs = Get-FileHashes $repo
 Write-Host "Scratch repo: $repo`nTranscripts: $out" -ForegroundColor Cyan
 $R = New-Report
@@ -63,6 +70,7 @@ Use-PluginUnderTest {
   Check $R 'p1: build blocked by external:spec-conformance' (@($state.tasks | Where-Object { "$($_.blockedBy)" -match 'external:spec-conformance' }).Count -ge 1)
   Check $R 'p1: no PRD rewrite, no receipt written by the team' (-not @($files | Where-Object { $_ -match '^delivery/(conformance/|results/acceptance-)' }).Count)
   Test-InputsUnchanged 'p1'
+  Test-BranchRule 'p1' $state
   Check-TrackingStore $R $repo $state 'p1'
   Save-Report $R "$out/report.md"
   if ($StopAfter -lt 2 -or -not $specs.Count) { return }
@@ -93,6 +101,7 @@ Use-PluginUnderTest {
   Check $R 'p2: sign-off still pending' ($state.signoff.status -ne 'approved')
   if ($sha -match '^[0-9a-f]{7,40}$') { Check-CandidateBound $R $repo $sha '^delivery/approvals\.md$' 'p2' }
   Test-InputsUnchanged 'p2'
+  Test-BranchRule 'p2' $state
   Check-ApprovalsHumanOnly $R $repo 'p2'
   Save-Report $R "$out/report.md"
   if ($StopAfter -lt 3 -or $sha -notmatch '^[0-9a-f]{7,40}$') { return }
@@ -118,6 +127,7 @@ Use-PluginUnderTest {
       Where-Object { $_ -notmatch '^\.copilot-tracking/' -and $_ -ne 'delivery/approvals.md' -and $_ -ne "delivery/results/acceptance-$sha.md" -and -not ($_ -match '^delivery/release/' -and -not $snapshot.ContainsKey($_)) })
   Check $R "p3: after the candidate only records changed$(if ($moved.Count) { ': ' + ($moved -join ', ') })" (-not $moved.Count)
   Test-InputsUnchanged 'p3'
+  Test-BranchRule 'p3' $state
   Check-ApprovalsHumanOnly $R $repo 'p3'
   Check-CandidateBound $R $repo $sha '^(delivery/approvals\.md|delivery/release/.+|delivery/results/acceptance-[^/]+\.md)$' 'p3'
   Test-ReceiptsUntouched 'p3'
