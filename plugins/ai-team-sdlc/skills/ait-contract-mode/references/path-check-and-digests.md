@@ -45,7 +45,7 @@ function Get-FolderDigest([Parameter(Mandatory)][string]$Dir, [string[]]$Exclude
   $rows = [System.Collections.Generic.List[string]]::new()
   foreach ($f in Get-ChildItem -LiteralPath $root -Recurse -File -Force) {
     $rel = $f.FullName.Substring($root.Length + 1).Replace('\', '/')
-    if ($Exclude | Where-Object { $rel -like $_ }) { continue }
+    if ($Exclude | Where-Object { $rel -clike $_ }) { continue }   # case-sensitive, as in bash
     # sort key = the path's UTF-8 bytes as fixed-width hex, so ordinal order = byte order of the path
     $keys.Add((-join ($utf8.GetBytes($rel) | ForEach-Object { $_.ToString('x2') })))
     $rows.Add("$rel $((Get-FileHash -Algorithm SHA256 -LiteralPath $f.FullName).Hash.ToLower())")
@@ -73,7 +73,9 @@ survives a resume.
 **Watched inputs.** Pass the same list to both calls: `contract.brief`, `contract.requirements`,
 `.github/ai-sdlc.yml`, `delivery/approvals.md`, and every `external_gates[].file` with `{spec}` and
 `{version}` replaced by `*`. They are hashed on disk, **whether Git tracks, ignores or doesn't know
-them**, so a gitignored brief or a new receipt is still seen.
+them**, so a gitignored brief or a new receipt is still seen. Globs follow one rule in both shells,
+for watching and for classifying: `*`, `?` and `[..]` match within one path component, and a whole
+`**` component spans zero or more; `core.ignorecase` decides case.
 
 ```bash
 # path_check baseline <dir> [watch ...]   — before dispatch
@@ -130,10 +132,32 @@ path_check() {
 function Invoke-PathCheck([ValidateSet('baseline', 'changed')][string]$Mode, [string]$Dir, [string[]]$Watch = @()) {
   function HashOf($p) { if (Test-Path -LiteralPath $p -PathType Leaf) { (Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash.ToLower() } else { 'absent' } }
   function NormPath($p) { $x = $p.Replace('\', '/'); do { $y = $x; $x = $x -replace '/{2,}', '/' -replace '/\./', '/'; if ($x.StartsWith('./')) { $x = $x.Substring(2) } } while ($x -ne $y); $x }
-  function WatchList {   # literal watch paths as given; globs expanded on disk (tracked, untracked or ignored)
+  function GlobRegex($glob, $ic) {   # bash globstar rules: '*', '?', '[..]' stay in one path component; a whole '**' component spans zero or more
+    $parts = $glob.Split('/'); $rx = ''
+    for ($i = 0; $i -lt $parts.Count; $i++) {
+      $c = $parts[$i]; $last = $i -eq $parts.Count - 1
+      if ($c -eq '**') { $rx += $(if ($last) { '(?:[^/]+/)*[^/]+' } else { '(?:[^/]+/)*' }); continue }
+      $rx += [regex]::Replace($c, '\[!?[^\]]*\]|\*|\?|[^*?\[]+|\[', { param($m) $v = $m.Value
+        if ($v -eq '*') { '[^/]*' } elseif ($v -eq '?') { '[^/]' } elseif ($v.Length -gt 2 -and $v.StartsWith('[')) { '[' + ($v.Substring(1, $v.Length - 2) -replace '^[!^](.*)$', '^$1/') + ']' } else { [regex]::Escape($v) } })
+      if (-not $last) { $rx += '/' }
+    }
+    [regex]::new("^$rx`$", $(if ($ic) { 'IgnoreCase, CultureInvariant' } else { 'CultureInvariant' }))
+  }
+  function WatchList {   # literal watch paths as given; globs matched on disk (tracked, untracked or ignored)
     $root = (Get-Location).Path
+    $ic = (git config --bool core.ignorecase 2>$null) -eq 'true'   # same case rule on every OS
     $Watch | ForEach-Object { NormPath $_ } | ForEach-Object {
-      if ($_ -match '[*?\[]') { Get-ChildItem -Path $_ -File -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName.Substring($root.Length + 1).Replace('\', '/') } }
+      if ($_ -match '[*?\[]') {
+        $fixed = @(); foreach ($s in $_.Split('/')) { if ($s -match '[*?\[]') { break }; $fixed += $s }
+        $re = GlobRegex $_ $ic
+        $base = if ($fixed.Count) { Join-Path $root ($fixed -join '/') } else { $root }
+        if ($ic -and -not (Test-Path -LiteralPath $base -PathType Container)) { $base = $root }   # ignorecase on a case-sensitive disk: walk from the root
+        if (Test-Path -LiteralPath $base -PathType Container) {
+          Get-ChildItem -LiteralPath $base -Recurse -File -Force -ErrorAction SilentlyContinue |
+            ForEach-Object { $_.FullName.Substring($root.Length + 1).Replace('\', '/') } |
+            Where-Object { $_ -notlike '.git/*' -and $re.IsMatch($_) }
+        }
+      }
       else { $_ }
     } | Sort-Object -Unique -CaseSensitive
   }
@@ -220,7 +244,13 @@ path_check_classify() {
   _under() { local k x; k=$(_k "$1"); while IFS= read -r x; do [ -n "$x" ] || continue; x=$(_k "$x")
     case $k in "$x"|"$x"/*) return 0 ;; esac; done <<< "$2"; return 1; }
   _input() { local k x; k=$(_k "$1"); while IFS= read -r x; do [ -n "$x" ] && [ "$k" = "$(_k "$x")" ] && return 0; done <<< "$PC_INPUTS"; return 1; }
-  _gate()  { local k g; k=$(_k "$1"); while IFS= read -r g; do [ -n "$g" ] || continue; g=$(_k "$g"); [[ $k == $g ]] && return 0; done <<< "$PC_GATES"; return 1; }
+  _gm()  { local -a K G; IFS=/ read -r -a K <<< "$1"; IFS=/ read -r -a G <<< "$2"; _gmi 0 0; }   # glob per path component
+  _gmi() { local i=$1 j=$2 t   # '*', '?', '[..]' stay in one component; a whole '**' component spans zero or more
+    while (( j < ${#G[@]} )); do
+      if [ "${G[j]}" = '**' ]; then for (( t = i; t <= ${#K[@]}; t++ )); do _gmi "$t" $((j + 1)) && return 0; done; return 1; fi
+      (( i < ${#K[@]} )) && [[ ${K[i]} == ${G[j]} ]] || return 1; i=$((i + 1)); j=$((j + 1))
+    done; (( i == ${#K[@]} )); }
+  _gate()  { local k g; k=$(_k "$1"); while IFS= read -r g; do [ -n "$g" ] || continue; g=$(_k "$g"); _gm "$k" "$g" && return 0; done <<< "$PC_GATES"; return 1; }
   _new()   { ! awk -F'\t' -v p="$1" '$2==p {f=1} END {exit !f}' "$out/hashes" && ! git cat-file -e "$head:$1" 2>/dev/null; }
   _proposed() { [ -f "$1" ] && awk -v want="$PC_PROPOSED" '
       BEGIN { w = tolower(want) }
@@ -263,7 +293,18 @@ function Test-PathCheck {
     function Under($p, $list) { $k = Key $p; foreach ($x in $list) { if ($x) { $x = Key $x
       if ([string]::Equals($k, $x, $cmp) -or $k.StartsWith("$x/", $cmp)) { return $true } } }; $false }
     function IsInput($p) { $k = Key $p; foreach ($x in $Inputs) { if ($x -and [string]::Equals($k, (Key $x), $cmp)) { return $true } }; $false }
-    function IsGate($p) { $k = Key $p; foreach ($g in $Gates) { if ($g) { $g = Key $g; if (($ic -and $k -like $g) -or (-not $ic -and $k -clike $g)) { return $true } } }; $false }
+    function GlobRegex($glob, $ic) {   # as in Invoke-PathCheck: '*', '?', '[..]' stay in one component; a whole '**' component spans zero or more
+      $parts = $glob.Split('/'); $rx = ''
+      for ($i = 0; $i -lt $parts.Count; $i++) {
+        $c = $parts[$i]; $last = $i -eq $parts.Count - 1
+        if ($c -eq '**') { $rx += $(if ($last) { '(?:[^/]+/)*[^/]+' } else { '(?:[^/]+/)*' }); continue }
+        $rx += [regex]::Replace($c, '\[!?[^\]]*\]|\*|\?|[^*?\[]+|\[', { param($m) $v = $m.Value
+          if ($v -eq '*') { '[^/]*' } elseif ($v -eq '?') { '[^/]' } elseif ($v.Length -gt 2 -and $v.StartsWith('[')) { '[' + ($v.Substring(1, $v.Length - 2) -replace '^[!^](.*)$', '^$1/') + ']' } else { [regex]::Escape($v) } })
+        if (-not $last) { $rx += '/' }
+      }
+      [regex]::new("^$rx`$", $(if ($ic) { 'IgnoreCase, CultureInvariant' } else { 'CultureInvariant' }))
+    }
+    function IsGate($p) { $k = Key $p; foreach ($g in $Gates) { if ($g -and (GlobRegex (Key $g) $ic).IsMatch($k)) { return $true } }; $false }
     function InHead($p) { git cat-file -e "${head}:$p" 2>$null; $LASTEXITCODE -eq 0 }
     $statusRx = '^\s*[-*]?\s*(\*\*)?status(\*\*)?\s*:\s*(\*\*)?' + [regex]::Escape($Proposed) + '(\*\*)?\s*$'
   }

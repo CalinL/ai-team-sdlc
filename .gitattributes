@@ -1,0 +1,2 @@
+# Test shell scripts must keep LF on every clone (bash fails on CRLF).
+tests/**/*.sh text eol=lf

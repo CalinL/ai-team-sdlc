@@ -1,0 +1,49 @@
+name: Tests
+
+# Free, deterministic tiers of tests/ (see tests/README.md): static checks with their mutation
+# self-test, the path-check and digest recipes in bash and PowerShell, and the agent-harness dry run.
+# Agent probes and end-to-end runs call models and are run by maintainers, not in CI.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PyYAML
+        run: python -m pip install --quiet pyyaml
+      - name: Install PowerShell (Linux images may not ship it)
+        if: runner.os == 'Linux'
+        run: command -v pwsh || sudo snap install powershell --classic
+      - name: Configure git identity for scratch repos
+        run: |
+          git config --global user.name "ait-tests"
+          git config --global user.email "ait-tests@example.com"
+      - name: Static checks and mutation self-test
+        run: |
+          python tests/static/check_static.py
+          python tests/static/self_test.py
+      - name: Recipes (bash, pwsh, Windows PowerShell on Windows)
+        run: python tests/recipes/run_recipes.py
+      - name: Agent harness dry run
+        shell: pwsh
+        run: ./tests/agents/run_agents.ps1 -DryRun -Runs 1

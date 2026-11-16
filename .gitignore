@@ -15,3 +15,7 @@ npm-debug.log*
 # OS cruft
 Thumbs.db
 .DS_Store
+
+# Test-suite output (transcripts, scratch repos, extracted recipes)
+tests/out/
+__pycache__/
