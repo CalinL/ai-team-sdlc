@@ -130,10 +130,19 @@ path_check() {
 function Invoke-PathCheck([ValidateSet('baseline', 'changed')][string]$Mode, [string]$Dir, [string[]]$Watch = @()) {
   function HashOf($p) { if (Test-Path -LiteralPath $p -PathType Leaf) { (Get-FileHash -Algorithm SHA256 -LiteralPath $p).Hash.ToLower() } else { 'absent' } }
   function NormPath($p) { $x = $p.Replace('\', '/'); do { $y = $x; $x = $x -replace '/{2,}', '/' -replace '/\./', '/'; if ($x.StartsWith('./')) { $x = $x.Substring(2) } } while ($x -ne $y); $x }
-  function WatchList {   # literal watch paths as given; globs expanded on disk (tracked, untracked or ignored)
+  function WatchList {   # literal watch paths as given; globs matched on disk (tracked, untracked or ignored)
     $root = (Get-Location).Path
+    $ic = (git config --bool core.ignorecase 2>$null) -eq 'true'   # same case rule on every OS
     $Watch | ForEach-Object { NormPath $_ } | ForEach-Object {
-      if ($_ -match '[*?\[]') { Get-ChildItem -Path $_ -File -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName.Substring($root.Length + 1).Replace('\', '/') } }
+      if ($_ -match '[*?\[]') {
+        $glob = $_; $depth = $glob.Split('/').Count; $fixed = @(); foreach ($s in $glob.Split('/')) { if ($s -match '[*?\[]') { break }; $fixed += $s }
+        $base = if ($fixed.Count) { Join-Path $root ($fixed -join '/') } else { $root }
+        if (Test-Path -LiteralPath $base -PathType Container) {
+          Get-ChildItem -LiteralPath $base -Recurse -File -Force -ErrorAction SilentlyContinue |
+            ForEach-Object { $_.FullName.Substring($root.Length + 1).Replace('\', '/') } |
+            Where-Object { $_ -notlike '.git/*' -and ($glob.Contains('**') -or $_.Split('/').Count -eq $depth) -and $(if ($ic) { $_ -like $glob } else { $_ -clike $glob }) }
+        }
+      }
       else { $_ }
     } | Sort-Object -Unique -CaseSensitive
   }
