@@ -167,6 +167,41 @@ details (paths, naming, stack, process), but never these **safety floors**:
 5. No secrets in code or tracking files.
 If a host rule conflicts with a floor, follow the floor and report the conflict in the Result.
 
+## Branches and pull requests (all modes)
+Applies whenever the team commits (`ait-sdlc-orchestrate` step 2, or a phase skill committing its
+own output). When the host's rules leave commits to people, the team makes no commit and creates no
+branch.
+1. **Branch.** Commit only on a feature branch. If the current branch is the default branch (`main`,
+   `master`, or the branch `git symbolic-ref refs/remotes/origin/HEAD` names) or `HEAD` is detached,
+   create and switch to `ait/<run-id>` before the first commit (`git switch -c ait/<run-id>`);
+   otherwise use the current branch. A phase skill run outside a run uses
+   `ait/<YYYY-MM-DD>-<slug>`. Record the branch in `state.json.branch` and stay on it until the run
+   ends. On resume, check out the recorded branch before any commit; a run without `branch`
+   (started before 1.1.2) applies this rule before its next commit. If the recorded branch is
+   missing, if `ait/<run-id>` already exists but this run didn't record it, or if the checkout would
+   overwrite uncommitted changes, stop and ask: never stash, reset or discard the human's work.
+2. **Staging.** Stage only the batch's paths (`git add -- <path>…`). Never `git add -A`,
+   `git add .` or `git commit -a`: they sweep in the human's uncommitted files.
+3. **Never** update the default branch, locally or on the remote (including a push with a
+   `HEAD:main` refspec); merge; run `gh pr merge` or enable auto-merge; force-push (`--force` or
+   `--force-with-lease`); amend or rebase a pushed commit or the release candidate; or bypass branch
+   protection.
+4. **Publishing.** Push the branch and open or update its pull request only when the human asks or
+   the host's rules say so. In contract mode, never before every finished task's `path-check` has
+   passed.
+5. **Three different approvals.**
+   - A **gate** is met by its own evidence: a contract-mode external gate by its human receipt and
+     the human's confirmation (`ait-contract-mode` §7).
+   - **Release sign-off** approves the release-candidate commit: three approvers, each from a real
+     human turn (Human-in-the-loop). If they approve in pull-request comments, the human relays the
+     quote or the link in the session; that comment is not the pull request's approving review. The
+     orchestrator records sign-off, with the quote or link, in `delivery/approvals.md`.
+   - **Pull-request approval** lets people merge the branch's final head, after the approval and
+     release records are pushed. It is never a gate and never a sign-off.
+   - A stale review dismissed because the record commits were pushed is not a change to the
+     release: don't reset sign-off. A squash or merge gives the default branch a different commit;
+     sign-off stays bound to the release candidate.
+
 ## Where things live
 Every work product (PRD, design, prototype, feature stories, specs and task plans, decision records,
 results, approvals, release records, showcase and idea material) goes where the
