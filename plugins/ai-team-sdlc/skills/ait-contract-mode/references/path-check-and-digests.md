@@ -138,7 +138,7 @@ function Invoke-PathCheck([ValidateSet('baseline', 'changed')][string]$Mode, [st
       $c = $parts[$i]; $last = $i -eq $parts.Count - 1
       if ($c -eq '**') { $rx += $(if ($last) { '(?:[^/]+/)*[^/]+' } else { '(?:[^/]+/)*' }); continue }
       $rx += [regex]::Replace($c, '\[!?[^\]]*\]|\*|\?|[^*?\[]+|\[', { param($m) $v = $m.Value
-        if ($v -eq '*') { '[^/]*' } elseif ($v -eq '?') { '[^/]' } elseif ($v.Length -gt 2 -and $v.StartsWith('[')) { '[' + ($v.Substring(1, $v.Length - 2) -replace '^!(.*)$', '^$1/') + ']' } else { [regex]::Escape($v) } })
+        if ($v -eq '*') { '[^/]*' } elseif ($v -eq '?') { '[^/]' } elseif ($v.Length -gt 2 -and $v.StartsWith('[')) { '[' + ($v.Substring(1, $v.Length - 2) -replace '^[!^](.*)$', '^$1/') + ']' } else { [regex]::Escape($v) } })
       if (-not $last) { $rx += '/' }
     }
     [regex]::new("^$rx`$", $(if ($ic) { 'IgnoreCase, CultureInvariant' } else { 'CultureInvariant' }))
@@ -299,7 +299,7 @@ function Test-PathCheck {
         $c = $parts[$i]; $last = $i -eq $parts.Count - 1
         if ($c -eq '**') { $rx += $(if ($last) { '(?:[^/]+/)*[^/]+' } else { '(?:[^/]+/)*' }); continue }
         $rx += [regex]::Replace($c, '\[!?[^\]]*\]|\*|\?|[^*?\[]+|\[', { param($m) $v = $m.Value
-          if ($v -eq '*') { '[^/]*' } elseif ($v -eq '?') { '[^/]' } elseif ($v.Length -gt 2 -and $v.StartsWith('[')) { '[' + ($v.Substring(1, $v.Length - 2) -replace '^!(.*)$', '^$1/') + ']' } else { [regex]::Escape($v) } })
+          if ($v -eq '*') { '[^/]*' } elseif ($v -eq '?') { '[^/]' } elseif ($v.Length -gt 2 -and $v.StartsWith('[')) { '[' + ($v.Substring(1, $v.Length - 2) -replace '^[!^](.*)$', '^$1/') + ']' } else { [regex]::Escape($v) } })
         if (-not $last) { $rx += '/' }
       }
       [regex]::new("^$rx`$", $(if ($ic) { 'IgnoreCase, CultureInvariant' } else { 'CultureInvariant' }))

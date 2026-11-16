@@ -63,13 +63,20 @@ function Check-CandidateBound($R, [string]$Repo, [string]$Sha, [string]$Allowed,
 }
 
 # Every plan/build/test task is done and no required gate is failed or unrun (before sign-off).
+# A human waiver: one approvals.md line naming the task and gate, with a quoted human grant ("... waive ...")
+# and no refusal or pending wording (a denied or merely requested waiver doesn't count).
+function Test-HumanWaiver([string]$Approvals, [string]$Task, [string]$Gate) {
+  [bool](($Approvals -split "`r?`n") | Where-Object {
+      $_ -match [regex]::Escape($Task) -and $_ -match "(?i)\b$([regex]::Escape($Gate))\b" -and $_ -match '(?i)"[^"]*\bwaiv(e|es|ed|ing)\b[^"]*"' -and
+      $_ -notmatch "(?i)\b(not|n't|no|never|deny|denied|declin\w*|reject\w*|request\w*|pending|awaiting)\b" })
+}
 # A gate counts only when passed, or skipped with a human waiver for that task and gate in approvals.md.
 function Check-TasksComplete($R, $State, [string]$Tag, [string]$Repo = '') {
   $ap = if ($Repo) { Read-Text $Repo 'delivery/approvals.md' } else { '' }
   $open = @($State.tasks | Where-Object { $_.phase -in 'plan', 'build', 'test' } | Where-Object {
       $t = $_; $t.status -ne 'done' -or @($t.requiredGates | Where-Object {
           $g = $_; $v = "$($t.gateResults.$g)"
-          -not ($v -eq 'passed' -or ($v -in 'skipped', 'waived' -and $ap -match "(?im)^.*waiv.*$([regex]::Escape($t.id)).*$([regex]::Escape($g))|^.*waiv.*$([regex]::Escape($g)).*$([regex]::Escape($t.id))")) }).Count })
+          -not ($v -eq 'passed' -or ($v -in 'skipped', 'waived' -and (Test-HumanWaiver $ap $t.id $g))) }).Count })
   Check $R "${Tag}: every plan, build and test task is done with its required gates$(if ($open.Count) { ' (open: ' + ($open.id -join ', ') + ')' })" (@($State.tasks).Count -and -not $open.Count)
 }
 

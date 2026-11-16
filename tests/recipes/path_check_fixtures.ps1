@@ -69,7 +69,7 @@ Put 'evidence/x/y.md' 'old'; Base; Put 'evidence/x/y.md' 'new'; Run "25 parity: 
 Setup; Add-Content .gitignore 'logs/'; git commit -qam ign; $script:Cfg.Gates += 'logs/**/gate/*.md'; $script:Watch = $W + 'logs/**/gate/*.md'
 Put 'logs/a/gate/sub/x.md' 'old'; Base; Put 'logs/a/gate/sub/x.md' 'new'; Run "26 parity: '*' after '**' still stays in one folder" pass
 Setup; Base; Put 'delivery/results/acceptance-x/n.md' 'r'; Run "27 tracked: a file one folder below a gate glob is not a receipt" pass
-Setup; $script:Cfg.Gates += 'delivery/results/acceptance[!x]*.md'; Base; Put 'delivery/results/acceptance/n.md' 'r'; Run "28 a negated bracket '[!x]' never matches '/'" pass
+Setup; $script:Cfg.Gates += 'delivery/results/acceptance[!x]*.md', 'delivery/results/acceptance[^y]*.md'; Base; Put 'delivery/results/acceptance/n.md' 'r'; Run "28 a negated bracket ('[!x]' or '[^y]') never matches '/'" pass
 
 ''
 "path-check ($($PSVersionTable.PSEdition) $($PSVersionTable.PSVersion)): $($script:Ok)/$($script:Ok + $script:Bad) fixtures as expected"

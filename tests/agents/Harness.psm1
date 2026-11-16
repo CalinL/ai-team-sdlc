@@ -21,7 +21,9 @@ function Use-PluginUnderTest([scriptblock]$Body) {
     try { $acquired = $mutex.WaitOne([TimeSpan]::FromMinutes(1)) } catch [Threading.AbandonedMutexException] { $acquired = $true }
     if (-not $acquired) { throw 'Another test session is using the plugin; try again when it finishes.' }
     $restore = Test-Path -LiteralPath $marker   # a killed session disabled it and never restored it
-    if ((Get-InstalledPluginState) -eq 'enabled') {
+    $initial = Get-InstalledPluginState
+    if ($initial -eq 'unknown') { throw 'Could not read the installed plugins (copilot plugin list failed); not running, so the installed copy cannot shadow the plugin under test.' }
+    if ($initial -eq 'enabled') {
       Set-Content -LiteralPath $marker -Value $script:InstalledId; $restore = $true
       $out = copilot plugin disable $script:InstalledId 2>&1 | Out-String
       if ($LASTEXITCODE -or (Get-InstalledPluginState) -ne 'disabled') { throw "Could not disable the installed $($script:InstalledId), so it would shadow the plugin under test: $out" }

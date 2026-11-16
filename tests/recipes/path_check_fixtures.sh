@@ -87,8 +87,8 @@ mkdir -p logs/a/gate/sub; echo old > logs/a/gate/sub/x.md; base; echo new > logs
                                                                                          run "26 parity: '*' after '**' still stays in one folder" pass
 setup; base; mkdir -p delivery/results/acceptance-x; echo r > delivery/results/acceptance-x/n.md
                                                                                          run "27 tracked: a file one folder below a gate glob is not a receipt" pass
-setup; export PC_GATES="$PC_GATES"$'\ndelivery/results/acceptance[!x]*.md'; base; mkdir -p delivery/results/acceptance; echo r > delivery/results/acceptance/n.md
-                                                                                         run "28 a negated bracket '[!x]' never matches '/'" pass
+setup; export PC_GATES="$PC_GATES"$'\ndelivery/results/acceptance[!x]*.md\ndelivery/results/acceptance[^y]*.md'; base; mkdir -p delivery/results/acceptance; echo r > delivery/results/acceptance/n.md
+                                                                                         run "28 a negated bracket ('[!x]' or '[^y]') never matches '/'" pass
 
 echo; echo "path-check (bash): $OK/$((OK + BAD)) fixtures as expected"
 [ "$BAD" -eq 0 ]
