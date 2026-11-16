@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Tier 2 — path-check fixtures (bash), run against the recipe as published in the plugin reference.
 # 1–15 are spec 1.1.1 §8.3; 16–23 are the 1.1.1 review findings (aliases, spaces, literal status, clean
-# baseline, case, combined aliases, case-aliased receipts, status without a colon). 24 guards bash/PowerShell
+# baseline, case, combined aliases, case-aliased receipts, status without a colon). 24–27 guard bash/PowerShell
 # parity of the watch-list glob expansion.
 # Usage: bash tests/recipes/path_check_fixtures.sh <lib.sh> <work-dir>
 set -u
@@ -9,10 +9,14 @@ LIB=$1; WORK=$2
 # shellcheck disable=SC1090
 source "$LIB"
 OK=0; BAD=0
+mkdir -p "$WORK" && WORK=$(cd "$WORK" && pwd) || exit 2
+export GIT_CEILING_DIRECTORIES=$(cd "$WORK" && { pwd -W 2>/dev/null || pwd; })   # native path (Git Bash: C:/...)   # git never walks up into a parent repository
 
 setup() {   # fresh repo with the spec 1.1.1 §5.1 config
-  rm -rf "$WORK/r"; mkdir -p "$WORK/r" && cd "$WORK/r" || exit 2
-  git init -q; git config user.name t; git config user.email t@example.com; git config core.autocrlf false
+  cd "$WORK" || exit 2; rm -rf "$WORK/r"; [ ! -e "$WORK/r" ] || { echo "cannot remove $WORK/r"; exit 2; }
+  mkdir -p "$WORK/r" && cd "$WORK/r" || exit 2
+  git init -q && [ "$(git rev-parse --git-dir)" = .git ] || { echo "not an isolated repo: $(pwd)"; exit 2; }
+  git config user.name t; git config user.email t@example.com; git config core.autocrlf false
   git config core.ignorecase false
   mkdir -p .github delivery specs architecture/adr src
   printf '.copilot-tracking/\ndelivery/brief.md\n' > .gitignore
@@ -76,5 +80,13 @@ setup; base; printf '# ADR-017\nstatus: Accepted\nStatusProposed\n' > architectu
                                                                                          run "23 new record 'status: Accepted' + line 'StatusProposed'" fail
 setup; printf 'delivery/results/\n' >> .gitignore; git commit -qam ign; mkdir -p delivery/results/acceptance-x; echo old > delivery/results/acceptance-x/n.md; base
 echo new > delivery/results/acceptance-x/n.md;                                           run "24 parity: watch glob '*' does not cross '/' (ignored nested file)" pass
+setup; printf 'evidence/\n' >> .gitignore; git commit -qam ign; export PC_GATES="$PC_GATES"$'\nevidence/**/*.md'; W+=('evidence/**/*.md')
+mkdir -p evidence/x; echo old > evidence/x/y.md; base; echo new > evidence/x/y.md;      run "25 parity: a whole '**' component spans folders (ignored nested gate file)" fail
+setup; printf 'logs/\n' >> .gitignore; git commit -qam ign; export PC_GATES="$PC_GATES"$'\nlogs/**/gate/*.md'; W+=('logs/**/gate/*.md')
+mkdir -p logs/a/gate/sub; echo old > logs/a/gate/sub/x.md; base; echo new > logs/a/gate/sub/x.md
+                                                                                         run "26 parity: '*' after '**' still stays in one folder" pass
+setup; base; mkdir -p delivery/results/acceptance-x; echo r > delivery/results/acceptance-x/n.md
+                                                                                         run "27 tracked: a file one folder below a gate glob is not a receipt" pass
+
 echo; echo "path-check (bash): $OK/$((OK + BAD)) fixtures as expected"
 [ "$BAD" -eq 0 ]

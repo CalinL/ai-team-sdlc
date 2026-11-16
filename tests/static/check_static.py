@@ -268,7 +268,7 @@ def relative_links_resolve():
         files += glob.glob(os.path.join(ROOT, pattern), recursive=True)
     errors = []
     for doc in files:
-        if rel(doc).startswith("docs/changes/"):
+        if rel(doc).startswith(("docs/changes/", "tests/out/")):
             continue
         text = strip_code(read(doc))
         for target in re.findall(r"\]\(([^)\s]+)\)", text):

@@ -13,6 +13,8 @@ import subprocess
 import sys
 import tempfile
 
+os.environ.pop("AIT_REPO_ROOT", None)   # the mutated copies must be checked, not another checkout
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.abspath(os.path.join(HERE, "..", ".."))
 P = "plugins/ai-team-sdlc"

@@ -6,7 +6,7 @@ probes when you change a skill or agent; run the end-to-end lifecycles before a 
 | Tier | What it proves | Cost | Where it runs |
 |---|---|---|---|
 | 1. Static (`static/`) | Plugin files are well formed and match the change specs: front matter, agent policy, credit headers, vendored skills byte-identical, skill size, layout table = spec, no 1.1.0 output paths, approvals rules, 13 contract-mode blocks, relative links, versions and counts, JSON. A mutation self-test proves each check can fail. | free, seconds | CI + local |
-| 2. Recipes (`recipes/`) | The path-check and folder-digest recipes, extracted from `skills/ait-contract-mode/references/path-check-and-digests.md`, give the expected verdict on 24 fixtures in bash, PowerShell 7 and Windows PowerShell 5.1, and the same digests as a Python reference. | free, ~2 min | CI (Linux + Windows) + local |
+| 2. Recipes (`recipes/`) | The path-check and folder-digest recipes, extracted from `skills/ait-contract-mode/references/path-check-and-digests.md`, give the expected verdict on 27 fixtures in bash, PowerShell 7 and Windows PowerShell 5.1, and the same digests as a Python reference. | free, ~2 min | CI (Linux + Windows) + local |
 | 3. Agent probes (`agents/`) | Agents behave as the skills say, on small seeded repos: artifact placement (including a weak model), host rules and explicit folders, version series, Scribe writes only human records, sign-off validity against the release candidate, 1.1.0 carry-over, contract validation and activation, default mode applies no contract rule; from 1.1.2, branches and pull requests (cases carry a `Since` version and are skipped against older plugins). | ~300 AI credits for one run of every case (measured: 266 for 13 cases; the 5-run weak cases ~60 each) | local, Copilot CLI |
 | 4. End to end (`e2e/`) | A whole lifecycle in a scratch repo: default mode (idea → sign-off → deploy) and contract mode (brief → conformance → build → release acceptance → sign-off → deploy), with scripted human steps; asserts the layout, the approval rules, the tracking store and a fresh clone. | measured: default ≈ 360 credits / 20 min; contract ≈ 560 credits / 40 min | local, Copilot CLI |
 
@@ -35,7 +35,12 @@ repository, so its own `AGENTS.md` never leaks into a probe.
 The probes run the plugin **from this working tree** (`copilot --plugin-dir plugins/ai-team-sdlc`);
 set `AIT_PLUGIN_DIR` to test another checkout's `plugins/ai-team-sdlc` (for example a release worktree).
 If the plugin is also installed and enabled, the harness disables it for the session and re-enables it
-afterwards; only one session can do this at a time.
+afterwards; only one session can do this at a time, and a session killed mid-run is repaired by the next
+one (a marker file in the temp folder records that the tests disabled it).
+
+**Probes run model-driven commands.** They pass `--allow-all-tools` (not `--allow-all-paths`), so file
+tools stay in the scratch repo, but shell commands are not sandboxed. Run tiers 3–4 on a development
+machine, a Codespace or a disposable VM, not on a machine holding secrets or production access.
 
 ## How the probes are graded
 

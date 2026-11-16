@@ -10,6 +10,7 @@ param(
   [string]$Model = '',            # override every case's model
   [double]$MaxCredits = 60,       # soft cap per run (copilot --max-ai-credits)
   [switch]$List,
+  [switch]$IgnoreSince,           # run cases whose Since is newer than the plugin under test
   [switch]$DryRun,               # seed and grade every case without calling a model (harness self-check; no credits)
   [switch]$KeepScratch
 )
@@ -22,17 +23,19 @@ $cases = foreach ($f in Get-ChildItem (Join-Path $PSScriptRoot 'cases') -Filter 
 }
 $cases = @($cases | Where-Object { $n = $_.Name; @($Case | Where-Object { $n -like $_ }).Count })
 $pluginVersion = [version](Get-Content (Join-Path (Get-PluginDir) 'plugin.json') -Raw | ConvertFrom-Json).version
-$skipped = @($cases | Where-Object { -not $DryRun -and $_.Since -and [version]$_.Since -gt $pluginVersion })   # cases for a newer plugin
-if ($skipped.Count) { Write-Host "Skipping $($skipped.Count) case(s) newer than plugin $pluginVersion`: $($skipped.Name -join ', ')" -ForegroundColor DarkGray }
-$cases = @($cases | Where-Object { $_ -notin $skipped })
-if ($List -or -not $cases.Count) {
-  $cases | ForEach-Object { '{0,-34} {1,-18} runs={2} pass>={3}  {4}' -f $_.Name, $_.Model, $_.Runs, $_.Pass, $_.Covers }
-  if (-not $cases.Count) { Write-Warning "No case matches '$($Case -join ', ')'."; exit 1 }
+if ($List) {
+  $cases | ForEach-Object { '{0,-34} {1,-18} runs={2} pass>={3} {4,-7} {5}' -f $_.Name, $_.Model, $_.Runs, $_.Pass, $(if ($_.Since) { "$($_.Since)+" } else { '' }), $_.Covers }
   exit 0
 }
+if (-not $cases.Count) { Write-Warning "No case matches '$($Case -join ', ')'."; exit 1 }
+# Cases for a newer plugin are skipped (-IgnoreSince runs them anyway, e.g. to show they fail on the old plugin).
+$skipped = @($cases | Where-Object { -not $DryRun -and -not $IgnoreSince -and $_.Since -and [version]$_.Since -gt $pluginVersion })
+if ($skipped.Count) { Write-Host "Skipping $($skipped.Count) case(s) newer than plugin $pluginVersion`: $($skipped.Name -join ', ')" -ForegroundColor DarkGray }
+$cases = @($cases | Where-Object { $_ -notin $skipped })
+if (-not $cases.Count) { Write-Host 'Nothing to run.'; exit 0 }
 if (-not $DryRun -and -not (Get-Command copilot -ErrorAction SilentlyContinue)) { throw 'The Copilot CLI (copilot) is not on PATH.' }
 
-$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$stamp = New-RunStamp
 $out = Join-Path (Get-RepoRoot) "tests/out/agents/$stamp"
 $scratchRoot = Join-Path ([IO.Path]::GetTempPath()) "ait-tests/$stamp"
 New-Item -ItemType Directory -Force -Path $out, $scratchRoot | Out-Null

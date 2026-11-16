@@ -1,10 +1,12 @@
 # Tier 2 — path-check fixtures (PowerShell 7 and Windows PowerShell 5.1), run against the recipe as
-# published in the plugin reference. Same 24 fixtures as path_check_fixtures.sh.
+# published in the plugin reference. Same 27 fixtures as path_check_fixtures.sh.
 # Usage: pwsh -File tests/recipes/path_check_fixtures.ps1 -Lib <lib.ps1> -Work <work-dir>
 param([Parameter(Mandatory)][string]$Lib, [Parameter(Mandatory)][string]$Work)
 $ErrorActionPreference = 'Continue'
 . $Lib
 New-Item -ItemType Directory -Force -Path $Work | Out-Null
+$Work = (Resolve-Path $Work).Path
+$env:GIT_CEILING_DIRECTORIES = $Work   # git never walks up into a parent repository
 $script:Ok = 0; $script:Bad = 0
 $W = @('delivery/brief.md', 'specs/prd.md', '.github/ai-sdlc.yml', 'delivery/approvals.md', 'specs/ui/ACCEPTED.md', 'delivery/conformance/*.md', 'delivery/results/acceptance-*.md')
 $B = '.copilot-tracking/run/baselines/T-001'
@@ -62,6 +64,11 @@ Setup; git config core.ignorecase true; Add-Content .gitignore 'delivery/results
 Setup; Base; Put 'architecture/adr/017-x.md' "# ADR-017`nstatus: Accepted`nStatusProposed`n"; Run "23 new record 'status: Accepted' + line 'StatusProposed'" fail
 Setup; Add-Content .gitignore 'delivery/results/'; git commit -qam ign; Put 'delivery/results/acceptance-x/n.md' 'old'; Base
 Put 'delivery/results/acceptance-x/n.md' 'new'; Run "24 parity: watch glob '*' does not cross '/' (ignored nested file)" pass
+Setup; Add-Content .gitignore 'evidence/'; git commit -qam ign; $script:Cfg.Gates += 'evidence/**/*.md'; $script:Watch = $W + 'evidence/**/*.md'
+Put 'evidence/x/y.md' 'old'; Base; Put 'evidence/x/y.md' 'new'; Run "25 parity: a whole '**' component spans folders (ignored nested gate file)" fail
+Setup; Add-Content .gitignore 'logs/'; git commit -qam ign; $script:Cfg.Gates += 'logs/**/gate/*.md'; $script:Watch = $W + 'logs/**/gate/*.md'
+Put 'logs/a/gate/sub/x.md' 'old'; Base; Put 'logs/a/gate/sub/x.md' 'new'; Run "26 parity: '*' after '**' still stays in one folder" pass
+Setup; Base; Put 'delivery/results/acceptance-x/n.md' 'r'; Run "27 tracked: a file one folder below a gate glob is not a receipt" pass
 
 ''
 "path-check ($($PSVersionTable.PSEdition) $($PSVersionTable.PSVersion)): $($script:Ok)/$($script:Ok + $script:Bad) fixtures as expected"

@@ -49,6 +49,6 @@ $check = {
 }
 
 @(
-  @{ Name = 'resume-110-carryover-sha'; Variant = 'sha'; Expect = 'approved'; Covers = '1.1.1 §2.4/§8.2 #16: carry-over; SHA sign-off on unchanged tree stays valid' }
-  @{ Name = 'resume-110-carryover-name'; Variant = 'name'; Expect = 'pending'; Covers = '1.1.1 §2.4/§8.2 #16: carry-over; artifact-name sign-off resets to pending' }
+  @{ Name = 'resume-110-carryover-sha'; Variant = 'sha'; Expect = 'approved'; Covers = '1.1.1 §2.4/§8.2 #16 (resume part, not new decisions): carry-over; SHA sign-off on unchanged tree stays valid' }
+  @{ Name = 'resume-110-carryover-name'; Variant = 'name'; Expect = 'pending'; Covers = '1.1.1 §2.4/§8.2 #16 (resume part, not new decisions): carry-over; artifact-name sign-off resets to pending' }
 ) | ForEach-Object { $_ + @{ Model = 'gpt-5.6-sol'; Runs = 1; Pass = 1; Setup = $setup; Prompt = $prompt; Check = $check } }

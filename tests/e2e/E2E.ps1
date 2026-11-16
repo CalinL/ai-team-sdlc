@@ -28,9 +28,33 @@ function Get-Uncommitted([string]$Repo) {
 
 function Test-Commit([string]$Repo, [string]$Sha) { Push-Location $Repo; try { git cat-file -e "$Sha^{commit}" 2>$null; $LASTEXITCODE -eq 0 } finally { Pop-Location } }
 
+# npm test: exit code and the number of passing tests node:test reports (a suite with no tests is not a pass).
 function Invoke-NpmTest([string]$Repo) {
   Push-Location $Repo
-  try { npm test --silent 2>&1 | Out-Null; $LASTEXITCODE } finally { Pop-Location }
+  try {
+    $out = npm test 2>&1 | Out-String; $code = $LASTEXITCODE
+    $m = [regex]::Matches($out, '(?m)^\s*(?:#|\u2139)\s*pass\s+(\d+)') | Select-Object -Last 1
+    [pscustomobject]@{ Exit = $code; Passed = $(if ($m) { [int]$m.Groups[1].Value } else { 0 }) }
+  } finally { Pop-Location }
+}
+
+# Tracked and untracked (not ignored) paths that differ from a commit: what a release would ship beyond it.
+function Get-ChangesSince([string]$Repo, [string]$Sha) {
+  Push-Location $Repo
+  try { @(@(git -c core.quotepath=off diff --name-only $Sha) + @(git -c core.quotepath=off ls-files --others --exclude-standard) | Where-Object { $_ } | Sort-Object -Unique) } finally { Pop-Location }
+}
+
+# The release candidate is the delivered tree: since that commit only the allowed record paths changed.
+function Check-CandidateBound($R, [string]$Repo, [string]$Sha, [string]$Allowed, [string]$Tag) {
+  $extra = @(Get-ChangesSince $Repo $Sha | Where-Object { $_ -notmatch $Allowed })
+  Check $R "${Tag}: the working tree is the release candidate apart from new records$(if ($extra.Count) { ' (also changed: ' + ($extra -join ', ') + ')' })" (-not $extra.Count)
+}
+
+# Every plan/build/test task is done and no required gate is failed or unrun (before sign-off).
+function Check-TasksComplete($R, $State, [string]$Tag) {
+  $open = @($State.tasks | Where-Object { $_.phase -in 'plan', 'build', 'test' } | Where-Object {
+      $t = $_; $t.status -ne 'done' -or @($t.requiredGates | Where-Object { "$($t.gateResults.$_)" -notin 'passed', 'skipped', 'waived' }).Count })
+  Check $R "${Tag}: every plan, build and test task is done with its required gates$(if ($open.Count) { ' (open: ' + ($open.id -join ', ') + ')' })" (@($State.tasks).Count -and -not $open.Count)
 }
 
 # 1.1.1 §2.5: a new run's tracking store holds only state.json, plan.md, inbox/ and path-check baselines.
@@ -45,7 +69,8 @@ function Check-TrackingStore($R, [string]$Repo, $State, [string]$Tag) {
 # 1.1.1 rule 2 (and the af4417d regression): approvals.md holds human-sourced records only.
 function Check-ApprovalsHumanOnly($R, [string]$Repo, [string]$Tag) {
   $ap = Read-Text $Repo 'delivery/approvals.md'
-  $bad = @(($ap -split "`r?`n") | Where-Object { $_ -match '(?i)\b(passed|failed)\b|gate result|\d+/\d+ (tests|criteria)' })
+  # Quoted human words may say "passed"; the rest of each line may not.
+  $bad = @(($ap -split "`r?`n") | Where-Object { ($_ -replace '"[^"]*"|\u201c[^\u201d]*\u201d', '') -match '(?i)\b(passed|failed)\b|gate result|\d+/\d+ (tests|criteria)' })
   Check $R "${Tag}: approvals.md holds no agent gate results$(if ($bad.Count) { ' (' + ($bad[0].Trim()) + ')' })" (-not $bad.Count)
 }
 

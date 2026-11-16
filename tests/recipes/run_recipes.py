@@ -5,6 +5,7 @@ Usage: python tests/recipes/run_recipes.py [out-dir]
 """
 import os
 import subprocess
+import time
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -19,7 +20,7 @@ def fwd(p):
 
 
 def main():
-    out = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "tests", "out", "recipes"))
+    out = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "tests", "out", "recipes", f"{time.strftime('%Y%m%d-%H%M%S')}-{os.getpid()}"))  # one folder per run: parallel runs never share fixtures
     lib = os.path.join(out, "lib")
     subprocess.run([sys.executable, os.path.join(HERE, "extract_recipes.py"), lib], check=True, stdout=subprocess.DEVNULL)
     suites = []
@@ -28,6 +29,8 @@ def main():
         suites.append(("path-check (bash)", [bash, fwd(os.path.join(HERE, "path_check_fixtures.sh")), fwd(os.path.join(lib, "lib.sh")), fwd(os.path.join(out, "bash"))]))
     else:
         suites.append(("path-check (bash)", None))
+    if not powershell_paths():
+        suites.append(("path-check (PowerShell)", None))
     for ps in powershell_paths():
         name = os.path.splitext(os.path.basename(ps))[0]
         suites.append((f"path-check ({name})", [ps, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", os.path.join(HERE, "path_check_fixtures.ps1"),

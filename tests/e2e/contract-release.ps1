@@ -11,7 +11,7 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot '../agents/Harness.psm1') -Force
 . (Join-Path $PSScriptRoot 'E2E.ps1')
 
-$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$stamp = New-RunStamp
 $out = Join-Path (Get-RepoRoot) "tests/out/e2e/contract-$stamp"
 $repo = Join-Path ([IO.Path]::GetTempPath()) "ait-tests/e2e-contract-$stamp"
 New-Item -ItemType Directory -Force -Path $out | Out-Null
@@ -33,6 +33,14 @@ function Sha256File([string]$Path) { (Get-FileHash -Algorithm SHA256 -LiteralPat
 function Write-Receipt([string]$Rel, [string]$Artifact, [string]$Digest) {
   Write-RepoFile $repo $Rel "---`nstatus: accepted`naccepted_by: Alex Chen`naccepted_at: 2026-01-05T10:00:00Z`nartifact: $Artifact`ndigest: $Digest`n---`nAccepted by the architecture owner.`n"
 }
+# Human receipts: only this test writes them, and the team must never edit, delete or add one.
+$script:receipts = @{}
+function Save-Receipts { foreach ($f in Get-AllFiles $repo | Where-Object { $_ -match '^delivery/(conformance/|results/acceptance-)' }) { $script:receipts[$f] = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $repo $f)).Hash } }
+function Test-ReceiptsUntouched([string]$Tag) {
+  $now = @(Get-AllFiles $repo | Where-Object { $_ -match '^delivery/(conformance/|results/acceptance-)' })
+  $bad = @(@($now) + @($script:receipts.Keys) | Sort-Object -Unique | Where-Object { -not (Test-Path -LiteralPath (Join-Path $repo $_)) -or -not $script:receipts.ContainsKey($_) -or (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $repo $_)).Hash -ne $script:receipts[$_] })
+  Check $R "${Tag}: human receipts untouched by the team$(if ($bad.Count) { ': ' + ($bad -join ', ') })" (-not $bad.Count)
+}
 function Test-InputsUnchanged([string]$Tag) {
   $now = Get-FileHashes $repo
   $changed = @('.github/ai-sdlc.yml', 'delivery/brief.md', 'specs/prd.md', 'architecture/overview.md' | Where-Object { $now[$_] -ne $inputs[$_] })
@@ -51,7 +59,7 @@ Use-PluginUnderTest {
   $specs = @($files | Where-Object { $_ -match '^specs/features/(\d{3}-[a-z0-9-]+)/\1\.md$' })
   Check $R 'p1: run is in contract mode' ($state.mode -eq 'contract')
   Check $R 'p1: per-feature stories.md and a folder-named spec' ($specs.Count -ge 1 -and @($files | Where-Object { $_ -match '^specs/features/\d{3}-[a-z0-9-]+/stories\.md$' }).Count -ge 1)
-  Check $R 'p1: no code before spec-conformance' (-not @($files | Where-Object { $_ -match '^src/' }).Count)
+  Check $R 'p1: no code before spec-conformance' (-not @($files | Where-Object { $_ -match '\.(c|m)?js$' -and $_ -notmatch '^(node_modules|\.copilot-tracking)/' }).Count)
   Check $R 'p1: build blocked by external:spec-conformance' (@($state.tasks | Where-Object { "$($_.blockedBy)" -match 'external:spec-conformance' }).Count -ge 1)
   Check $R 'p1: no PRD rewrite, no receipt written by the team' (-not @($files | Where-Object { $_ -match '^delivery/(conformance/|results/acceptance-)' }).Count)
   Test-InputsUnchanged 'p1'
@@ -65,7 +73,7 @@ Use-PluginUnderTest {
     Write-Receipt "delivery/conformance/$name.md" $s $d
     "spec-conformance for $s, digest ${d}: `"Conforms to the architecture; go ahead.`""
   }
-  Invoke-Git $repo @('add', '-A', 'delivery/conformance'); Invoke-Git $repo @('commit', '-qm', 'Alex Chen: spec conformance receipts')
+  Invoke-Git $repo @('add', '--', 'delivery/conformance'); Invoke-Git $repo @('commit', '-qm', 'Alex Chen: spec conformance receipts'); Save-Receipts
   Write-Host "[part 2] receipts written; build -> test, expect a stop at release-acceptance ..." -ForegroundColor Cyan
   $p = Invoke-Copilot -Dir $repo -Model $Model -MaxCredits $MaxCredits -Log "$out/part2.log" -Prompt (
     "Use the ait-sdlc-orchestrate skill to resume run $($state.runId). The architecture owner, Alex Chen, confirms in this turn, verbatim: " + ($quotes -join ' ') +
@@ -75,10 +83,15 @@ Use-PluginUnderTest {
   $ap = Read-Text $repo 'delivery/approvals.md'
   $sha = "$($state.signoff.artifact)"
   Check $R 'p2: approvals.md holds the spec-conformance confirmation with its digest' ($ap -match 'spec-conformance' -and $ap -match 'Conforms to the architecture; go ahead\.' -and $ap -match [regex]::Escape((Sha256File (Join-Path $repo $specs[0]))))
-  Check $R 'p2: code and tests written; npm test passes' (@(Get-AllFiles $repo | Where-Object { $_ -match '^src/' }).Count -ge 1 -and (Invoke-NpmTest $repo) -eq 0)
-  Check $R 'p2: every build task passed path-check' (-not @($state.tasks | Where-Object { $_.requiredGates -contains 'path-check' -and $_.status -eq 'done' -and $_.gateResults.'path-check' -ne 'passed' }).Count -and @($state.tasks | Where-Object { $_.requiredGates -contains 'path-check' }).Count)
+  $nt = Invoke-NpmTest $repo
+  Check $R "p2: code written; npm test passes with real tests ($($nt.Passed) passing; need 3+)" (@(Get-AllFiles $repo | Where-Object { $_ -match '\.(c|m)?js$' -and $_ -notmatch '^(node_modules|specs|architecture|delivery|\.copilot-tracking)/' }).Count -ge 2 -and $nt.Exit -eq 0 -and $nt.Passed -ge 3)
+  $pc = @($state.tasks | Where-Object { $_.phase -in 'build', 'test' -and $_.requiredGates -contains 'path-check' })
+  Check $R 'p2: every build and test task is done and passed path-check' ($pc.Count -and -not @($pc | Where-Object { $_.status -ne 'done' -or $_.gateResults.'path-check' -ne 'passed' }).Count)
+  Check-TasksComplete $R $state 'p2'
+  Test-ReceiptsUntouched 'p2'
   Check $R 'p2: release candidate SHA recorded before release-acceptance' ($sha -match '^[0-9a-f]{7,40}$' -and (Test-Commit $repo $sha))
   Check $R 'p2: sign-off still pending' ($state.signoff.status -ne 'approved')
+  if ($sha -match '^[0-9a-f]{7,40}$') { Check-CandidateBound $R $repo $sha '^delivery/approvals\.md$' 'p2' }
   Test-InputsUnchanged 'p2'
   Check-ApprovalsHumanOnly $R $repo 'p2'
   Save-Report $R "$out/report.md"
@@ -87,7 +100,7 @@ Use-PluginUnderTest {
   # ---- Human step 2: release acceptance + sign-off
   $snapshot = Get-FileHashes $repo
   Write-Receipt "delivery/results/acceptance-$sha.md" 'release candidate' $sha
-  Invoke-Git $repo @('add', '-A', 'delivery/results'); Invoke-Git $repo @('commit', '-qm', 'Alex Chen: release acceptance')
+  Invoke-Git $repo @('add', '--', "delivery/results/acceptance-$sha.md"); Invoke-Git $repo @('commit', '-qm', 'Alex Chen: release acceptance'); Save-Receipts
   Write-Host "[part 3] release receipt + approvals; sign-off -> deploy ..." -ForegroundColor Cyan
   $p = Invoke-Copilot -Dir $repo -Model $Model -MaxCredits $MaxCredits -Log "$out/part3.log" -Prompt (
     "Use the ait-sdlc-orchestrate skill to resume run $($state.runId). In this turn, verbatim: Alex Chen confirms release-acceptance for release candidate $sha, digest ${sha}: `"Release accepted.`" " +
@@ -97,7 +110,7 @@ Use-PluginUnderTest {
   $state = Get-RunState $repo
   $ap = Read-Text $repo 'delivery/approvals.md'
   Check $R 'p3: release-acceptance confirmation recorded' ($ap -match 'release-acceptance' -and $ap -match 'Release accepted\.')
-  Check $R 'p3: sign-off approved by all three, quotes in approvals.md' ($state.signoff.status -eq 'approved' -and $ap -match 'Approved to ship\.' -and $ap -match 'No open findings, approved\.')
+  Check $R 'p3: sign-off approved by all three, names and quotes in approvals.md' ($state.signoff.status -eq 'approved' -and $state.signoff.approvers.product_owner -and $state.signoff.approvers.security_team -and $state.signoff.approvers.tech_lead -and $ap -match 'Pat Lee' -and $ap -match 'Sam Roy' -and $ap -match 'Dana Kim' -and $ap -match 'Approved to ship\.' -and $ap -match 'No open findings, approved\.')
   Check $R 'p3: deploy ships the candidate without re-pinning' ("$($state.signoff.artifact)" -eq $sha)
   Check $R 'p3: release records in delivery/release/' (@(Get-AllFiles $repo | Where-Object { $_ -match '^delivery/release/.+' }).Count -ge 1)
   $after = Get-FileHashes $repo
@@ -106,6 +119,8 @@ Use-PluginUnderTest {
   Check $R "p3: after the candidate only records changed$(if ($moved.Count) { ': ' + ($moved -join ', ') })" (-not $moved.Count)
   Test-InputsUnchanged 'p3'
   Check-ApprovalsHumanOnly $R $repo 'p3'
+  Check-CandidateBound $R $repo $sha '^(delivery/approvals\.md|delivery/release/.+|delivery/results/acceptance-[^/]+\.md)$' 'p3'
+  Test-ReceiptsUntouched 'p3'
   Check-FreshClone $R $repo @('delivery/approvals.md', "delivery/results/acceptance-$sha.md") @('^specs/features/\d{3}-[a-z0-9-]+/stories\.md$', '^delivery/conformance/', '^delivery/release/')
 }
 

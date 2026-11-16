@@ -11,7 +11,7 @@ $tasky = 'Tasky, a small to-do list web app'
       param($Repo, $Log, $Changed)
       $spec = @($Changed | Where-Object { $_ -match '^specs/features/(\d{3}-[a-z0-9-]+)/(\d{3}-[a-z0-9-]+)\.md$' -and $Matches[1] -eq $Matches[2] })
       $adr = @($Changed | Where-Object { $_ -match '^architecture/adr/\d{3}-[a-z0-9-]+\.md$' })
-      $allowed = '^(specs/prd\.md|specs/README\.md|specs/features/\d{3}-[a-z0-9-]+/(stories\.md|tasks\.md|\d{3}-[a-z0-9-]+\.md)|specs/ui/(prototype-v\d+\.html|notes\.md)|specs/design/.+|architecture/adr/\d{3}-[a-z0-9-]+\.md)$'
+      $allowed = '^(specs/prd\.md|specs/README\.md|specs/features/\d{3}-[a-z0-9-]+/(stories\.md|tasks\.md|\d{3}-[a-z0-9-]+\.md)|specs/ui/prototype-v\d+\.html|architecture/adr/\d{3}-[a-z0-9-]+\.md)$'   # the four mapped artifacts (+ index, stories, plan)
       $stray = @($Changed | Where-Object { $_ -notmatch $allowed })
       Expect ($Changed -contains 'specs/prd.md') 'no specs/prd.md'
       Expect ($spec.Count -ge 1) 'no folder-named feature spec under specs/features/'
@@ -19,7 +19,7 @@ $tasky = 'Tasky, a small to-do list web app'
       Expect (@($adr | Where-Object { (Read-Text $Repo $_) -match 'Proposed' }).Count -ge 1) 'decision record is not Proposed'
       Expect (@($Changed | Where-Object { $_ -match '^specs/ui/prototype-v\d+\.html$' }).Count -ge 1) 'no specs/ui/prototype-v<N>.html'
       Expect (-not $stray.Count) "unmapped or misplaced files: $($stray -join ', ')"
-      Expect ($Log -match '(?is)(launch|announcement|email).{0,400}(where|which (folder|location|path)|destination|no (row|home)|not (written|saved|placed))|(where|destination).{0,200}(launch|announcement|email)') 'reply does not ask where the email goes'
+      Expect ((Get-ReplyText $Log) -match '(?is)(launch|announcement|email).{0,400}(where|which (folder|location|path)|destination|no (row|home)|not (written|saved|placed))|(where|destination).{0,200}(launch|announcement|email)') 'reply does not ask where the email goes'
     }
   }
   @{

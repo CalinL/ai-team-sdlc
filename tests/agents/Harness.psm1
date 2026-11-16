@@ -11,20 +11,43 @@ function Get-RepoRoot { $script:RepoRoot }
 function Get-PluginDir { $script:PluginDir }
 
 # The installed copy of the plugin would shadow the one under test, so it is disabled for the session
-# and re-enabled only if it was enabled before. A named mutex stops two sessions toggling it at once.
+# and re-enabled afterwards. A named mutex stops two sessions toggling it at once, and a marker file
+# records that the tests disabled it, so a session that was killed mid-run is repaired by the next one.
 function Use-PluginUnderTest([scriptblock]$Body) {
   $mutex = [Threading.Mutex]::new($false, 'Global\ait-team-sdlc-plugin-swap')
-  if (-not $mutex.WaitOne([TimeSpan]::FromMinutes(1))) { throw 'Another test session is using the plugin; try again when it finishes.' }
-  $restore = $false
+  $marker = Join-Path ([IO.Path]::GetTempPath()) 'ait-team-sdlc-plugin-disabled-by-tests.flag'
+  $acquired = $false; $restore = $false
   try {
-    $line = (copilot plugin list 2>&1 | Out-String) -split "`r?`n" | Where-Object { $_ -match [regex]::Escape($script:InstalledId) }
-    if ($line -and $line -notmatch '\[disabled\]') { copilot plugin disable $script:InstalledId 2>&1 | Out-Null; $restore = $true }
+    try { $acquired = $mutex.WaitOne([TimeSpan]::FromMinutes(1)) } catch [Threading.AbandonedMutexException] { $acquired = $true }
+    if (-not $acquired) { throw 'Another test session is using the plugin; try again when it finishes.' }
+    $restore = Test-Path -LiteralPath $marker   # a killed session disabled it and never restored it
+    if ((Get-InstalledPluginState) -eq 'enabled') {
+      Set-Content -LiteralPath $marker -Value $script:InstalledId; $restore = $true
+      $out = copilot plugin disable $script:InstalledId 2>&1 | Out-String
+      if ($LASTEXITCODE -or (Get-InstalledPluginState) -ne 'disabled') { throw "Could not disable the installed $($script:InstalledId), so it would shadow the plugin under test: $out" }
+    }
     & $Body
   } finally {
-    if ($restore) { copilot plugin enable $script:InstalledId 2>&1 | Out-Null }
-    $mutex.ReleaseMutex(); $mutex.Dispose()
+    try {
+      if ($restore -and (Get-InstalledPluginState) -ne 'absent') {
+        $out = copilot plugin enable $script:InstalledId 2>&1 | Out-String
+        if ($LASTEXITCODE -or (Get-InstalledPluginState) -ne 'enabled') {
+          throw "Could not re-enable your installed $($script:InstalledId). Run: copilot plugin enable $($script:InstalledId)`n$out"
+        }
+      }
+      if ($restore) { Remove-Item -LiteralPath $marker -ErrorAction SilentlyContinue }
+    } finally { if ($acquired) { $mutex.ReleaseMutex() }; $mutex.Dispose() }
   }
 }
+
+# 'enabled', 'disabled' or 'absent' for the installed copy of this plugin.
+function Get-InstalledPluginState {
+  $line = (copilot plugin list 2>&1 | Out-String) -split "`r?`n" | Where-Object { $_ -match "\s$([regex]::Escape($script:InstalledId))\s" } | Select-Object -First 1
+  if (-not $line) { 'absent' } elseif ($line -match '\[disabled\]') { 'disabled' } else { 'enabled' }
+}
+
+# A unique id for one test session's output and scratch folders (two sessions may start in the same second).
+function New-RunStamp { '{0}-{1}' -f (Get-Date -Format 'yyyyMMdd-HHmmss'), [guid]::NewGuid().ToString('N').Substring(0, 6) }
 
 function Write-RepoFile([string]$Root, [string]$Rel, [string]$Text) {
   $p = Join-Path $Root $Rel
@@ -34,7 +57,7 @@ function Write-RepoFile([string]$Root, [string]$Rel, [string]$Text) {
 }
 
 function New-ScratchRepo([string]$Path, [hashtable]$Files = @{}, [string]$Message = 'seed') {
-  if (Test-Path $Path) { Remove-Scratch $Path }
+  if (Test-Path $Path) { throw "Scratch path already exists, refusing to reuse it: $Path" }
   New-Item -ItemType Directory -Force -Path $Path | Out-Null
   Push-Location $Path
   try {
@@ -66,10 +89,10 @@ function Get-FileHashes([string]$Root) {
   $h
 }
 
-# Files added or modified since a Get-FileHashes snapshot.
+# Files added, modified or deleted since a Get-FileHashes snapshot.
 function Get-ChangedFiles([string]$Root, [hashtable]$Before) {
   $after = Get-FileHashes $Root
-  @($after.Keys | Where-Object { -not $Before.ContainsKey($_) -or $Before[$_] -ne $after[$_] } | Sort-Object)
+  @(@($after.Keys) + @($Before.Keys) | Sort-Object -Unique | Where-Object { $after[$_] -ne $Before[$_] })
 }
 
 function Invoke-Copilot {
@@ -94,6 +117,11 @@ function Read-Text([string]$Root, [string]$Rel) { $p = Join-Path $Root $Rel; if 
 function Read-Json([string]$Root, [string]$Rel) { $t = Read-Text $Root $Rel; if ($t) { $t | ConvertFrom-Json } }
 function Test-Committed([string]$Root, [string]$Rel) {
   Push-Location $Root; try { $null = git ls-files --error-unmatch -- $Rel 2>$null; ($LASTEXITCODE -eq 0) -and -not (git status --porcelain -- $Rel) } finally { Pop-Location }
+}
+# The assistant's own words: in the CLI transcript, tool calls and their output are indented and the
+# reply starts at column 0, so a skill quoted by a tool can never satisfy a reply check.
+function Get-ReplyText([string]$Log) {
+  (($Log -split "`r?`n") | Where-Object { $_ -match '^\S' -and $_ -notmatch '^(Changes|AI Credits|Tokens|Resume)\s' }) -join "`n"
 }
 function Get-Transcript([string]$Log) { if (Test-Path -LiteralPath $Log) { [IO.File]::ReadAllText($Log) } else { '' } }
 
