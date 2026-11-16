@@ -170,15 +170,16 @@ details (paths, naming, stack, process), but never these **safety floors**:
 If a host rule conflicts with a floor, follow the floor and report the conflict in the Result.
 
 ## Branches and pull requests (all modes)
-Applies whenever the team commits: the orchestrator in a run (`ait-sdlc-orchestrate` step 2;
-specialists dispatched in a run never commit), or a phase skill run on its own that commits its own
-output. When the host's rules leave commits to people, the team makes no commit and creates no
+Applies whenever the team commits: every orchestrator commit in a run (the step 0 carry-over, each
+batch in step 2, the sign-off and release records; specialists dispatched in a run never commit), or
+a phase skill run on its own that commits its own output. When the host's rules leave commits to people, the team makes no commit and creates no
 branch.
 1. **Branch.** Commit only on a feature branch, resolved before the first commit and, on resume,
    before anything reads or compares the working tree.
    - The **default branch** is `main`, `master`, or the remote's default: the output of
      `git symbolic-ref -q --short refs/remotes/origin/HEAD` without its `origin/` prefix, else the
-     branch on the `ref:` line of `git ls-remote --symref origin HEAD`. If the repository has a
+     branch on the `ref:` line of `git ls-remote --symref origin HEAD` without its `refs/heads/`
+     prefix. If the repository has a
      remote, neither command names its default, and the current branch is not `main` or `master`,
      ask before the first commit whether the current branch is a feature branch.
    - On the default branch or a detached `HEAD`, create and switch to `ait/<run-id>`
@@ -191,8 +192,8 @@ branch.
      the recorded branch first; a run without `branch` (started before 1.1.2) applies this rule. If
      the recorded branch is missing, or the checkout would overwrite uncommitted changes, stop and
      ask: never stash, reset or discard the human's work.
-2. **Staging and committing.** Stage only the batch's paths (`git add -- <path>…`) and commit only
-   them (`git commit -m "<message>" -- <path>…`), so files the human already staged stay staged and
+2. **Staging and committing.** Every commit stages only its own paths (`git add -- <path>…`) and
+   commits only them (`git commit -m "<message>" -- <path>…`), so files the human already staged stay staged and
    uncommitted. Never `git add -A`, `git add --all`, `git add .`, `git commit -a` or
    `git commit -am`: they sweep in the human's work.
 3. **Never** (a safety floor: Host repository rules, 6) update the default branch, locally or on the
