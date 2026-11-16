@@ -12,6 +12,7 @@
     "approvers": { "product_owner": null, "security_team": null, "tech_lead": null },
     "grantedAt": null
   },
+  "branch": null,
   "tasks": [
     {
       "id": "T-001",

@@ -50,6 +50,11 @@ Do not duplicate those rules; apply them.
    `references/tracking-templates/`, **create `inbox/` and `inbox/processed/`**, and record the
    resolved artifact destinations in `state.json.layout` (`ait-artifact-layout`).
 3. Detect and validate the mode (`ait-conventions` › Modes); record it in `state.json`.
+4. Resolve the run's branch (`ait-conventions` › Branches and pull requests) before any commit of
+   this step, including item 1's carry-over commit: on resume with a recorded `state.json.branch`,
+   check it out; otherwise (a new run, or a run started before 1.1.2), on the default branch or a
+   detached `HEAD` create and switch to `ait/<run-id>`, else use the current branch, and record it
+   in `state.json.branch`.
 
 ### 1. Research & decompose (Plan)
 1. Read the specs. If ambiguous, ask the **minimum** clarifying questions (batch them once).
@@ -101,6 +106,9 @@ Repeat until no ready tasks remain:
 7. Commit the batch's artifacts at their committed paths (`ait-artifact-layout` › What
    `.copilot-tracking/` may hold), unless the host's rules leave commits to people, in which case
    ask.
+8. Commit only on the run's branch (`state.json.branch`), staging only the batch's paths, never
+   `git add -A`; push or open a pull request only as `ait-conventions` › Branches and pull
+   requests allows.
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
 Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.
