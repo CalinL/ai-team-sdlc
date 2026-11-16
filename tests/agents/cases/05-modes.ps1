@@ -15,6 +15,7 @@
       param($Repo, $Log, $Changed)
       $s = Get-ChildItem (Join-Path $Repo '.copilot-tracking') -Filter state.json -Recurse -Force -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object { [IO.File]::ReadAllText($_.FullName) | ConvertFrom-Json }
       Expect (-not @($Changed | Where-Object { $_ -match '/inbox/.+\.md$' }).Count -and -not @($s.tasks | Where-Object { $_.status -notin 'pending', 'blocked' }).Count) 'the run went on after the invalid config (handoffs or started tasks)'
+      Expect (-not $s -or "$($s.currentPhase)" -in '', 'plan', 'init', 'initialize') "the run advanced to phase '$($s.currentPhase)' after the invalid config"
       Expect (-not @($Changed | Where-Object { $_ -notmatch '^\.copilot-tracking/' }).Count) "the run went on and wrote: $(($Changed | Where-Object { $_ -notmatch '^\.copilot-tracking/' }) -join ', ')"
       $reply = Get-ReplyText $Log
       Expect ($reply -match '(?i)\.\./shared|(contain|has|includes|uses|with)[^\n]{0,30}\.\.') 'the reply does not report the ".." brief path error'
@@ -46,7 +47,7 @@
       Expect (-not $Changed.Count) "files were written: $($Changed -join ', ')"
       Expect ($items.Count -ge 3) 'no numbered gate list in the reply'
       Expect ($list -notmatch '(?i)path[- ]check|spec-conformance|release-acceptance|conformance|baseline|protected|external gate') "a contract-only gate is listed: $list"
-      Expect (-not @($items | Where-Object { $_.ToLowerInvariant() -notmatch 'build|lint|unit|test' }).Count) "a gate other than build, lint, unit is listed: $list"
+      Expect (-not @($items | Where-Object { $_.ToLowerInvariant() -notmatch 'build|lint|unit|test' -or $_.ToLowerInvariant() -match 'security|sast|secret|acceptance|critic|review|e2e|integration|smoke|deploy|rai' }).Count) "a gate other than build, lint, unit is listed: $list"
       $b = $list.IndexOf('build'); $l = $list.IndexOf('lint'); $u = [Math]::Max($list.IndexOf('unit'), $list.IndexOf('test'))
       Expect ($b -ge 0 -and $l -gt $b -and $u -gt $l) "build, lint, unit not listed in order: $list"
     }
