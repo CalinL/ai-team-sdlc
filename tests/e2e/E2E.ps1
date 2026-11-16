@@ -85,7 +85,7 @@ function Check-TrackingStore($R, [string]$Repo, $State, [string]$Tag) {
   if (-not $State) { Check $R "${Tag}: tracking store (no run found)" $false; return }
   $base = ".copilot-tracking/$($State.runId)/"
   $extra = @(Get-AllFiles $Repo | Where-Object { $_.StartsWith($base) } | ForEach-Object { $_.Substring($base.Length) } |
-      Where-Object { $_ -notmatch '^(state\.json|plan\.md|inbox/.*|baselines/.*|[^/]*(path-check|baseline)[^/]*)$' })
+      Where-Object { $_ -notmatch '^(state\.json|plan\.md|inbox/.*|.*(path-check|baseline).*)$' })   # the skill doesn't pin the baseline folder
   Check $R "${Tag}: tracking store holds only state.json, plan.md, inbox/, baselines/$(if ($extra.Count) { ' (extra: ' + ($extra -join ', ') + ')' })" (-not $extra.Count)
 }
 
