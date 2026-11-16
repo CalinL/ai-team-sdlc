@@ -34,6 +34,10 @@ Do not duplicate those rules; apply them.
 ## The loop
 
 ### 0. Initialize or resume
+First resolve the run's branch (`ait-conventions` › Branches and pull requests, 1), before item 1
+reads or compares the working tree or commits the carry-over, unless the host's rules leave commits
+to people (then no branch and no commit): on resume check out `state.json.branch`; otherwise create
+or adopt the branch as that rule says, and record it in `state.json.branch` once `state.json` exists.
 1. **Resume only when an existing `run-id` is supplied** → read `state.json` (canonical), reconcile
    `plan.md`, skip `done` tasks, and re‑run any task left `in_progress` (crash recovery). Write
    artifacts to the paths in `state.json.layout.paths`; a run without `layout` (started on 1.1.0)
@@ -50,11 +54,6 @@ Do not duplicate those rules; apply them.
    `references/tracking-templates/`, **create `inbox/` and `inbox/processed/`**, and record the
    resolved artifact destinations in `state.json.layout` (`ait-artifact-layout`).
 3. Detect and validate the mode (`ait-conventions` › Modes); record it in `state.json`.
-4. Resolve the run's branch (`ait-conventions` › Branches and pull requests) before any commit of
-   this step, including item 1's carry-over commit: on resume with a recorded `state.json.branch`,
-   check it out; otherwise (a new run, or a run started before 1.1.2), on the default branch or a
-   detached `HEAD` create and switch to `ait/<run-id>`, else use the current branch, and record it
-   in `state.json.branch`.
 
 ### 1. Research & decompose (Plan)
 1. Read the specs. If ambiguous, ask the **minimum** clarifying questions (batch them once).
@@ -106,9 +105,10 @@ Repeat until no ready tasks remain:
 7. Commit the batch's artifacts at their committed paths (`ait-artifact-layout` › What
    `.copilot-tracking/` may hold), unless the host's rules leave commits to people, in which case
    ask.
-8. Commit only on the run's branch (`state.json.branch`), staging only the batch's paths, never
-   `git add -A`; push or open a pull request only as `ait-conventions` › Branches and pull
-   requests allows.
+8. Item 7's commit lands on the run's branch (`state.json.branch`) and stages and commits only the
+   batch's paths (`git add -- <path>…`, then `git commit -m "<message>" -- <path>…`), never
+   `git add -A` or `git commit -a`; push or open a pull request only as `ait-conventions` › Branches
+   and pull requests allows.
 
 ### Contract mode (only when .github/ai-sdlc.yml defines contract)
 Applies only when the host repository's `.github/ai-sdlc.yml` has a `contract:` block.

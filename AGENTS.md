@@ -208,8 +208,8 @@ Requirements, specs, decisions, approvals, results and release records are commi
 The rules are in the **`ait-artifact-layout`** skill (`plugins/ai-team-sdlc/skills/ait-artifact-layout/SKILL.md`).
 
 ### 10. Branches and pull requests
-The team commits only on a feature branch: a run that starts on the default branch or a detached `HEAD` creates `ait/<run-id>` and records it in `state.json.branch`.
-It stages only its own paths (never `git add -A`), never updates the default branch, merges, force-pushes or bypasses branch protection, and pushes or opens a pull request only when you ask or your repo's rules say so.
+The team commits only on a feature branch: a run that starts on the default branch (`main`, `master` or the remote's default) or a detached `HEAD` creates `ait/<run-id>` and records it in `state.json.branch`.
+It stages and commits only its own paths (never `git add -A`), so your staged and uncommitted work stays yours; it never updates the default branch, merges, force-pushes or bypasses branch protection (a safety floor), and pushes or opens a pull request only when you ask or your repo's rules say so.
 Pull-request approval lets people merge; it is never a gate and never the three-approver release sign-off, which stays bound to the release-candidate commit.
 The rules are in the **`ait-conventions`** skill, "Branches and pull requests (all modes)".
 
