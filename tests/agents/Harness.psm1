@@ -29,20 +29,25 @@ function Use-PluginUnderTest([scriptblock]$Body) {
     & $Body
   } finally {
     try {
-      if ($restore -and (Get-InstalledPluginState) -ne 'absent') {
-        $out = copilot plugin enable $script:InstalledId 2>&1 | Out-String
-        if ($LASTEXITCODE -or (Get-InstalledPluginState) -ne 'enabled') {
-          throw "Could not re-enable your installed $($script:InstalledId). Run: copilot plugin enable $($script:InstalledId)`n$out"
+      if ($restore) {
+        $state = Get-InstalledPluginState
+        if ($state -ne 'absent') {
+          $out = copilot plugin enable $script:InstalledId 2>&1 | Out-String
+          if ($LASTEXITCODE -or (Get-InstalledPluginState) -ne 'enabled') {   # the marker stays, so the next session retries
+            throw "Could not confirm your installed $($script:InstalledId) is enabled again. Run: copilot plugin enable $($script:InstalledId)`n$out"
+          }
         }
+        Remove-Item -LiteralPath $marker -ErrorAction SilentlyContinue
       }
-      if ($restore) { Remove-Item -LiteralPath $marker -ErrorAction SilentlyContinue }
     } finally { if ($acquired) { $mutex.ReleaseMutex() }; $mutex.Dispose() }
   }
 }
 
 # 'enabled', 'disabled' or 'absent' for the installed copy of this plugin.
 function Get-InstalledPluginState {
-  $line = (copilot plugin list 2>&1 | Out-String) -split "`r?`n" | Where-Object { $_ -match "\s$([regex]::Escape($script:InstalledId))\s" } | Select-Object -First 1
+  $out = copilot plugin list 2>&1 | Out-String
+  if ($LASTEXITCODE) { return 'unknown' }   # a failed lookup is never taken for "not installed"
+  $line = $out -split "`r?`n" | Where-Object { $_ -match "\s$([regex]::Escape($script:InstalledId))\s" } | Select-Object -First 1
   if (-not $line) { 'absent' } elseif ($line -match '\[disabled\]') { 'disabled' } else { 'enabled' }
 }
 

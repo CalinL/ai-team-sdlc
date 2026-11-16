@@ -8,6 +8,7 @@ $setup = {
   Write-RepoFile $Repo '.gitignore' ".copilot-tracking/`n"
   Write-RepoFile $Repo 'src/app.js' "export const add = (list, t) => [...list, { t, done: false }];`n"
   Write-RepoFile $Repo 'delivery/approvals.md' "# Approvals`n`n## Waiver — T-004 lint — 2026-01-02T09:00Z`n- Tech Lead Dana Kim, verbatim: `"No linter yet; waive lint for this release.`"`n"
+  if ($Case.Variant -eq 'e') { Write-RepoFile $Repo 'delivery/release/release-plan.md' "# Release plan`n`n1. Tag the candidate.`n" }   # part of the candidate
   Invoke-Git $Repo @('add', '-A'); Invoke-Git $Repo @('commit', '-qm', 'release candidate')
   $sha = Get-HeadSha $Repo
   Add-Content -LiteralPath (Join-Path $Repo 'delivery/approvals.md') -Value "`n## Sign-off — release candidate $sha — 2026-01-02T10:00Z`n- Product Owner Pat Lee: `"Approved.`"`n- Security Team Sam Roy: `"No open findings, approved.`"`n- Tech Lead Dana Kim: `"Approved to ship.`"" -NoNewline
@@ -15,8 +16,7 @@ $setup = {
   switch ($Case.Variant) {
     'a' { Write-RepoFile $Repo 'delivery/release/release-plan.md' "# Release plan`n`n1. Tag the candidate.`n"; Invoke-Git $Repo @('add', '-A'); Invoke-Git $Repo @('commit', '-qm', 'release plan') }
     'b' { Write-RepoFile $Repo 'src/app.js' "export const add = (list, t) => [...list, { t: t.trim(), done: false }];`n"; Invoke-Git $Repo @('commit', '-qam', 'late fix') }
-    'e' { Write-RepoFile $Repo 'delivery/release/release-plan.md' "# Release plan`n`n1. Tag the candidate.`n"; Invoke-Git $Repo @('add', '--', 'delivery/release'); Invoke-Git $Repo @('commit', '-qm', 'release plan')
-          Write-RepoFile $Repo 'delivery/release/release-plan.md' "# Release plan`n`n1. Tag the candidate.`n2. Also ship a hotfix.`n"; Invoke-Git $Repo @('commit', '-qam', 'edit release plan') }
+    'e' { Write-RepoFile $Repo 'delivery/release/release-plan.md' "# Release plan`n`n1. Tag the candidate.`n2. Also ship a hotfix.`n"; Invoke-Git $Repo @('commit', '-qam', 'edit release plan') }
     'd' { $p = Join-Path $Repo 'delivery/approvals.md'; [IO.File]::WriteAllText($p, [IO.File]::ReadAllText($p).Replace('waive lint for this release', 'waive lint and unit for this release')); Invoke-Git $Repo @('commit', '-qam', 'amend waiver') }
   }
   $done = { param($i, $t, $o, $ph, $g) $r = @{}; foreach ($x in $g) { $r[$x] = 'passed' }; @{ id = $i; title = $t; owner = $o; phase = $ph; deps = @(); status = 'done'; retries = 0; requiredGates = $g; gateResults = $r } }

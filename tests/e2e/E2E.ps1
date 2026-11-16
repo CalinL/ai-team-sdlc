@@ -45,15 +45,31 @@ function Get-ChangesSince([string]$Repo, [string]$Sha) {
 }
 
 # The release candidate is the delivered tree: since that commit only the allowed record paths changed.
+# Exempt only new records: approvals.md whose content at the candidate is an unchanged prefix, and
+# allowed files (release records, receipts) that did not exist at the candidate.
 function Check-CandidateBound($R, [string]$Repo, [string]$Sha, [string]$Allowed, [string]$Tag) {
-  $extra = @(Get-ChangesSince $Repo $Sha | Where-Object { $_ -notmatch $Allowed })
+  Push-Location $Repo
+  try {
+    $extra = @(Get-ChangesSince $Repo $Sha | Where-Object {
+        $f = $_
+        if ($f -notmatch $Allowed) { return $true }
+        $old = git show "${Sha}:$f" 2>$null
+        $existed = $LASTEXITCODE -eq 0
+        if ($f -eq 'delivery/approvals.md') { $existed -and -not (Read-Text $Repo $f).Replace("`r`n", "`n").StartsWith((($old -join "`n") + "`n")) }
+        else { $existed }
+      })
+  } finally { Pop-Location }
   Check $R "${Tag}: the working tree is the release candidate apart from new records$(if ($extra.Count) { ' (also changed: ' + ($extra -join ', ') + ')' })" (-not $extra.Count)
 }
 
 # Every plan/build/test task is done and no required gate is failed or unrun (before sign-off).
-function Check-TasksComplete($R, $State, [string]$Tag) {
+# A gate counts only when passed, or skipped with a human waiver for that task and gate in approvals.md.
+function Check-TasksComplete($R, $State, [string]$Tag, [string]$Repo = '') {
+  $ap = if ($Repo) { Read-Text $Repo 'delivery/approvals.md' } else { '' }
   $open = @($State.tasks | Where-Object { $_.phase -in 'plan', 'build', 'test' } | Where-Object {
-      $t = $_; $t.status -ne 'done' -or @($t.requiredGates | Where-Object { "$($t.gateResults.$_)" -notin 'passed', 'skipped', 'waived' }).Count })
+      $t = $_; $t.status -ne 'done' -or @($t.requiredGates | Where-Object {
+          $g = $_; $v = "$($t.gateResults.$g)"
+          -not ($v -eq 'passed' -or ($v -in 'skipped', 'waived' -and $ap -match "(?im)^.*waiv.*$([regex]::Escape($t.id)).*$([regex]::Escape($g))|^.*waiv.*$([regex]::Escape($g)).*$([regex]::Escape($t.id))")) }).Count })
   Check $R "${Tag}: every plan, build and test task is done with its required gates$(if ($open.Count) { ' (open: ' + ($open.id -join ', ') + ')' })" (@($State.tasks).Count -and -not $open.Count)
 }
 

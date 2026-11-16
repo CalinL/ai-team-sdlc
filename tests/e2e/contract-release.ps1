@@ -87,7 +87,7 @@ Use-PluginUnderTest {
   Check $R "p2: code written; npm test passes with real tests ($($nt.Passed) passing; need 3+)" (@(Get-AllFiles $repo | Where-Object { $_ -match '\.(c|m)?js$' -and $_ -notmatch '^(node_modules|specs|architecture|delivery|\.copilot-tracking)/' }).Count -ge 2 -and $nt.Exit -eq 0 -and $nt.Passed -ge 3)
   $pc = @($state.tasks | Where-Object { $_.phase -in 'build', 'test' -and $_.requiredGates -contains 'path-check' })
   Check $R 'p2: every build and test task is done and passed path-check' ($pc.Count -and -not @($pc | Where-Object { $_.status -ne 'done' -or $_.gateResults.'path-check' -ne 'passed' }).Count)
-  Check-TasksComplete $R $state 'p2'
+  Check-TasksComplete $R $state 'p2' $repo
   Test-ReceiptsUntouched 'p2'
   Check $R 'p2: release candidate SHA recorded before release-acceptance' ($sha -match '^[0-9a-f]{7,40}$' -and (Test-Commit $repo $sha))
   Check $R 'p2: sign-off still pending' ($state.signoff.status -ne 'approved')

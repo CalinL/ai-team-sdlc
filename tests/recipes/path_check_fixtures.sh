@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Tier 2 — path-check fixtures (bash), run against the recipe as published in the plugin reference.
 # 1–15 are spec 1.1.1 §8.3; 16–23 are the 1.1.1 review findings (aliases, spaces, literal status, clean
-# baseline, case, combined aliases, case-aliased receipts, status without a colon). 24–27 guard bash/PowerShell
+# baseline, case, combined aliases, case-aliased receipts, status without a colon). 24–28 guard bash/PowerShell
 # parity of the watch-list glob expansion.
 # Usage: bash tests/recipes/path_check_fixtures.sh <lib.sh> <work-dir>
 set -u
@@ -87,6 +87,8 @@ mkdir -p logs/a/gate/sub; echo old > logs/a/gate/sub/x.md; base; echo new > logs
                                                                                          run "26 parity: '*' after '**' still stays in one folder" pass
 setup; base; mkdir -p delivery/results/acceptance-x; echo r > delivery/results/acceptance-x/n.md
                                                                                          run "27 tracked: a file one folder below a gate glob is not a receipt" pass
+setup; export PC_GATES="$PC_GATES"$'\ndelivery/results/acceptance[!x]*.md'; base; mkdir -p delivery/results/acceptance; echo r > delivery/results/acceptance/n.md
+                                                                                         run "28 a negated bracket '[!x]' never matches '/'" pass
 
 echo; echo "path-check (bash): $OK/$((OK + BAD)) fixtures as expected"
 [ "$BAD" -eq 0 ]

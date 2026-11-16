@@ -52,7 +52,7 @@ Use-PluginUnderTest {
   $sha = "$($state.signoff.artifact)"
   Check $R 'p1: the release candidate SHA is recorded and exists' ($sha -match '^[0-9a-f]{7,40}$' -and (Test-Commit $repo $sha))
   Check $R 'p1: sign-off is pending (no self-approval)' ($state.signoff.status -eq 'pending')
-  Check-TasksComplete $R $state 'p1'
+  Check-TasksComplete $R $state 'p1' $repo
   if ($sha -match '^[0-9a-f]{7,40}$') { Check-CandidateBound $R $repo $sha '^(delivery/approvals\.md|delivery/release/.+)$' 'p1' }
   if ($pluginVersion -ge [version]'1.1.2') {   # spec 1.1.2 §5.2 #1 and #9
     Push-Location $repo
