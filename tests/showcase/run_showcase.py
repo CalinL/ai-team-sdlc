@@ -268,7 +268,7 @@ MUTATIONS = [
     ("presentation mode shows the spotlight", {"body.sim-present .simfocus{outline:none!important;animation:none!important}": ""}, {"presentation"}),
     ("host shortcut fires while typing", {"if (typing) return; /* MUT:typing */": ""}, {"typing"}),
     ("unreadable text in a first-screen overlay", {".help-tx{color:var(--ink-2)}": ".help-tx{color:#cfd3d8}"}, {"contrast-light"}),
-    ("photo/gradient page behind solid surfaces", {"body{margin:0;": "body{background-image:linear-gradient(#123,#456);margin:0;"}, set()),
+    ("photo/gradient page behind solid surfaces", {"background:var(--bg);color:var(--ink);display:grid": "background:linear-gradient(#123,#456) var(--bg);color:var(--ink);display:grid"}, set()),
     ("drawer slides off-canvas (transform)", {"#side{display:none;position:fixed;top:56px;bottom:0;left:0;z-index:55;box-shadow:0 8px 24px rgba(0,0,0,.3)}\n  #side.open{display:flex}":
                                               "#side{display:flex;position:fixed;top:56px;bottom:0;left:0;z-index:55;transform:translateX(-105%);transition:.2s}\n  #side.open{transform:none}"}, set()),
     ("footer says synthetic data", {"Simulated data for demonstration": "Synthetic data for demonstration"}, set()),
