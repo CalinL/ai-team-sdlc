@@ -2,13 +2,16 @@
 # Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 """Reusable browser checks for a showcase or prototype built as a product app (references/product-app.md).
 
-Usage:  python check-prototype.py <file.html | URL> [--layout app|page] [--tours short,full] [--quiet]
+Usage:  python check-prototype.py <file.html | URL> [--layout app|page] [--tours short,full|none]
+                                 [--allow-unverified] [--quiet]
+        --tours none when the prototype has no Simulate tour; --layout page for a single-page layout.
 Needs:  pip install playwright && python -m playwright install chromium
 
 Checks (each prints PASS/FAIL; exit code 1 on any FAIL):
   app-shell        menu items [data-nav], theme switch [data-theme-toggle], header, footer, Ctrl+K search
-  header-row       the header's controls sit on one row
-  contrast-<theme> every screen in both themes: text >= 4.5:1, large text >= 3:1
+  header-row       the header's controls sit on one row (also at phone width: header-row-phone)
+  contrast-<theme> every screen in both themes: text >= 4.5:1, large text >= 3:1 (text over images or
+                   gradients can't be measured and fails unless --allow-unverified)
   overlays         one open at a time, Esc closes it, focus returns to its opener, Tab stays in dialogs
   typing           shortcuts are ignored while typing in a field
   mobile-drawer    at phone width the menu is a slide-out drawer that opens and closes
@@ -29,6 +32,7 @@ Known pitfalls, handled here; keep them in mind when you add checks:
 """
 import argparse
 import pathlib
+import re
 import sys
 
 try:
@@ -63,18 +67,20 @@ CONTRAST_JS = r"""() => {
     const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || !r.height || cs.visibility !== "visible" || +cs.opacity === 0) continue;
     const svg = el.closest("svg");
-    let fg = rgba(svg && cs.fill && !cs.fill.startsWith("url") ? cs.fill : cs.color);
-    let op = 1; for (let e = el; e; e = e.parentElement) op *= +getComputedStyle(e).opacity;
-    fg[3] *= op;
-    let bg = [0, 0, 0, 0], unknown = false;
+    // Composite the text pixel and the background pixel through every ancestor: each one's background
+    // goes under both, and its opacity fades both (group opacity), down to a white canvas.
+    let tp = rgba(svg && cs.fill && !cs.fill.startsWith("url") ? cs.fill : cs.color), bp = [0, 0, 0, 0], unknown = false, gone = false;
     for (let e = el; e; e = e.parentElement) {
       const s = getComputedStyle(e);
+      if (+s.opacity === 0) { gone = true; break; }      // inside an invisible container (e.g. a hidden toast)
       if (s.backgroundImage !== "none") { unknown = true; break; }
-      bg = over(bg, rgba(s.backgroundColor)); if (bg[3] >= 0.999) break;
+      const b = rgba(s.backgroundColor); tp = over(tp, b); bp = over(bp, b);
+      const o = +s.opacity; if (o < 1) { tp[3] *= o; bp[3] *= o; }
     }
+    if (gone) continue;
     if (unknown) { skipped++; continue; }
-    bg = over(bg, [255, 255, 255, 1]);
-    const c = ratio(over(fg, bg), bg), size = parseFloat(cs.fontSize), bold = +cs.fontWeight >= 700;
+    tp = over(tp, [255, 255, 255, 1]); bp = over(bp, [255, 255, 255, 1]);
+    const c = ratio(tp, bp), size = parseFloat(cs.fontSize), bold = +cs.fontWeight >= 700;
     const need = size >= 24 || (bold && size >= 18.66) ? 3 : 4.5; checked++;
     if (c < need) fails.push({ text: n.textContent.trim().slice(0, 40), ratio: +c.toFixed(2), need,
       where: (el.id ? "#" + el.id : el.tagName.toLowerCase() + (el.className && typeof el.className === "string" ? "." + el.className.trim().split(/\s+/)[0] : "")) });
@@ -82,8 +88,17 @@ CONTRAST_JS = r"""() => {
   return { checked, skipped, fails };
 }"""
 
-OPEN_OVERLAYS_JS = """() => [...document.querySelectorAll('[aria-controls][aria-expanded="true"]')]
-  .filter(o => !o.closest('.simbar')).map(o => o.getAttribute('aria-controls'))"""
+# Overlays that are actually visible, whatever their openers' aria-expanded says. Only overlays whose
+# opener is visible count (on a desktop, the menu a hidden phone button controls is not an overlay).
+OPEN_OVERLAYS_JS = """() => { const vis = e => { if (!e) return false; const s = getComputedStyle(e), r = e.getBoundingClientRect();
+    return !e.hidden && s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
+  return [...new Set([...document.querySelectorAll('[aria-controls][aria-expanded]')]
+    .filter(o => vis(o) && !o.closest('.simbar, [data-simulate], [data-simulate-run]')).map(o => o.getAttribute('aria-controls')))]
+    .filter(id => vis(document.getElementById(id))); }"""
+ARIA_MISMATCH_JS = """() => [...document.querySelectorAll('[aria-controls][aria-expanded]')].filter(o => o.getBoundingClientRect().width > 0)
+  .filter(o => { const e = document.getElementById(o.getAttribute('aria-controls')); if (!e) return false;
+    const s = getComputedStyle(e), open = !e.hidden && s.display !== 'none' && s.visibility !== 'hidden' && e.getBoundingClientRect().width > 0;
+    return (o.getAttribute('aria-expanded') === 'true') !== open; }).map(o => o.getAttribute('aria-controls'))"""
 VISIBLE_JS = """id => { const e = document.getElementById(id); if (!e) return false;
   const s = getComputedStyle(e), r = e.getBoundingClientRect(); return !e.hidden && s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0; }"""
 
@@ -124,12 +139,18 @@ def is_open(page, oid):
     return page.evaluate(VISIBLE_JS, oid)
 
 
+FORCE_CLOSE_JS = """ids => ids.forEach(id => { const e = document.getElementById(id); if (!e) return; e.hidden = true; e.classList.remove('open');
+  e.style.display = 'none'; document.querySelectorAll(`[aria-controls="${id}"]`).forEach(o => o.setAttribute('aria-expanded', 'false')); })"""
+
+
 def close_all(page):
+    """Esc until no overlay shows; if Esc can't close one (already reported), hide it so later checks still run."""
     for _ in range(4):
         if not page.evaluate(OPEN_OVERLAYS_JS):
             return
         page.keyboard.press("Escape")
         page.wait_for_timeout(120)
+    page.evaluate(FORCE_CLOSE_JS, page.evaluate(OPEN_OVERLAYS_JS))
 
 
 def set_theme(page, want):
@@ -141,28 +162,58 @@ def set_theme(page, want):
     return page.evaluate("document.documentElement.dataset.theme") == want
 
 
-def check_contrast(page, run, layout):
-    navs = page.query_selector_all("[data-nav]") if layout == "app" else []
+def visit(page, screen):
+    """Opens a screen from the menu and waits until its item is marked aria-current (proof it is active)."""
+    item = page.locator(f'[data-nav="{screen}"]').first
+    try:
+        item.click(timeout=3000)
+    except Exception:  # noqa: BLE001 - covered or collapsed: a programmatic click still exercises the handler
+        item.evaluate("e => e.click()")
+    try:
+        page.wait_for_selector(f'[data-nav="{screen}"][aria-current]:not([aria-current="false"])', state="attached", timeout=3000)
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def check_contrast(page, run, layout, allow_unverified):
+    screens = list(dict.fromkeys(page.eval_on_selector_all("[data-nav]", "es => es.map(e => e.dataset.nav)"))) if layout == "app" else []
     toggle = page.query_selector("[data-theme-toggle]") is not None
     for theme in ("light", "dark") if layout == "app" or toggle else ("current",):
         if theme != "current" and not set_theme(page, theme):
             run.check(f"contrast-{theme}", False, "could not switch theme with [data-theme-toggle]")
             continue
         fails, checked, skipped = {}, 0, 0
-        for nav in navs or [None]:
-            if nav is not None:
+        for screen in screens or ["page"]:
+            if screen != "page":
                 close_all(page)
-                screen = nav.get_attribute("data-nav")
-                nav.evaluate("e => e.click()")
-                page.wait_for_timeout(250)
-            else:
-                screen = "page"
+                if not visit(page, screen):
+                    fails.setdefault(f"{screen}: the menu item never became aria-current, so the screen was not verified", 1)
+                    continue
+                page.wait_for_timeout(200)
+            res = page.evaluate(CONTRAST_JS)
+            checked += res["checked"]
+            skipped += res["skipped"]
+            if not res["checked"]:
+                fails.setdefault(f"{screen}: no text could be measured", 1)
+            for f in res["fails"]:
+                fails.setdefault(f"{screen}: {f['where']} '{f['text']}' {f['ratio']}:1 < {f['need']}:1", 1)
+        for h, oid in openers(page) if layout == "app" else []:
+            close_all(page)
+            h.click(timeout=3000)
+            page.wait_for_timeout(200)
+            if not is_open(page, oid):
+                continue   # the overlay check reports it
             res = page.evaluate(CONTRAST_JS)
             checked += res["checked"]
             skipped += res["skipped"]
             for f in res["fails"]:
-                fails.setdefault(f"{screen}: {f['where']} '{f['text']}' {f['ratio']}:1 < {f['need']}:1", 1)
-        detail = f"{checked} text elements, {skipped} over images/gradients skipped"
+                fails.setdefault(f"#{oid} open: {f['where']} '{f['text']}' {f['ratio']}:1 < {f['need']}:1", 1)
+        close_all(page)
+        if skipped and not allow_unverified:
+            fails.setdefault(f"{skipped} text element(s) over images or gradients cannot be measured: put a solid scrim behind "
+                             "them, or check them by eye and rerun with --allow-unverified (record that in the handoff)", 1)
+        detail = f"{checked} text elements measured, {skipped} over images/gradients" + (" accepted as checked by eye" if skipped else "")
         name = "contrast" if theme == "current" else f"contrast-{theme}"
         if theme == "current":
             detail += "; one theme only (no [data-theme-toggle])"
@@ -185,7 +236,8 @@ def check_overlays(page, run):
             close_all(page)
             continue
         if page.evaluate("id => document.getElementById(id).matches('[role=dialog][aria-modal=true]')", oid):
-            for _ in range(12):
+            stops = page.evaluate("""id => document.getElementById(id).querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])').length""", oid)
+            for _ in range(min(stops + 2, 80)):   # one full cycle and then some
                 page.keyboard.press("Tab")
                 if not page.evaluate("id => document.getElementById(id).contains(document.activeElement)", oid):
                     problems.append(f"Tab left dialog #{oid}")
@@ -203,36 +255,73 @@ def check_overlays(page, run):
         page.wait_for_timeout(120)
         b.evaluate("e => e.click()")
         page.wait_for_timeout(150)
-        still = [o for o in page.evaluate(OPEN_OVERLAYS_JS) if is_open(page, o)]
+        still = page.evaluate(OPEN_OVERLAYS_JS)
         if len(still) > 1:
             problems.append(f"#{aid} and #{bid} open at once")
+        bad = page.evaluate(ARIA_MISMATCH_JS)
+        if bad:
+            problems.append(f"aria-expanded disagrees with what is shown for #{', #'.join(bad)}")
     close_all(page)
+    other = next(((h, oid) for h, oid in ops if page.evaluate("id => !document.getElementById(id).querySelector('input, textarea')", oid)), None)
+    if other:   # Ctrl+K while another overlay is open must leave only the search open
+        other[0].click()
+        page.wait_for_timeout(150)
     page.keyboard.press("Control+k")
     page.wait_for_timeout(200)
     typing = page.evaluate("() => { const a = document.activeElement; return !!a && (/^(INPUT|TEXTAREA)$/.test(a.tagName) || a.isContentEditable); }")
     if not typing:
         problems.append("Ctrl+K did not open search with its input focused")
+    elif len(page.evaluate(OPEN_OVERLAYS_JS)) > 1:
+        problems.append("Ctrl+K left another overlay open")
     run.check("overlays", not problems, f"{len(ops)} openers" if not problems else "; ".join(problems))
+    running = False
     if typing:
         page.keyboard.type("x")
-        page.keyboard.press("Alt+Shift+2")
+        page.keyboard.press("Control+Alt+2")
         page.wait_for_timeout(250)
         running = page.evaluate("() => !!(window.Simulate && Simulate.running)")
         if running:
             page.evaluate("Simulate.stop()")
-        run.check("typing", not running, "Alt+Shift+2 while typing started a tour" if running else "")
     close_all(page)
+    # The host's own shortcuts: typing in an ordinary field, Ctrl+K must not open anything.
+    find_field = """() => { const overlays = [...document.querySelectorAll('[aria-controls]')]
+        .map(o => document.getElementById(o.getAttribute('aria-controls'))).filter(Boolean);
+      return [...document.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea')]
+        .find(e => e.getBoundingClientRect().width > 0 && !e.closest('[role=dialog]') && !overlays.some(o => o.contains(e))) || null; }"""
+    field = page.evaluate_handle(find_field)
+    if not field.as_element():   # look for an ordinary field on every screen
+        for screen in page.eval_on_selector_all("[data-nav]", "es => [...new Set(es.map(e => e.dataset.nav))]"):
+            if visit(page, screen):
+                page.wait_for_timeout(150)
+                field = page.evaluate_handle(find_field)
+                if field.as_element():
+                    break
+    host_ok, note = True, ""
+    if field.as_element():
+        field.as_element().focus()
+        page.keyboard.type("x")
+        page.keyboard.press("Control+k")
+        page.wait_for_timeout(200)
+        host_ok = not page.evaluate(OPEN_OVERLAYS_JS)
+        note = "" if host_ok else "Ctrl+K opened an overlay while typing in a field"
+        close_all(page)
+    else:
+        note = "no ordinary field on the first screen, so the host's shortcuts were not tested while typing"
+    problems_t = [m for m in ("no field to type in (Ctrl+K search did not focus one)" if not typing else "",
+                              "Ctrl+Alt+2 while typing started a tour" if running else "",
+                              note if not host_ok else "") if m]
+    run.check("typing", not problems_t, "; ".join(problems_t) if problems_t else note)
 
 
-def check_header(page, run):
+def check_header(page, run, name="header-row"):
     spans = page.evaluate("""() => { const h = document.querySelector('header'); if (!h) return null;
       return [...h.querySelectorAll('button, a, input, [role=button], nav')].filter(e => { const r = e.getBoundingClientRect();
         return r.width && r.height && getComputedStyle(e).visibility === 'visible'; }).map(e => { const r = e.getBoundingClientRect(); return [r.top, r.bottom]; }); }""")
     if spans is None:
-        run.check("header-row", False, "no <header>")
+        run.check(name, False, "no <header>")
         return
     ok = bool(spans) and min(b for _, b in spans) > max(t for t, _ in spans)
-    run.check("header-row", ok, f"{len(spans)} controls" + ("" if ok else " wrap onto more than one row"))
+    run.check(name, ok, f"{len(spans)} controls" + ("" if ok else " wrap onto more than one row"))
 
 
 def check_mobile(page, run):
@@ -240,6 +329,7 @@ def check_mobile(page, run):
     page.reload()
     page.wait_for_timeout(400)
     close_all(page)
+    check_header(page, run, "header-row-phone")
     navs = [n for n in page.query_selector_all("[data-nav]") if n.is_visible()]
     drawer = [(h, oid) for h, oid in openers(page)
               if page.evaluate("id => !!document.getElementById(id) && !!document.getElementById(id).querySelector('[data-nav]')", oid)]
@@ -285,7 +375,7 @@ def check_simulate(page, run, tours, warnings):
         if not ended:
             page.evaluate("Simulate.stop()")
             page.wait_for_timeout(300)
-        left_open = [o for o in page.evaluate(OPEN_OVERLAYS_JS) if is_open(page, o)]
+        left_open = page.evaluate(OPEN_OVERLAYS_JS)
         warns = warnings[before:]
         ok = bar and prog and ended and not warns and not left_open
         run.check(f"simulate-{name}", ok, f"{len(titles)} beats" if ok else
@@ -298,12 +388,18 @@ def check_presentation(page, run, tours, layout):
         return
     page.evaluate("Simulate.present(true)")
     page.evaluate(f"void Simulate.start('{tours[0]}')")
-    page.wait_for_timeout(400)
+    try:   # wait for a spotlight to exist, so the "no outline in presentation mode" check can fail
+        page.wait_for_selector(".simfocus", state="attached", timeout=4000)
+    except Exception:  # noqa: BLE001 - a tour without hl() simply has no spotlight to check
+        pass
+    # By display, not size: the progress line is 0% wide on the first beat.
     shown = page.evaluate("""() => [...document.querySelectorAll('[data-simulate], [data-simulate-run], [data-demo-only], #simbar, #simprog')]
-      .filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).display !== 'none'; }).length""")
+      .filter(e => getComputedStyle(e).display !== 'none' && getComputedStyle(e).visibility !== 'hidden').length
+      + [...document.querySelectorAll('.simfocus')].filter(e => getComputedStyle(e).outlineStyle !== 'none').length""")
     nav_ok = layout != "app" or any(n.is_visible() for n in page.query_selector_all("[data-nav]"))
     foot = page.query_selector("footer")
-    foot_ok = layout != "app" or bool(foot and foot.is_visible() and (foot.text_content() or "").strip())
+    foot_ok = layout != "app" or bool(foot and foot.is_visible() and re.search(r"simulat|sample|fictional|illustrative|demo",
+                                                                                  foot.text_content() or "", re.I))
     page.evaluate("Simulate.stop()")
     page.wait_for_timeout(300)
     page.evaluate("Simulate.present(false)")
@@ -316,6 +412,7 @@ def main():
     ap.add_argument("target")
     ap.add_argument("--layout", choices=["app", "page"], default="app", help="page = a single-page layout the user asked for")
     ap.add_argument("--tours", default="short,full", help="comma-separated Simulate scenarios, or 'none'")
+    ap.add_argument("--allow-unverified", action="store_true", help="accept text over images/gradients, checked by eye")
     ap.add_argument("--quiet", action="store_true", help="print failures only")
     a = ap.parse_args()
     tours = [] if a.tours == "none" else [t.strip() for t in a.tours.split(",") if t.strip()]
@@ -339,7 +436,7 @@ def main():
             missing = [k for k, v in parts.items() if not v]
             run.check("app-shell", not missing, "missing: " + ", ".join(missing) if missing else "")
             run.guard("header-row", check_header, page, run)
-        run.guard("contrast", check_contrast, page, run, a.layout)
+        run.guard("contrast", check_contrast, page, run, a.layout, a.allow_unverified)
         if a.layout == "app":
             run.guard("overlays", check_overlays, page, run)
             run.guard("mobile-drawer", check_mobile, page, run)

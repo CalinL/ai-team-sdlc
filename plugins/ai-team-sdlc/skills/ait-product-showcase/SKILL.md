@@ -121,7 +121,8 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    Either way: **no backend**. Use the real data the user supplies (in the source or alongside it)
    where it is available and appropriate for the audience; fill every gap with **realistic mock
    data**. Show one clear, **persistent** prototype-level disclosure of simulated data, visible
-   during normal browsing and Simulate (e.g. a header chip or footer); it satisfies the
+   during normal browsing and Simulate (in the app footer on the generate path; on the reproduce
+   path, where the source design puts it, e.g. a header chip); it satisfies the
    "labelled simulated" rule, so do not clutter screens with per-figure caveats. With mixed real and
    mock data, record which figures are sourced and which are simulated in the handoff. Keep data consistent across screens, and keep
    every screen visually consistent (brand, tone, spacing). Build only the scope the source asks
@@ -148,7 +149,8 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    comparison against the source. On the generate path, also check every screen's contrast in both
    themes and the overlay rules ([`references/product-app.md`](references/product-app.md) §3–§5):
    run the bundled harness [`assets/check-prototype.py`](assets/check-prototype.py) when Python
-   Playwright is available, otherwise the same checks through the Playwright MCP. Fix all issues before proceeding. Here `ait-prototype-testing` runs
+   Playwright is available (`--tours none` if the user opted out of Simulate), otherwise the same
+   checks through the Playwright MCP. Fix all issues before proceeding. Here `ait-prototype-testing` runs
    as a **sub-step** and returns its evidence to you; **you** write the single inbox handoff.
 4. **Peer review (mandatory — two independent critics).** Spin up **two** review subagents and run
    them **in parallel**, each equipped with the `ait-product-design` skill. Prefer two strong models
@@ -173,8 +175,8 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    **3 rounds** without agreement, stop iterating and hand the unresolved blockers to the user — the
    task is `blocked`, never `done`, so nothing ships below the bar. The user may choose to stop
    once one critic is READY and the other's review is still pending: record that as the user's
-   decision, with the pending verdict, in the change summary (`v<N>-changes.md`; for `-v1`, the
-   handoff) and in the handoff; it stands in for the second READY. Missed opportunities are suggestions, never scope changes without user
+   decision, with the pending verdict, in the change summary `v<N>-changes.md` (create it for
+   `-v1` too) and in the handoff; it stands in for the second READY. Missed opportunities are suggestions, never scope changes without user
    approval (and never on the reproduce path). If a reviewer contradicts an explicit user
    instruction, follow the user and surface the disagreement. If the source may be confidential,
    confirm it may be shared with other models first (this includes any real data the user

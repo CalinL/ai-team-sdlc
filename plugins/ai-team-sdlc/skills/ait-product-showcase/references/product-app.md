@@ -41,7 +41,8 @@ explicitly asks for one. On the reproduce path, follow the source design instead
 ## 3. Overlay rules (default acceptance criteria)
 Overlays are the search, menus (user, notifications), side panels, dialogs and the mobile menu.
 1. Only one overlay is open at a time: opening one closes the others.
-2. `Esc` closes the topmost one.
+2. `Esc` closes the topmost one (and calls `preventDefault()`, so a running Simulate tour stays
+   on).
 3. Focus returns to the button that opened it.
 4. `Tab` stays inside an open dialog.
 5. Keyboard shortcuts (the host's and the Simulate kit's) are ignored while the viewer is typing in
@@ -51,11 +52,14 @@ Overlays are the search, menus (user, notifications), side panels, dialogs and t
 
 ## 4. Hooks the harness relies on
 Plain ARIA and three data attributes, so the checks work on any prototype:
-- each menu item that opens a screen carries `data-nav="<screen-id>"`;
+- each menu item that opens a screen carries `data-nav="<screen-id>"`, and the active one carries
+  `aria-current="page"`;
 - the theme lives on `<html data-theme="light|dark">`, and the switch carries `data-theme-toggle`;
 - every overlay opener has `aria-controls="<overlay-id>"` and an up-to-date `aria-expanded`;
   a closed overlay is `hidden` (or `display:none`);
 - dialogs carry `role="dialog"` and `aria-modal="true"`;
+- the scenario menu items (in the user or help menu) carry `data-simulate-run="short"` and
+  `"full"`, and anything only a demo needs carries `data-demo-only` (presentation mode hides both);
 - the search opener also opens on Ctrl+K and focuses its input.
 
 ## 5. Checking it
@@ -68,7 +72,10 @@ python <skill>/assets/check-prototype.py showcase/<use-case>/v<N>.html
 
 It opens the file muted, visits every screen in both themes, checks contrast, the overlay rules,
 the phone drawer, the header row, both Simulate scenarios and presentation mode, and fails on any
-console error. Add `--layout page` for a single-page layout the user asked for. Without Python,
+console error. Add `--layout page` for a single-page layout the user asked for, and `--tours none`
+when the prototype has no Simulate tour. Text over an image or gradient can't be measured: put a
+solid scrim behind it, or check it by eye, rerun with `--allow-unverified` and say so in the
+handoff. Without Python,
 run the same checks through the Playwright MCP (`ait-prototype-testing`); the harness's check list
 is the checklist, and its `CONTRAST_JS` snippet runs as-is in `browser_evaluate`.
 

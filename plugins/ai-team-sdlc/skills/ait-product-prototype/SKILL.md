@@ -89,7 +89,8 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
    states, capture console errors, test responsive breakpoints, and run an accessibility smoke pass.
    Check contrast on every screen in both themes and the overlay rules, with the
    `ait-product-showcase` skill's bundled `assets/check-prototype.py` when Python Playwright is
-   available (otherwise the same checks through the MCP).
+   available (with `--tours none` unless the `simulate` opt-in is on, and `--layout page` for a
+   single-page layout the user asked for), otherwise the same checks through the MCP.
    Use its `--mute-audio` launch setup during automated building/testing, including opt-in Simulate
    checks; leave delivered narration enabled.
    Here `ait-prototype-testing` runs as a **sub-step** and returns its evidence to you; **you** write the

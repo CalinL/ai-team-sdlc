@@ -62,7 +62,11 @@ If you are validating shipped, spec-derived behavior against acceptance criteria
 > identical — use whichever prefix your environment surfaces.
 
 **Silent automated runs.** During building and testing, launch Chromium/Edge with
-`--mute-audio` so Simulate narration does not play aloud. For Playwright MCP, merge
+`--mute-audio` so Simulate narration does not play aloud. `--mute-audio` alone does not silence
+Web Speech on every OS (Windows speaks through the system voice): also stub `speechSynthesis`
+before the page runs, with the `SILENT_JS` init script from `ait-product-showcase`'s
+`assets/check-prototype.py` (for the Playwright MCP, through its init-script option), or run
+that harness, which does it. For Playwright MCP, merge
 `"--mute-audio"` into `browser.launchOptions.args` in its JSON configuration (loaded with
 `--config`), preserving existing options, then relaunch the test browser; an already-running
 browser will not pick up launch arguments. If the host cannot configure the launch, report

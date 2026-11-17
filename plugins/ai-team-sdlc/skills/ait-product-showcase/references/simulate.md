@@ -42,10 +42,10 @@ logic is the part that is easy to get subtly wrong.
   it is plain text and not a tab stop.
   - **Two scenarios.** A **short** tour (about 1 minute: only the core value moments) and the
     **full** tour (under 5 minutes: every main feature, end to end). Start either from a menu item
-    (`data-simulate-run="short"` or `"full"`), with `Alt+Shift+1` / `Alt+Shift+2`, or with
+    (`data-simulate-run="short"` or `"full"`), with `Ctrl+Alt+1` / `Ctrl+Alt+2`, or with
     `Simulate.start("short" | "full")`; the `▶ Simulate` button plays the full tour. Both play the
     same way every time.
-  - **Presentation mode** (for live demos and screen recordings). `Alt+Shift+P`, a menu item calling
+  - **Presentation mode** (for live demos and screen recordings). `Ctrl+Alt+P`, a menu item calling
     `Simulate.present()`, or `?present` in the URL hides every walkthrough control: the trigger, the
     scenario menu items, the progress line, the panel, the spotlight outline, and anything marked
     `data-demo-only`. What remains looks and behaves like the real product, with its navigation and
@@ -136,7 +136,9 @@ const at = (view, patch = {}) => { Object.assign(S, patch); nav(view); };   // t
    - Rename the `.toast` rules to the prototype's toast class, or delete them if it has none.
 2. **Button.** Put `SIMULATE · BUTTON` in the top bar. Any element with `data-simulate` is a trigger,
    so a second entry scene (a landing or host-app screen) can carry its own button. You may swap
-   `.sim-trigger` for the prototype's primary-button class.
+   `.sim-trigger` for the prototype's primary-button class. Put the two scenarios in a menu (the
+   user or help menu) as items carrying `data-simulate-run="short"` and `data-simulate-run="full"`,
+   and mark any other demo-only element `data-demo-only`.
 3. **Engine.** Paste `SIMULATE · ENGINE` after the prototype's own script. It is an IIFE: it declares
    no globals except `window.Simulate` (`start`, `stop`, `next`, `pause`, `running`), and it does
    not depend on the host's `$`/`$$` helpers. Edit only `CONFIG`:
@@ -222,7 +224,8 @@ delivered showcase.
       as verified or not verified in the handoff, and never claim it without hearing it.
 
 ## 7. Gotchas
-- `speechSynthesis` requires a user gesture, which is why the tour starts only from the button.
+- `speechSynthesis` requires a user gesture, which is why a tour starts only from a user action:
+  the button, a scenario menu item or a shortcut.
 - Chrome may stop a long utterance after about 15 seconds. Keep beats short; the backstop is only a
   safety net.
 - `speechSynthesis.pause()` is unreliable on some engines. The engine also freezes its own clock, so

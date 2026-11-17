@@ -8,8 +8,8 @@
     3. SIMULATE · ENGINE  → after the prototype's own <script> (a separate <script> is fine)
   Then edit only the CONFIG section at the top of the engine (badge, snapshot/restore, closeAll,
   dismiss, steps = the full tour, short = the ~1-minute tour). Start a tour with the button, a menu
-  item carrying data-simulate-run="short|full", Alt+Shift+1 / Alt+Shift+2, or Simulate.start(name).
-  Presentation mode (Alt+Shift+P, ?present, Simulate.present()) hides every walkthrough control;
+  item carrying data-simulate-run="short|full", Ctrl+Alt+1 / Ctrl+Alt+2, or Simulate.start(name).
+  Presentation mode (Ctrl+Alt+P, ?present, Simulate.present()) hides every walkthrough control;
   ?cursor shows a visible pointer and ?mute (or M during a tour) silences the narration.
   The engine is wrapped in an IIFE: it declares no globals except window.Simulate and needs nothing
   from the host except the functions your beats call. Everything outside the marked blocks is a
@@ -106,7 +106,7 @@ body.simming .toast.show{transform:translateX(-50%) translateY(0)}
   .simbar.sim-open .sim-text::after{content:"Tap to collapse"}
   .sim-dots{margin-top:7px}
 }
-/* Presentation mode (Alt+Shift+P, ?present, Simulate.present()): only the product stays on screen.
+/* Presentation mode (Ctrl+Alt+P, ?present, Simulate.present()): only the product stays on screen.
    Mark any other demo-only element (a "Simulate" menu, a help link) with data-demo-only. */
 body.sim-present [data-simulate],body.sim-present [data-simulate-run],body.sim-present [data-demo-only],
 body.sim-present .simbar,body.sim-present .simprog{display:none!important}
@@ -229,7 +229,7 @@ render();
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   const st = { on: false, paused: false, skip: false, stop: false, muted: false, token: 0, i: 0, clock: 0, ticker: null, was: null, voice: null,
-    localOnly: false, silent: false, pending: null, present: false, cursor: !!CONFIG.cursor, scenario: "full" };
+    localOnly: false, silent: false, pending: null, present: false, cursor: !!CONFIG.cursor, scenario: "full", req: 0, typing: null };
   let STEPS = [];
   // URL flags for live demos and recordings: ?present (presentation mode), ?cursor (visible pointer), ?mute.
   const flags = new URLSearchParams(location.search);
@@ -303,27 +303,30 @@ render();
     pointAt(e);
   }
   // The visible pointer, when on: glides to the element's centre once scrolling settles.
+  // One pending move at a time; a target that was re-rendered away is skipped, never sent to (0, 0).
+  let pointTimer = null;
   function pointAt(e) {
     const c = q("#simcursor"); if (!c || !e) return;
-    setTimeout(() => { const r = e.getBoundingClientRect(); c.style.transform = `translate(${r.left + r.width / 2}px,${r.top + r.height / 2}px)`; }, reduceMotion() ? 0 : 350);
+    clearTimeout(pointTimer);
+    pointTimer = setTimeout(() => { if (!e.isConnected) return; const r = e.getBoundingClientRect(); c.style.transform = `translate(${r.left + r.width / 2}px,${r.top + r.height / 2}px)`; }, reduceMotion() ? 0 : 350);
   }
   async function typeInto(sel, text, perChar) {
     const f = q(sel); if (!f) { console.warn("[simulate] typeInto target not found:", sel); return; }
-    pointAt(f);
+    pointAt(f); st.typing = f;   // the tour's own typing: Esc still exits
     const set = v => { f.value = v; f.dispatchEvent(new Event("input", { bubbles: true })); };
     f.focus(); set("");
     for (let i = 0; i < text.length; i++) {
       alive(st.token);                         // Exit aborts without touching the field again
-      if (st.skip) { set(text); f.blur(); return; }   // Next completes the typing instantly
+      if (st.skip) { set(text); f.blur(); st.typing = null; return; }   // Next completes the typing instantly
       set(text.slice(0, i + 1));
       if (i % 3 === 0) await wait(perChar || 40);
     }
-    f.blur();
+    f.blur(); st.typing = null;
   }
   async function click(sel) {
     const e = typeof sel === "string" ? q(sel) : sel;
     if (!e) { console.warn("[simulate] click target not found:", sel); return; }
-    hl(e); await wait(700);
+    hl(e); await wait(q("#simcursor") ? 950 : 700);   // with the pointer on, let it arrive (350ms + .55s glide)
     const c = q("#simcursor"); if (c) { c.classList.remove("sim-press"); void c.offsetWidth; c.classList.add("sim-press"); }
     e.click();
   }
@@ -409,6 +412,8 @@ render();
 
   /* ---- run / stop ---- */
   const safely = (what, fn) => { try { fn && fn(); } catch (e) { console.error("[simulate] " + what + " failed:", e); } };
+  // Without CONFIG.dismiss, hide the common .toast.show pattern.
+  const dismiss = () => CONFIG.dismiss ? CONFIG.dismiss() : qa(".toast.show").forEach(e => e.classList.remove("show"));
   async function start(name) {
     if (st.on) return;
     const scenario = name === "short" ? "short" : "full";
@@ -431,7 +436,7 @@ render();
       const pb = document.getElementById("sim-pause"); if (pb && !st.present) pb.focus({ preventScroll: true }); // Space then pauses instead of re-clicking the trigger
       for (st.i = 0; st.i < STEPS.length; st.i++) {
         const s = STEPS[st.i]; st.skip = false; caption(s);
-        safely("dismiss", CONFIG.dismiss);                         // no message from the last beat lingers
+        safely("dismiss", dismiss);                               // no message from the last beat lingers
         const t0 = st.clock, speech = speak(s.n);   // voice and stage actions run in parallel
         if (s.r) await s.r();
         const skipped = await narrate(speech, t0, s.d || 0, s.n);
@@ -446,24 +451,32 @@ render();
   }
   // Exit only raises the flag; the running loop unwinds and cleans up in its own `finally`,
   // so no pending stage action can fire after the viewer's state has been restored.
-  function stop() { if (!st.on) return; st.stop = true; hush(); }
-  // Start a scenario from a menu or shortcut, ending a running tour first.
-  async function run(name) { if (st.on) { stop(); while (st.on) await sleep(TICK / 2); } start(name); }
+  // Exit also cancels a scenario request still waiting for the previous tour to unwind.
+  function stop() { st.req++; if (!st.on) return; st.stop = true; hush(); }
+  // Start a scenario from a menu or shortcut, ending a running tour first. Only the latest request runs.
+  async function run(name) {
+    if (st.on) stop();
+    const req = ++st.req;
+    while (st.on) { await sleep(TICK / 2); if (req !== st.req) return; }
+    if (req === st.req) start(name);
+  }
   function cleanup(finished) {
     clearInterval(st.ticker); hush();
     if (TTS) try { speechSynthesis.resume(); } catch (e) { }   // never leave the synthesizer paused
-    Object.assign(st, { on: false, paused: false, skip: false });
+    Object.assign(st, { on: false, paused: false, skip: false, typing: null });
     document.body.classList.remove("simming");
+    clearTimeout(pointTimer);
     ["#simbar", "#simprog", "#simcursor"].forEach(s => { const e = q(s); if (e) e.remove(); });
     qa(".simfocus").forEach(e => e.classList.remove("simfocus"));
     setButton(false);
     safely("closeAll", CONFIG.closeAll);                           // exit or finish closes every overlay
-    safely("dismiss", CONFIG.dismiss);
+    safely("dismiss", dismiss);
     const was = st.was; st.was = null;
     if (was && (!finished || CONFIG.restoreOnFinish)) {
       try { CONFIG.restore(was); } catch (e) { console.error("[simulate] restore failed:", e); }
     }
-    const f = st.focus && st.focus.isConnected ? st.focus : q(CONFIG.trigger); st.focus = null;
+    // Back to where the viewer was, unless that element is gone or hidden (e.g. a menu that closed).
+    const f = st.focus && st.focus.isConnected && st.focus.getClientRects().length ? st.focus : q(CONFIG.trigger); st.focus = null;
     try { f && f.focus({ preventScroll: true }); } catch (e) { }
   }
   // Presentation mode hides every walkthrough control; the product (and its disclosure) stays.
@@ -485,15 +498,18 @@ render();
   document.addEventListener("keydown", e => {
     if (e.defaultPrevented) return;
     const t = e.target, typing = t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable);
-    // Alt+Shift+1 short tour · Alt+Shift+2 full tour · Alt+Shift+P presentation mode (never while typing).
-    if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && !typing) {
+    // Ctrl+Alt+1 short tour · Ctrl+Alt+2 full tour · Ctrl+Alt+P presentation mode (never while typing).
+    // Not Alt+Shift: that is Windows' keyboard-language switch and would flip a presenter's layout.
+    if (e.ctrlKey && e.altKey && !e.shiftKey && !e.metaKey && !typing) {
       const k = { Digit1: "short", Digit2: "full", KeyP: "present" }[e.code];
-      if (k) { e.preventDefault(); if (k === "present") present(); else run(k); return; }
+      if (k) { e.preventDefault(); if (!e.repeat) { if (k === "present") present(); else run(k); } return; }
     }
     if (!st.on) return;
-    if (e.key === "Escape") stop();
-    else if (typing) return;
-    else if (e.key === "ArrowRight") next();
+    // Esc exits the tour, unless the viewer is typing in a field of their own (the host closes that
+    // overlay; a host that consumes Esc calls preventDefault, which is checked above).
+    if (e.key === "Escape") { if (!typing || t === st.typing) stop(); return; }
+    if (typing) return;
+    if (e.key === "ArrowRight") next();
     else if (e.key === " " && !/^(BUTTON|A)$/.test(t.tagName) && !t.closest(".sim-text")) { e.preventDefault(); togglePause(); }
     else if ((e.key === "m" || e.key === "M") && !e.altKey && !e.ctrlKey && !e.metaKey) toggleMute();
   });

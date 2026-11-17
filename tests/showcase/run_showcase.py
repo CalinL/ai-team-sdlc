@@ -60,9 +60,14 @@ def build_fixture(out, mutate=None):
     return out
 
 
+# Counts utterances on top of the silent stub, to prove narration on and off.
+COUNT_JS = "window.__spoken = 0; { const s = speechSynthesis.speak.bind(speechSynthesis); speechSynthesis.speak = u => { window.__spoken++; s(u); }; }"
+
+
 def page_with_log(browser, url, viewport=(1366, 900)):
     pg = browser.new_page(viewport={"width": viewport[0], "height": viewport[1]})
     pg.add_init_script(SILENT_JS)   # never call native speech (--mute-audio misses it on Windows)
+    pg.add_init_script(COUNT_JS)
     log = []
     pg.on("console", lambda m: log.append(f"{m.type}: {m.text}") if m.type in ("error", "warning") else None)
     pg.on("pageerror", lambda e: log.append(f"pageerror: {e}"))
@@ -110,25 +115,26 @@ def kit_tests(browser, fixture):
     check("kit: Next on the last beat ends the tour at once", took < 1.0, f"{took:.2f}s")
     # 2. Scenarios: menu item, shortcut and API; the same beats every time.
     a = beats(pg, lambda: pg.evaluate("void Simulate.start('short')"))
-    b = beats(pg, lambda: pg.keyboard.press("Alt+Shift+1"))
+    b = beats(pg, lambda: pg.keyboard.press("Control+Alt+1"))
     c = beats(pg, lambda: pg.click("[data-simulate-run=short]"))
     check("kit: short scenario from API, shortcut and menu item plays the same beats", a == b == c and len(a) == 2, f"{a}")
-    f1 = beats(pg, lambda: pg.keyboard.press("Alt+Shift+2"))
+    f1 = beats(pg, lambda: pg.keyboard.press("Control+Alt+2"))
     f2 = beats(pg, lambda: pg.evaluate("void Simulate.start('full')"))
     check("kit: full scenario plays the same beats twice", f1 == f2 and len(f1) == 4, f"{len(f1)} beats")
     # 4. Shortcuts are ignored while typing.
     pg.evaluate("nav('ask')")
     pg.focus("#q")
-    pg.keyboard.press("Alt+Shift+2")
-    pg.keyboard.press("Alt+Shift+P")
+    pg.keyboard.press("Control+Alt+2")
+    pg.keyboard.press("Control+Alt+P")
     pg.wait_for_timeout(300)
     check("kit: shortcuts are ignored while typing", not pg.evaluate("Simulate.running") and not pg.evaluate("Simulate.presenting"))
     pg.evaluate("document.activeElement.blur()")
     # 3. Presentation mode by shortcut; a tour runs in it.
-    pg.keyboard.press("Alt+Shift+P")
+    pg.keyboard.press("Control+Alt+P")
     pg.evaluate("void Simulate.start('short')")
-    pg.wait_for_timeout(400)
-    hidden = not any(pg.is_visible(s) for s in ("[data-simulate]", "[data-simulate-run]", "#simbar", "#simprog"))
+    pg.wait_for_selector(".simfocus", state="attached", timeout=5000)
+    hidden = not any(pg.is_visible(s) for s in ("[data-simulate]", "[data-simulate-run]", "#simbar")) and \
+        pg.evaluate("getComputedStyle(document.getElementById('simprog')).display") == "none"
     focus_outline = pg.evaluate("() => { const e = document.querySelector('.simfocus'); return e ? getComputedStyle(e).outlineStyle : 'none'; }")
     check("kit: presentation mode (shortcut) hides the walkthrough controls while a tour runs",
           hidden and pg.evaluate("Simulate.running") and focus_outline == "none" and pg.is_visible("#tabs"))
@@ -150,14 +156,77 @@ def kit_tests(browser, fixture):
     # closeAll on start and on exit (fixture maps it to the app's own close-all).
     pg, log = page_with_log(browser, fixture.as_uri())
     pg.click("#notif-btn")
+    was_open = pg.is_visible("#notif")
     pg.evaluate("void Simulate.start('full')")
     pg.wait_for_timeout(300)
-    on_start = pg.is_hidden("#notif")
+    on_start = was_open and pg.is_hidden("#notif")
     pg.evaluate("document.getElementById('user-btn').click()")
     pg.wait_for_timeout(200)
     pg.evaluate("Simulate.stop()")
     pg.wait_for_timeout(300)
     check("kit: closeAll runs when a tour starts and when it exits", on_start and pg.is_hidden("#user-menu"))
+    # The full tour from its menu item; presentation mode hides data-demo-only elements too.
+    pg.click("#user-btn")
+    pg.click("[data-simulate-run=full]")
+    pg.wait_for_timeout(500)
+    from_menu = pg.evaluate("Simulate.running") and pg.evaluate("Simulate.scenario") == "full"
+    pg.evaluate("Simulate.stop()")
+    pg.wait_for_timeout(300)
+    shown_before = pg.is_visible("#demo-note")
+    pg.keyboard.press("Control+Alt+P")
+    hidden_after = pg.is_hidden("#demo-note") and pg.is_visible("footer") and pg.is_visible("[data-nav]")
+    pg.keyboard.press("Control+Alt+P")
+    check("kit: full tour from its menu item; presentation mode hides data-demo-only, keeps nav and footer",
+          from_menu and shown_before and hidden_after and pg.is_visible("#demo-note"))
+    # Esc while typing in the app's own dialog closes the dialog, not the tour; the next Esc exits.
+    pg.evaluate("void Simulate.start('full')")
+    pg.wait_for_timeout(500)
+    pg.click("#search-btn")
+    pg.wait_for_timeout(200)
+    pg.keyboard.press("Escape")
+    pg.wait_for_timeout(300)
+    kept = pg.evaluate("Simulate.running") and pg.is_hidden("#search")
+    pg.keyboard.press("Escape")
+    pg.wait_for_timeout(400)
+    check("kit: Esc in the app's dialog closes it and keeps the tour; the next Esc exits", kept and not pg.evaluate("Simulate.running"))
+    # Rapid scenario requests: only the latest runs, and Exit cancels a request still waiting.
+    pg.keyboard.press("Control+Alt+1")
+    pg.keyboard.press("Control+Alt+2")
+    pg.keyboard.press("Escape")
+    pg.wait_for_timeout(1500)
+    check("kit: Exit cancels scenario requests still waiting to start", not pg.evaluate("Simulate.running"))
+    pg.close()
+    # Unattended playback (no Next) in presentation mode: both scenarios finish on their own.
+    pg, log = page_with_log(browser, fixture.as_uri() + "?present&cursor")
+    pg.keyboard.press("Control+Alt+1")
+    pg.wait_for_selector("#simcursor", state="attached")
+    start_pos = pg.get_attribute("#simcursor", "style")
+    pg.wait_for_timeout(2500)
+    moved = pg.get_attribute("#simcursor", "style") != start_pos
+    pg.wait_for_function("!Simulate.running", timeout=30000)
+    spoken_short = pg.evaluate("window.__spoken")
+    check("kit: short tour plays to the end unattended in presentation mode, cursor moving, narration on",
+          moved and spoken_short == 2 and pg.evaluate("Simulate.presenting"), f"moved={moved} utterances={spoken_short}")
+    pg.keyboard.press("m")   # no effect outside a tour; mute is tested via ?mute below
+    pg.close()
+    pg, log = page_with_log(browser, fixture.as_uri() + "?present&mute")
+    pg.keyboard.press("Control+Alt+2")
+    pg.wait_for_selector("#simbar", state="attached")
+    pg.wait_for_function("!Simulate.running", timeout=40000)
+    check("kit: full tour plays to the end unattended in presentation mode, narration off",
+          pg.evaluate("window.__spoken") == 0 and not log, f"utterances={pg.evaluate('window.__spoken')} log={log[:2]}")
+    pg.close()
+    # Without CONFIG.dismiss the engine still clears .toast.show at the next beat.
+    nodis = build_fixture(fixture.parent / "no-dismiss.html", {'    dismiss: () => $("#toast").classList.remove("show"),\n': ""})
+    pg, log = page_with_log(browser, nodis.as_uri())
+    pg.evaluate("void Simulate.start('full')")
+    pg.wait_for_timeout(300)
+    pg.evaluate("Simulate.next()")
+    pg.wait_for_selector(".toast.show", timeout=10000)
+    pg.evaluate("Simulate.next()")
+    pg.wait_for_timeout(250)
+    check("kit: without CONFIG.dismiss, .toast.show is still cleared at the next beat", not pg.is_visible(".toast.show"))
+    pg.evaluate("Simulate.stop()")
     pg.close()
 
 
@@ -178,18 +247,27 @@ def harness(fixture, expect_fail=None):
 
 MUTATIONS = [
     ("low-contrast ink in dark mode", {"--ink-muted:#9aa4b2": "--ink-muted:#4a525c"}, {"contrast-dark"}),
-    ("Esc does not close", {'if (e.key === "Escape" && openId) { closeAll(true); return; } /* MUT:esc */': ""}, {"overlays"}),
+    ("Esc does not close", {'if (e.key === "Escape" && openId) { e.preventDefault(); closeAll(true); return; } /* MUT:esc */': ""}, {"overlays"}),
+    ("faded text (group opacity)", {".muted{color:var(--ink-muted)}": ".muted{color:var(--ink-muted);opacity:.45}"}, {"contrast-light", "contrast-dark"}),
+    ("text over a gradient (unmeasurable)", {".card{background:var(--surface);": ".card{background:linear-gradient(var(--surface),var(--surface-2));"}, {"contrast-light", "contrast-dark"}),
+    ("screens never marked active", {'if (b.dataset.nav === v) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");': ""}, {"contrast-light", "contrast-dark"}),
+    ("closed overlay stays on screen", {'function show(id, on) { if (id === "side") $("#side").classList.toggle("open", on); else $("#" + id).hidden = !on; }':
+                                        'function show(id, on) { if (id === "side") $("#side").classList.toggle("open", on); else if (on) $("#" + id).hidden = false; }'}, {"overlays"}),
     ("two overlays open at once", {"closeAll(false); /* MUT:one-at-a-time */": ""}, {"overlays"}),
     ("focus not returned", {"if (restoreFocus && back) back.focus(); /* MUT:focus */": ""}, {"overlays"}),
     ("Tab escapes the dialog", {'if (e.key === "Tab" && openId === "search") {': "if (false) {"}, {"overlays"}),
     ("presentation mode shows the panel", {"body.sim-present .simbar,body.sim-present .simprog{display:none!important}":
                                            "body.sim-present .simprog{display:none!important}"}, {"presentation"}),
+    ("presentation mode shows the progress line", {"body.sim-present .simbar,body.sim-present .simprog{display:none!important}":
+                                                   "body.sim-present .simbar{display:none!important}"}, {"presentation"}),
+    ("presentation mode shows the spotlight", {"body.sim-present .simfocus{outline:none!important;animation:none!important}": ""}, {"presentation"}),
+    ("host shortcut fires while typing", {"if (typing) return; /* MUT:typing */": ""}, {"typing"}),
     ("menu not a drawer on phones", {"#side{display:none;position:fixed": "#side{position:fixed"}, {"mobile-drawer"}),
 ]
 
 
 def main():
-    out = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "tests" / "out" / "showcase" / f"{time.strftime('%Y%m%d-%H%M%S')}-{os.getpid()}")
+    out = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "tests" / "out" / "showcase" / f"{time.strftime('%Y%m%d-%H%M%S')}-{os.getpid()}").resolve()
     out.mkdir(parents=True, exist_ok=True)
     fixture = build_fixture(out / "app.html")
     with sync_playwright() as p:
