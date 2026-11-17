@@ -2,13 +2,15 @@
 # Created by Calin Lupas with AI assistance. Credits: the repository's README.md (Authors and credits) and NOTICE.
 """Reusable browser checks for a showcase or prototype built as a product app (references/product-app.md).
 
-Usage:  python check-prototype.py <file.html | URL> [--layout app|page] [--tours short,full|none]
-                                 [--allow-unverified] [--quiet]
-        --tours none when the prototype has no Simulate tour; --layout page for a single-page layout.
+Usage:  python check-prototype.py <file.html | URL> [--layout app|page] [--shell full|lean]
+                                 [--tours short,full|none] [--allow-unverified] [--quiet]
+        --tours none when the prototype has no Simulate tour; --layout page for a single-page layout;
+        --shell lean for the lean shell (no search, notifications or user menu).
 Needs:  pip install playwright && python -m playwright install chromium
 
 Checks (each prints PASS/FAIL; exit code 1 on any FAIL):
-  app-shell        menu items [data-nav], theme switch [data-theme-toggle], header, footer, Ctrl+K search
+  app-shell        menu items [data-nav], theme switch [data-theme-toggle], header, footer
+                   (Ctrl+K search is checked under overlays, full shell only)
   header-row       the header's controls sit on one row (also at phone width: header-row-phone)
   contrast-<theme> every screen in both themes: text >= 4.5:1, large text >= 3:1 (text over images or
                    gradients can't be measured and fails unless --allow-unverified)
@@ -236,12 +238,12 @@ def check_contrast(page, run, layout, allow_unverified):
         run.check(name, not fails, detail if not fails else f"{len(fails)} failing: " + "; ".join(f"{k} (first on {v})" for k, v in list(fails.items())[:6]))
 
 
-def check_overlays(page, run):
+def check_overlays(page, run, shell):
     page.reload()   # a clean page: nothing left over from the contrast pass
     page.wait_for_timeout(400)
     close_all(page)
     ops = openers(page)
-    if not ops:
+    if not ops and shell == "full":
         run.check("overlays", False, "no overlay openers ([aria-controls][aria-expanded]) found")
         return
     problems, tested = [], set()
@@ -300,17 +302,19 @@ def check_overlays(page, run):
         if bad:
             problems.append(f"aria-expanded disagrees with what is shown for #{', #'.join(bad)}")
     close_all(page)
-    other = next(((h, oid) for h, oid in ops if page.evaluate("id => !document.getElementById(id).querySelector('input, textarea')", oid)), None)
-    if other:   # Ctrl+K while another overlay is open must leave only the search open
-        other[0].click()
-        page.wait_for_timeout(150)
-    page.keyboard.press("Control+k")
-    page.wait_for_timeout(200)
-    typing = page.evaluate("() => { const a = document.activeElement; return !!a && (/^(INPUT|TEXTAREA)$/.test(a.tagName) || a.isContentEditable); }")
-    if not typing:
-        problems.append("Ctrl+K did not open search with its input focused")
-    elif len(page.evaluate(OPEN_OVERLAYS_JS)) > 1:
-        problems.append("Ctrl+K left another overlay open")
+    typing = False
+    if shell == "full":   # the lean shell has no search
+        other = next(((h, oid) for h, oid in ops if page.evaluate("id => !document.getElementById(id).querySelector('input, textarea')", oid)), None)
+        if other:   # Ctrl+K while another overlay is open must leave only the search open
+            other[0].click()
+            page.wait_for_timeout(150)
+        page.keyboard.press("Control+k")
+        page.wait_for_timeout(200)
+        typing = page.evaluate("() => { const a = document.activeElement; return !!a && (/^(INPUT|TEXTAREA)$/.test(a.tagName) || a.isContentEditable); }")
+        if not typing:
+            problems.append("Ctrl+K did not open search with its input focused")
+        elif len(page.evaluate(OPEN_OVERLAYS_JS)) > 1:
+            problems.append("Ctrl+K left another overlay open")
     run.check("overlays", not problems, f"{len(tested)} overlays" if not problems else "; ".join(problems))
     running = False
     if typing:
@@ -338,6 +342,13 @@ def check_overlays(page, run):
     if field.as_element():
         field.as_element().focus()
         page.keyboard.type("x")
+        if shell == "lean":   # no search field: check the kit's shortcut in this field instead
+            page.keyboard.press("Control+Alt+2")
+            page.wait_for_timeout(250)
+            running = page.evaluate("() => !!(window.Simulate && Simulate.running)")
+            if running:
+                page.evaluate("Simulate.stop()")
+                field.as_element().focus()
         page.keyboard.press("Control+k")
         page.wait_for_timeout(200)
         host_ok = not page.evaluate(OPEN_OVERLAYS_JS)
@@ -345,7 +356,7 @@ def check_overlays(page, run):
         close_all(page)
     else:
         note = "no ordinary field on any screen, so the host's shortcuts were not tested while typing"
-    problems_t = [m for m in ("no field to type in (Ctrl+K search did not focus one)" if not typing else "",
+    problems_t = [m for m in ("no field to type in (Ctrl+K search did not focus one)" if shell == "full" and not typing else "",
                               "Ctrl+Alt+2 while typing started a tour" if running else "",
                               note if not host_ok else "") if m]
     run.check("typing", not problems_t, "; ".join(problems_t) if problems_t else note)
@@ -451,6 +462,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("target")
     ap.add_argument("--layout", choices=["app", "page"], default="app", help="page = a single-page layout the user asked for")
+    ap.add_argument("--shell", choices=["full", "lean"], default="full", help="lean = no search, notifications or user menu (the prototype default)")
     ap.add_argument("--tours", default="short,full", help="comma-separated Simulate scenarios, or 'none'")
     ap.add_argument("--allow-unverified", action="store_true", help="accept text over images/gradients, checked by eye")
     ap.add_argument("--quiet", action="store_true", help="print failures only")
@@ -478,7 +490,7 @@ def main():
             run.guard("header-row", check_header, page, run)
         run.guard("contrast", check_contrast, page, run, a.layout, a.allow_unverified)
         if a.layout == "app":
-            run.guard("overlays", check_overlays, page, run)
+            run.guard("overlays", check_overlays, page, run, a.shell)
             run.guard("mobile-drawer", check_mobile, page, run)
         if tours:
             run.guard("simulate", check_simulate, page, run, tours, warnings)

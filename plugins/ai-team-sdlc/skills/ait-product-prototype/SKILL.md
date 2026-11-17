@@ -61,6 +61,7 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 |-------|----------|-------|
 | design direction | yes | UX flows, wireframes, design tokens, and acceptance-ready UX notes from `ait-product-design`. |
 | fidelity | no | Low/mid/high; default to the lowest fidelity that lets stakeholders validate the flow. |
+| shell | no | `lean` (default) or `full`; see `ait-product-showcase` `references/product-app.md` §1. |
 | constraints | no | Brand, platform, accessibility, device, or design-system constraints. |
 | opt-ins | no | **Default none.** Enable only on explicit user request: `simulate` (narrated guided tour) and/or `peer-review` (one round of critic review). |
 | output folder | no | Default `specs/ui/` (resolved by `ait-artifact-layout`; see **Output files**). |
@@ -78,8 +79,10 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 3. Build the prototype at the versioned path in **Output files**, applying `frontend-design` for
    craft and `theme-factory` for the chosen tokens/theme. Keep it a spike — no backend, no
    production concerns. Use real data only when the user supplies it; otherwise stub data is fine.
-   Unless the user asks otherwise, lay it out as a **product app** with **light and dark themes
-   from the start** and the **overlay rules**, per the `ait-product-showcase` skill's
+   Unless the user asks otherwise, lay it out as a **product app** with the **lean shell** (the
+   **full shell** when the user asks, at high fidelity, or when the flow needs search,
+   notifications or the user menu), **light and dark themes from the start** and the **overlay
+   rules** for the overlays it has, per the `ait-product-showcase` skill's
    `references/product-app.md`, at this skill's fidelity (plain styling is fine). Don't ask about
    the look; build a single-page layout only on an explicit request.
    When the design direction or user names a target company, show its official logo following
@@ -89,8 +92,9 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
    states, capture console errors, test responsive breakpoints, and run an accessibility smoke pass.
    Check contrast on every screen in both themes and the overlay rules, with the
    `ait-product-showcase` skill's bundled `assets/check-prototype.py` when Python Playwright is
-   available and it can run (with `--tours none` unless the `simulate` opt-in is on, and `--layout page` for a
-   single-page layout the user asked for), otherwise the same checks through the MCP.
+   available and it can run (with `--shell lean` for the lean shell, `--tours none` unless the
+   `simulate` opt-in is on, and `--layout page` for a single-page layout the user asked for),
+   otherwise the same checks through the MCP.
    Use its `--mute-audio` launch setup during automated building/testing, including opt-in Simulate
    checks; leave delivered narration enabled.
    Here `ait-prototype-testing` runs as a **sub-step** and returns its evidence to you; **you** write the

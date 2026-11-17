@@ -241,7 +241,8 @@ than shrinking the type.
   otherwise describe the place generically.
 - **Prototype layout:** a product app (left menu, header with search and notifications, light and
   dark themes, footer with the data date and the disclosure, an Overview home screen), unless the
-  user asked for a single-page or presentation layout.
+  user asked for a single-page or presentation layout. A quick `ait-product-prototype` spike may
+  use the lean shell (no search, notifications or user menu).
 - **Reproducible demo path:**
   - the starting state;
   - the exact simulated outputs for the wow beat, so the builder does not improvise the reveal;

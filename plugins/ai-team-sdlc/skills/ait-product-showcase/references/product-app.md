@@ -27,6 +27,13 @@ explicitly asks for one. On the reproduce path, follow the source design instead
 - **Phones (≤760px).** The menu becomes a slide-out drawer opened from a menu button in the
   header; the header keeps the essentials on one row.
 
+That is the **full shell**, the `ait-product-showcase` default. The **lean shell** is the
+`ait-product-prototype` default: the left menu (collapsing and progress optional), a header with
+the breadcrumb and the light/dark switch, the footer, the Overview and the phone drawer; the
+search, notifications and user menu are left out. A prototype uses the full shell when the user
+asks for it, at high fidelity, or when the flow under test needs search, notifications or the user
+menu.
+
 ## 2. Themes
 - Build **light and dark from the start**, with theme tokens from day one: every colour comes from
   a token on `:root[data-theme="light"]` and `:root[data-theme="dark"]`. The first load follows
@@ -60,7 +67,7 @@ Plain ARIA and three data attributes, so the checks work on any prototype:
 - dialogs carry `role="dialog"` and `aria-modal="true"`;
 - the scenario menu items (in the user or help menu) carry `data-simulate-run="short"` and
   `"full"`, and anything only a demo needs carries `data-demo-only` (presentation mode hides both);
-- the search opener also opens on Ctrl+K and focuses its input.
+- the search opener (full shell) also opens on Ctrl+K and focuses its input.
 
 ## 5. Checking it
 Run the bundled harness when Python Playwright is available
@@ -72,7 +79,8 @@ python <skill>/assets/check-prototype.py showcase/<use-case>/v<N>.html
 
 It opens the file muted, visits every screen in both themes, checks contrast, the overlay rules,
 the phone drawer, the header row, both Simulate scenarios and presentation mode, and fails on any
-console error. Add `--layout page` for a single-page layout the user asked for, and `--tours none`
+console error. Add `--shell lean` for the lean shell, `--layout page` for a single-page layout the
+user asked for, and `--tours none`
 when the prototype has no Simulate tour. Text over an image or gradient can't be measured: put a
 solid scrim behind it, or check it by eye, rerun with `--allow-unverified` and say so in the
 handoff. Without Python, or when the harness can't run here (for example its path is outside the

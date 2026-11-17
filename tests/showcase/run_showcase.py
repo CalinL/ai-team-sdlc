@@ -231,9 +231,9 @@ def kit_tests(browser, fixture):
     pg.close()
 
 
-def run_harness(fixture):
+def run_harness(fixture, args=()):
     env = dict(os.environ, PYTHONIOENCODING="utf-8")
-    return subprocess.run([sys.executable, str(HARNESS), str(fixture), "--quiet"], capture_output=True, text=True,
+    return subprocess.run([sys.executable, str(HARNESS), str(fixture), "--quiet", *args], capture_output=True, text=True,
                           encoding="utf-8", errors="replace", env=env)
 
 
@@ -275,6 +275,16 @@ MUTATIONS = [
     ("menu not a drawer on phones", {"#side{display:none;position:fixed": "#side{position:fixed"}, {"mobile-drawer"}),
 ]
 
+# The lean shell (the ait-product-prototype default): no search, notifications or user menu.
+LEAN = {'<button class="ib" id="search-btn" aria-controls="search" aria-expanded="false">Search <span class="opt">Ctrl+K</span></button>': "",
+        '<button class="ib" id="notif-btn" aria-controls="notif" aria-expanded="false" aria-label="Notifications">🔔 3</button>': "",
+        '<button class="ib" id="user-btn" aria-controls="user-menu" aria-expanded="false">Dana · Adjuster</button>': "",
+        'if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openOverlay("search", $("#search-btn")); }': ""}
+LEAN_RUNS = [
+    ("lean shell, checked with --shell lean", ["--shell", "lean"], set()),
+    ("lean shell, checked as a full shell", [], {"overlays", "typing"}),
+]
+
 
 def main():
     out = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "tests" / "out" / "showcase" / f"{time.strftime('%Y%m%d-%H%M%S')}-{os.getpid()}").resolve()
@@ -285,10 +295,12 @@ def main():
         kit_tests(browser, fixture)
         browser.close()
     # The clean fixture and every mutation, 4 harness runs at a time (each is an independent browser).
-    jobs = [(fixture, None)] + [(build_fixture(out / f"mut-{i}.html", mut), (name, want)) for i, (name, mut, want) in enumerate(MUTATIONS)]
+    jobs = [(fixture, (), None)] + [(build_fixture(out / f"mut-{i}.html", mut), (), (name, want)) for i, (name, mut, want) in enumerate(MUTATIONS)]
+    lean = build_fixture(out / "lean.html", LEAN)
+    jobs += [(lean, args, (name, want)) for name, args, want in LEAN_RUNS]
     with ThreadPoolExecutor(max_workers=4) as pool:
-        runs = list(pool.map(lambda j: run_harness(j[0]), jobs))
-    for (_, expect), r in zip(jobs, runs):
+        runs = list(pool.map(lambda j: run_harness(j[0], j[1]), jobs))
+    for (_, _, expect), r in zip(jobs, runs):
         harness(r, expect)
     print(f"\nshowcase: {sum(RESULTS)}/{len(RESULTS)} as expected")
     return 0 if all(RESULTS) else 1
