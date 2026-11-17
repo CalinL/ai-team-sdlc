@@ -149,8 +149,8 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    comparison against the source. On the generate path, also check every screen's contrast in both
    themes and the overlay rules ([`references/product-app.md`](references/product-app.md) §3–§5):
    run the bundled harness [`assets/check-prototype.py`](assets/check-prototype.py) when Python
-   Playwright is available (`--tours none` if the user opted out of Simulate), otherwise the same
-   checks through the Playwright MCP. Fix all issues before proceeding. Here `ait-prototype-testing` runs
+   Playwright is available and it can run (`--tours none` if the user opted out of Simulate),
+   otherwise the same checks through the Playwright MCP. Fix all issues before proceeding. Here `ait-prototype-testing` runs
    as a **sub-step** and returns its evidence to you; **you** write the single inbox handoff.
 4. **Peer review (mandatory — two independent critics).** Spin up **two** review subagents and run
    them **in parallel**, each equipped with the `ait-product-design` skill. Prefer two strong models

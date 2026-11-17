@@ -233,8 +233,7 @@ than shrinking the type.
 - **Sample data:** the trigger (the request, document or event that starts the story) and the
   records each screen needs. Include enough rows for every state, plus the edge cases that create
   tension and the wow. Make it synthetic but plausible for the sector, and check that no
-  synthetic name (person, client, company, product, place) matches a real one; rename any that
-  does.
+  synthetic company, client or place name matches a real one; rename any that does.
 - **Calculation ledger:** every headline number in the brief and the demo (totals, rates,
   scenario outcomes) with its inputs, formula and result, reconciled so that the parts add up to
   the totals shown on every screen.

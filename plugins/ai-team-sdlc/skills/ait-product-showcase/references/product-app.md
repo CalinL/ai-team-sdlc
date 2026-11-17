@@ -75,9 +75,10 @@ the phone drawer, the header row, both Simulate scenarios and presentation mode,
 console error. Add `--layout page` for a single-page layout the user asked for, and `--tours none`
 when the prototype has no Simulate tour. Text over an image or gradient can't be measured: put a
 solid scrim behind it, or check it by eye, rerun with `--allow-unverified` and say so in the
-handoff. Without Python,
-run the same checks through the Playwright MCP (`ait-prototype-testing`); the harness's check list
-is the checklist, and its `CONTRAST_JS` snippet runs as-is in `browser_evaluate`.
+handoff. Without Python, or when the harness can't run here (for example its path is outside the
+workspace), run the same checks through the Playwright MCP (`ait-prototype-testing`); the harness's
+check list is the checklist, and its `CONTRAST_JS` snippet runs as-is in `browser_evaluate`. A
+harness that can't run never blocks the task on its own.
 
 When a new version changes a behaviour on purpose, update the checks that encoded the old one
 (and say so in `v<N>-changes.md`); never weaken a check to make a regression pass.
