@@ -23,6 +23,7 @@ Known pitfalls, handled here; keep them in mind when you add checks:
     attached instead.
   - The Simulate button is taller than other header controls, so "header height <= one control"
     fails falsely: check that the controls' vertical spans overlap instead.
+  - --mute-audio alone does not silence Web Speech on Windows: SILENT_JS stubs speechSynthesis.
   - Windows consoles default to a legacy code page: stdout is switched to UTF-8 so characters
     such as − and · in page text never crash printing.
 """
@@ -36,6 +37,16 @@ except (AttributeError, ValueError):
     pass
 
 from playwright.sync_api import sync_playwright
+
+# --mute-audio does not silence Web Speech on every OS (Windows speaks through the system voice), so
+# every test page also gets this init script: native speech is never called, and each utterance
+# "ends" on its own so the tour keeps its pacing. The delivered prototype is not changed.
+SILENT_JS = """(() => { try {
+  const s = window.speechSynthesis; if (!s) return;
+  s.speak = u => { setTimeout(() => { try { u.onend && u.onend(new Event("end")); } catch (e) { } }, 50); };
+  s.cancel = () => { }; s.pause = () => { }; s.resume = () => { };
+  if (window.SpeechSynthesisUtterance) Object.defineProperty(SpeechSynthesisUtterance.prototype, "volume", { get: () => 0, set: () => { }, configurable: true });
+} catch (e) { } })();"""
 
 # Runs as-is in the Playwright MCP's browser_evaluate as well.
 CONTRAST_JS = r"""() => {
@@ -311,7 +322,9 @@ def main():
     run, errors, warnings = Run(a.quiet), [], []
     with sync_playwright() as p:
         browser = p.chromium.launch(args=["--mute-audio"])
-        page = browser.new_page(viewport={"width": 1366, "height": 900})
+        context = browser.new_context(viewport={"width": 1366, "height": 900})
+        context.add_init_script(SILENT_JS)   # silent run: see SILENT_JS
+        page = context.new_page()
         page.on("console", lambda m: errors.append(m.text) if m.type == "error" else
                 (warnings.append(m.text) if m.type == "warning" and "[simulate]" in m.text else None))
         page.on("pageerror", lambda e: errors.append(str(e)))

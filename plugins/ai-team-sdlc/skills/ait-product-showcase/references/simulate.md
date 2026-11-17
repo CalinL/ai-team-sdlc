@@ -191,7 +191,9 @@ The narration is the demo. Write it like a presenter, not a tooltip.
 Run this with `ait-prototype-testing` (Playwright MCP). Serve over `http://` if the MCP blocks
 `file://`.
 Launch automated build/test browsers with `--mute-audio` using that skill's MCP configuration
-instructions. Keep the narration engine and controls intact; test muting must not silence the
+instructions. `--mute-audio` does not silence Web Speech on every OS (Windows speaks through the
+system voice), so also stub `speechSynthesis` in an init script, as the harness's `SILENT_JS`
+does. Keep the narration engine and controls intact; test muting must not silence the
 delivered showcase.
 - [ ] `▶ Simulate` is visible on load. Clicking it shows the panel, the hairline and the first beat.
 - [ ] Every `hl()`/`click()` target exists, with no `[simulate] … not found` warnings.
