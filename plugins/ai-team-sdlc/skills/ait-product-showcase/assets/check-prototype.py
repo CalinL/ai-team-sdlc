@@ -70,10 +70,17 @@ CONTRAST_JS = r"""() => {
     // Composite the text pixel and the background pixel through every ancestor: each one's background
     // goes under both, and its opacity fades both (group opacity), down to a white canvas.
     let tp = rgba(svg && cs.fill && !cs.fill.startsWith("url") ? cs.fill : cs.color), bp = [0, 0, 0, 0], unknown = false, gone = false;
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     for (let e = el; e; e = e.parentElement) {
       const s = getComputedStyle(e);
       if (+s.opacity === 0) { gone = true; break; }      // inside an invisible container (e.g. a hidden toast)
-      if (s.backgroundImage !== "none") { unknown = true; break; }
+      // A label positioned outside its parent (a chart axis label) is not painted on that parent.
+      if (e !== el && e !== document.body && e !== document.documentElement) {
+        const a = e.getBoundingClientRect();
+        if (cx < a.left || cx > a.right || cy < a.top || cy > a.bottom) { const o = +s.opacity; if (o < 1) { tp[3] *= o; bp[3] *= o; } continue; }
+      }
+      // An image or gradient matters only while the layers above it are still see-through.
+      if (s.backgroundImage !== "none" && bp[3] < 0.999) { unknown = true; break; }
       const b = rgba(s.backgroundColor); tp = over(tp, b); bp = over(bp, b);
       const o = +s.opacity; if (o < 1) { tp[3] *= o; bp[3] *= o; }
     }
@@ -91,16 +98,20 @@ CONTRAST_JS = r"""() => {
 # Overlays that are actually visible, whatever their openers' aria-expanded says. Only overlays whose
 # opener is visible count (on a desktop, the menu a hidden phone button controls is not an overlay).
 OPEN_OVERLAYS_JS = """() => { const vis = e => { if (!e) return false; const s = getComputedStyle(e), r = e.getBoundingClientRect();
-    return !e.hidden && s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
+    return !e.hidden && s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0
+      && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight; };
   return [...new Set([...document.querySelectorAll('[aria-controls][aria-expanded]')]
     .filter(o => vis(o) && !o.closest('.simbar, [data-simulate], [data-simulate-run]')).map(o => o.getAttribute('aria-controls')))]
     .filter(id => vis(document.getElementById(id))); }"""
 ARIA_MISMATCH_JS = """() => [...document.querySelectorAll('[aria-controls][aria-expanded]')].filter(o => o.getBoundingClientRect().width > 0)
   .filter(o => { const e = document.getElementById(o.getAttribute('aria-controls')); if (!e) return false;
-    const s = getComputedStyle(e), open = !e.hidden && s.display !== 'none' && s.visibility !== 'hidden' && e.getBoundingClientRect().width > 0;
+    const s = getComputedStyle(e), r = e.getBoundingClientRect(), open = !e.hidden && s.display !== 'none' && s.visibility !== 'hidden'
+      && r.width > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
     return (o.getAttribute('aria-expanded') === 'true') !== open; }).map(o => o.getAttribute('aria-controls'))"""
+# Shown = rendered AND on screen: a drawer slid off-canvas with a transform is closed.
 VISIBLE_JS = """id => { const e = document.getElementById(id); if (!e) return false;
-  const s = getComputedStyle(e), r = e.getBoundingClientRect(); return !e.hidden && s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0; }"""
+  const s = getComputedStyle(e), r = e.getBoundingClientRect(); return !e.hidden && s.display !== 'none' && s.visibility !== 'hidden'
+    && r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight; }"""
 
 
 class Run:
@@ -139,8 +150,8 @@ def is_open(page, oid):
     return page.evaluate(VISIBLE_JS, oid)
 
 
-FORCE_CLOSE_JS = """ids => ids.forEach(id => { const e = document.getElementById(id); if (!e) return; e.hidden = true; e.classList.remove('open');
-  e.style.display = 'none'; document.querySelectorAll(`[aria-controls="${id}"]`).forEach(o => o.setAttribute('aria-expanded', 'false')); })"""
+FORCE_CLOSE_JS = """ids => ids.forEach(id => { const e = document.getElementById(id); if (!e) return; e.hidden = true;
+  e.classList.remove('open', 'show', 'active'); document.querySelectorAll(`[aria-controls="${id}"]`).forEach(o => o.setAttribute('aria-expanded', 'false')); })"""
 
 
 def close_all(page):
@@ -188,53 +199,62 @@ def check_contrast(page, run, layout, allow_unverified):
             if screen != "page":
                 close_all(page)
                 if not visit(page, screen):
-                    fails.setdefault(f"{screen}: the menu item never became aria-current, so the screen was not verified", 1)
+                    fails.setdefault(f"the menu item never became aria-current, so the screen was not verified", screen)
                     continue
                 page.wait_for_timeout(200)
             res = page.evaluate(CONTRAST_JS)
             checked += res["checked"]
             skipped += res["skipped"]
             if not res["checked"]:
-                fails.setdefault(f"{screen}: no text could be measured", 1)
+                fails.setdefault(f"no text could be measured", screen)
             for f in res["fails"]:
-                fails.setdefault(f"{screen}: {f['where']} '{f['text']}' {f['ratio']}:1 < {f['need']}:1", 1)
-        for h, oid in openers(page) if layout == "app" else []:
+                fails.setdefault(f"{f['where']} '{f['text']}' {f['ratio']}:1 < {f['need']}:1", f"{screen}")
+            # Every overlay this screen offers (its own and the header's), opened one at a time.
+            for i in range(len(openers(page)) if layout == "app" else 0):
+                close_all(page)
+                ops = openers(page)   # re-acquired each time: opening and closing may re-render
+                if i >= len(ops):
+                    break
+                h, oid = ops[i]
+                h.click(timeout=3000)
+                page.wait_for_timeout(200)
+                if not is_open(page, oid):
+                    continue   # the overlay check reports it
+                res = page.evaluate(CONTRAST_JS)
+                checked += res["checked"]
+                skipped += res["skipped"]
+                for f in res["fails"]:
+                    fails.setdefault(f"{f['where']} '{f['text']}' {f['ratio']}:1 < {f['need']}:1", f"{screen} with #{oid} open")
             close_all(page)
-            h.click(timeout=3000)
-            page.wait_for_timeout(200)
-            if not is_open(page, oid):
-                continue   # the overlay check reports it
-            res = page.evaluate(CONTRAST_JS)
-            checked += res["checked"]
-            skipped += res["skipped"]
-            for f in res["fails"]:
-                fails.setdefault(f"#{oid} open: {f['where']} '{f['text']}' {f['ratio']}:1 < {f['need']}:1", 1)
-        close_all(page)
         if skipped and not allow_unverified:
             fails.setdefault(f"{skipped} text element(s) over images or gradients cannot be measured: put a solid scrim behind "
-                             "them, or check them by eye and rerun with --allow-unverified (record that in the handoff)", 1)
+                             "them, or check them by eye and rerun with --allow-unverified (record that in the handoff)", "page")
         detail = f"{checked} text elements measured, {skipped} over images/gradients" + (" accepted as checked by eye" if skipped else "")
         name = "contrast" if theme == "current" else f"contrast-{theme}"
         if theme == "current":
             detail += "; one theme only (no [data-theme-toggle])"
-        run.check(name, not fails, detail if not fails else f"{len(fails)} failing: " + "; ".join(list(fails)[:6]))
+        run.check(name, not fails, detail if not fails else f"{len(fails)} failing: " + "; ".join(f"{k} (first on {v})" for k, v in list(fails.items())[:6]))
 
 
 def check_overlays(page, run):
+    page.reload()   # a clean page: nothing left over from the contrast pass
+    page.wait_for_timeout(400)
     close_all(page)
     ops = openers(page)
     if not ops:
         run.check("overlays", False, "no overlay openers ([aria-controls][aria-expanded]) found")
         return
-    problems = []
-    for h, oid in ops:
+    problems, tested = [], set()
+
+    def test_opener(h, oid):
+        tested.add(oid)
         h.focus()
         h.click()
         page.wait_for_timeout(150)
         if not is_open(page, oid) or h.get_attribute("aria-expanded") != "true":
             problems.append(f"#{oid} did not open with aria-expanded=true")
             close_all(page)
-            continue
+            return
         if page.evaluate("id => document.getElementById(id).matches('[role=dialog][aria-modal=true]')", oid):
             stops = page.evaluate("""id => document.getElementById(id).querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])').length""", oid)
             for _ in range(min(stops + 2, 80)):   # one full cycle and then some
@@ -249,6 +269,24 @@ def check_overlays(page, run):
             close_all(page)
         elif not h.evaluate("e => document.activeElement === e"):
             problems.append(f"focus did not return to the opener of #{oid}")
+
+    for h, oid in ops:
+        test_opener(h, oid)
+    # Overlays that only some screens offer (a dialog on a detail screen, a filter panel).
+    for screen in page.eval_on_selector_all("[data-nav]", "es => [...new Set(es.map(e => e.dataset.nav))]"):
+        close_all(page)
+        if not visit(page, screen):
+            continue
+        page.wait_for_timeout(150)
+        for i in range(len(openers(page))):
+            close_all(page)
+            now = openers(page)
+            if i < len(now) and now[i][1] not in tested:
+                test_opener(*now[i])
+    close_all(page)
+    page.reload()
+    page.wait_for_timeout(400)
+    ops = openers(page)
     for (a, aid), (b, bid) in zip(ops, ops[1:]):
         close_all(page)
         a.click()
@@ -273,7 +311,7 @@ def check_overlays(page, run):
         problems.append("Ctrl+K did not open search with its input focused")
     elif len(page.evaluate(OPEN_OVERLAYS_JS)) > 1:
         problems.append("Ctrl+K left another overlay open")
-    run.check("overlays", not problems, f"{len(ops)} openers" if not problems else "; ".join(problems))
+    run.check("overlays", not problems, f"{len(tested)} overlays" if not problems else "; ".join(problems))
     running = False
     if typing:
         page.keyboard.type("x")
@@ -306,7 +344,7 @@ def check_overlays(page, run):
         note = "" if host_ok else "Ctrl+K opened an overlay while typing in a field"
         close_all(page)
     else:
-        note = "no ordinary field on the first screen, so the host's shortcuts were not tested while typing"
+        note = "no ordinary field on any screen, so the host's shortcuts were not tested while typing"
     problems_t = [m for m in ("no field to type in (Ctrl+K search did not focus one)" if not typing else "",
                               "Ctrl+Alt+2 while typing started a tour" if running else "",
                               note if not host_ok else "") if m]
@@ -330,7 +368,8 @@ def check_mobile(page, run):
     page.wait_for_timeout(400)
     close_all(page)
     check_header(page, run, "header-row-phone")
-    navs = [n for n in page.query_selector_all("[data-nav]") if n.is_visible()]
+    on_screen = "e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight; }"
+    navs = [n for n in page.query_selector_all("[data-nav]") if n.is_visible() and n.evaluate(on_screen)]
     drawer = [(h, oid) for h, oid in openers(page)
               if page.evaluate("id => !!document.getElementById(id) && !!document.getElementById(id).querySelector('[data-nav]')", oid)]
     if navs or not drawer:
@@ -339,7 +378,8 @@ def check_mobile(page, run):
         h, oid = drawer[0]
         h.click()
         page.wait_for_timeout(300)
-        opened = is_open(page, oid) and any(n.is_visible() for n in page.query_selector_all("[data-nav]"))
+        page.wait_for_timeout(300)   # let a slide-in transition finish
+        opened = is_open(page, oid) and any(n.is_visible() and n.evaluate(on_screen) for n in page.query_selector_all("[data-nav]"))
         page.keyboard.press("Escape")
         page.wait_for_timeout(300)
         closed = not is_open(page, oid)
@@ -398,7 +438,7 @@ def check_presentation(page, run, tours, layout):
       + [...document.querySelectorAll('.simfocus')].filter(e => getComputedStyle(e).outlineStyle !== 'none').length""")
     nav_ok = layout != "app" or any(n.is_visible() for n in page.query_selector_all("[data-nav]"))
     foot = page.query_selector("footer")
-    foot_ok = layout != "app" or bool(foot and foot.is_visible() and re.search(r"simulat|sample|fictional|illustrative|demo",
+    foot_ok = layout != "app" or bool(foot and foot.is_visible() and re.search(r"simulat|synthetic|sample|mock|fictional|fictitious|illustrative|demo",
                                                                                   foot.text_content() or "", re.I))
     page.evaluate("Simulate.stop()")
     page.wait_for_timeout(300)

@@ -504,10 +504,10 @@ render();
       const k = { Digit1: "short", Digit2: "full", KeyP: "present" }[e.code];
       if (k) { e.preventDefault(); if (!e.repeat) { if (k === "present") present(); else run(k); } return; }
     }
-    if (!st.on) return;
-    // Esc exits the tour, unless the viewer is typing in a field of their own (the host closes that
-    // overlay; a host that consumes Esc calls preventDefault, which is checked above).
+    // Esc exits the tour (and cancels a scenario waiting to start, even between two tours), unless the
+    // viewer is typing in a field of their own; a host that consumes Esc calls preventDefault (checked above).
     if (e.key === "Escape") { if (!typing || t === st.typing) stop(); return; }
+    if (!st.on) return;
     if (typing) return;
     if (e.key === "ArrowRight") next();
     else if (e.key === " " && !/^(BUTTON|A)$/.test(t.tagName) && !t.closest(".sim-text")) { e.preventDefault(); togglePause(); }

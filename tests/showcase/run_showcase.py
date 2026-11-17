@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -230,10 +231,13 @@ def kit_tests(browser, fixture):
     pg.close()
 
 
-def harness(fixture, expect_fail=None):
+def run_harness(fixture):
     env = dict(os.environ, PYTHONIOENCODING="utf-8")
-    r = subprocess.run([sys.executable, str(HARNESS), str(fixture), "--quiet"], capture_output=True, text=True,
-                       encoding="utf-8", errors="replace", env=env)
+    return subprocess.run([sys.executable, str(HARNESS), str(fixture), "--quiet"], capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", env=env)
+
+
+def harness(r, expect_fail=None):
     failed = set(re.findall(r"^FAIL  (\S+)", r.stdout, re.M))
     if expect_fail is None:
         check("harness: the fixture app passes every check", r.returncode == 0, r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:])
@@ -241,8 +245,8 @@ def harness(fixture, expect_fail=None):
             print(r.stdout)
     else:
         name, want = expect_fail
-        ok = r.returncode == 1 and want <= failed
-        check(f"harness: mutation '{name}' fails {sorted(want)}", ok, f"failed={sorted(failed)}" + ("" if r.stdout else " " + (r.stderr or "")[-300:]))
+        ok = (r.returncode == 1 and want <= failed) if want else (r.returncode == 0 and not failed)
+        check(f"harness: mutation '{name}' " + (f"fails {sorted(want)}" if want else "still passes"), ok, f"failed={sorted(failed)}" + ("" if r.stdout else " " + (r.stderr or "")[-300:]))
 
 
 MUTATIONS = [
@@ -255,13 +259,19 @@ MUTATIONS = [
                                         'function show(id, on) { if (id === "side") $("#side").classList.toggle("open", on); else if (on) $("#" + id).hidden = false; }'}, {"overlays"}),
     ("two overlays open at once", {"closeAll(false); /* MUT:one-at-a-time */": ""}, {"overlays"}),
     ("focus not returned", {"if (restoreFocus && back) back.focus(); /* MUT:focus */": ""}, {"overlays"}),
-    ("Tab escapes the dialog", {'if (e.key === "Tab" && openId === "search") {': "if (false) {"}, {"overlays"}),
+    ("Tab escapes the dialog", {'if (e.key === "Tab" && openId && $("#" + openId).matches("[role=dialog]") /* MUT:trap-other */) {': "if (false) {"}, {"overlays"}),
+    ("Tab escapes a dialog on another screen", {'$("#" + openId).matches("[role=dialog]") /* MUT:trap-other */': 'openId === "search"'}, {"overlays"}),
     ("presentation mode shows the panel", {"body.sim-present .simbar,body.sim-present .simprog{display:none!important}":
                                            "body.sim-present .simprog{display:none!important}"}, {"presentation"}),
     ("presentation mode shows the progress line", {"body.sim-present .simbar,body.sim-present .simprog{display:none!important}":
                                                    "body.sim-present .simbar{display:none!important}"}, {"presentation"}),
     ("presentation mode shows the spotlight", {"body.sim-present .simfocus{outline:none!important;animation:none!important}": ""}, {"presentation"}),
     ("host shortcut fires while typing", {"if (typing) return; /* MUT:typing */": ""}, {"typing"}),
+    ("unreadable text in a first-screen overlay", {".help-tx{color:var(--ink-2)}": ".help-tx{color:#cfd3d8}"}, {"contrast-light"}),
+    ("photo/gradient page behind solid surfaces", {"body{margin:0;": "body{background-image:linear-gradient(#123,#456);margin:0;"}, set()),
+    ("drawer slides off-canvas (transform)", {"#side{display:none;position:fixed;top:56px;bottom:0;left:0;z-index:55;box-shadow:0 8px 24px rgba(0,0,0,.3)}\n  #side.open{display:flex}":
+                                              "#side{display:flex;position:fixed;top:56px;bottom:0;left:0;z-index:55;transform:translateX(-105%);transition:.2s}\n  #side.open{transform:none}"}, set()),
+    ("footer says synthetic data", {"Simulated data for demonstration": "Synthetic data for demonstration"}, set()),
     ("menu not a drawer on phones", {"#side{display:none;position:fixed": "#side{position:fixed"}, {"mobile-drawer"}),
 ]
 
@@ -274,9 +284,12 @@ def main():
         browser = p.chromium.launch(args=["--mute-audio"])
         kit_tests(browser, fixture)
         browser.close()
-    harness(fixture)
-    for i, (name, mut, want) in enumerate(MUTATIONS):
-        harness(build_fixture(out / f"mut-{i}.html", mut), (name, want))
+    # The clean fixture and every mutation, 4 harness runs at a time (each is an independent browser).
+    jobs = [(fixture, None)] + [(build_fixture(out / f"mut-{i}.html", mut), (name, want)) for i, (name, mut, want) in enumerate(MUTATIONS)]
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        runs = list(pool.map(lambda j: run_harness(j[0]), jobs))
+    for (_, expect), r in zip(jobs, runs):
+        harness(r, expect)
     print(f"\nshowcase: {sum(RESULTS)}/{len(RESULTS)} as expected")
     return 0 if all(RESULTS) else 1
 

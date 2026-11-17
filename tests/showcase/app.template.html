@@ -26,7 +26,9 @@ header .crumb{color:var(--ink-2)}header .sp{flex:1}
 .count{margin-left:auto;background:var(--accent-bg);color:var(--on-accent);border-radius:999px;padding:0 7px;font-size:12px}
 main{padding:20px;overflow:auto}
 .card{background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:16px;margin-bottom:12px}
-.muted{color:var(--ink-muted)}a{color:var(--accent-ink)}
+.chart{display:flex;align-items:flex-end;height:90px;padding:28px 0 26px}.bar{position:relative;width:34px;background:var(--accent-bg);border-radius:6px 6px 0 0}
+.bar-v,.bar-lb{position:absolute;left:50%;transform:translateX(-50%);font-style:normal;color:var(--ink-2);font-size:12px}.bar-v{top:-22px}.bar-lb{bottom:-22px}
+.muted{color:var(--ink-muted)}.help-tx{color:var(--ink-2)}a{color:var(--accent-ink)}
 footer{grid-column:1/3;padding:8px 16px;color:var(--ink-muted);background:var(--surface);border-top:1px solid var(--line-2);font-size:12px}
 .pop{position:fixed;top:60px;right:16px;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:12px;width:260px;z-index:50}
 #search{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:60}
@@ -61,8 +63,11 @@ footer{grid-column:1/3;padding:8px 16px;color:var(--ink-muted);background:var(--
   <button data-nav="insights">📈 <span class="lbl">Insights</span></button>
 </nav>
 <main id="view"></main>
-<p id="demo-note" data-demo-only class="muted" style="position:fixed;right:16px;bottom:44px;margin:0">Demo: press Ctrl+Alt+1 for a tour</p>
+<p id="demo-note" data-demo-only class="muted" style="position:fixed;right:16px;bottom:44px;margin:0;background:var(--surface);padding:2px 6px">Demo: press Ctrl+Alt+1 for a tour</p>
 <footer>Data as of 14 Nov 2026 · Simulated data for demonstration · Not an official product</footer>
+<div id="decide" role="dialog" aria-modal="true" aria-label="Decide" class="pop" hidden><p class="help-tx">Approve 4,200?</p>
+  <button class="ib">Approve</button> <button class="ib">Send back</button></div>
+<div class="pop" id="help" hidden><p class="help-tx">Decide each claim before 5 pm.</p></div>
 <div class="pop" id="notif" hidden><b>Notifications</b><p class="muted">Claim CLM-2041 needs a decision.</p></div>
 <div class="pop" id="user-menu" hidden><button class="ib" data-simulate-run="short">Play the 1-minute tour</button> <button class="ib" data-simulate-run="full">Play the full tour</button><p class="muted">Signed in as Dana</p></div>
 <div id="search" role="dialog" aria-modal="true" aria-label="Search" hidden><div class="box">
@@ -72,10 +77,12 @@ footer{grid-column:1/3;padding:8px 16px;color:var(--ink-muted);background:var(--
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const S = { view: "overview", claim: null };
 const VIEWS = {
-  overview: () => `<div class="card hero"><h2>Good morning, Dana</h2><p class="muted">3 claims need a decision today.</p><label class="muted">Filter <input id="filter" placeholder="Type to filter"></label></div>
+  overview: () => `<div class="card hero"><h2>Good morning, Dana</h2><p class="muted">3 claims need a decision today.</p><label class="muted">Filter <input id="filter" placeholder="Type to filter"></label>
+      <button class="ib" id="help-btn" aria-controls="help" aria-expanded="false">Help</button></div>
     <div class="card"><svg width="260" height="40" role="img" aria-label="Claims this week"><text x="4" y="24" fill="var(--ink-2)">Claims this week − 12 · trend</text></svg></div>`,
-  claims: () => `<div class="card"><b>CLM-2041</b> · water damage · <a href="#" id="open-claim">Open</a></div><div class="card" id="claim">${S.claim ? "Decision ready: approve 4,200." : "No claim open."}</div>`,
-  insights: () => `<div class="card kpis"><b>71%</b> <span class="muted">settled within 5 days</span></div>`
+  claims: () => `<div class="card"><b>CLM-2041</b> · water damage · <a href="#" id="open-claim">Open</a> <button class="ib" id="decide-btn" aria-controls="decide" aria-expanded="false">Decide</button></div><div class="card" id="claim">${S.claim ? "Decision ready: approve 4,200." : "No claim open."}</div>`,
+  insights: () => `<div class="card kpis"><b>71%</b> <span class="muted">settled within 5 days</span>
+    <div class="chart"><div class="bar" style="height:40px"><em class="bar-v">4.8d</em><span class="bar-lb">Mon</span></div></div></div>`
 };
 function toast(t) { const e = $("#toast"); e.textContent = t; e.classList.add("show"); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove("show"), 2600); }
 function nav(v) {
@@ -100,7 +107,7 @@ function openOverlay(id, by) {
   const b = $(`[aria-controls="${id}"]`); if (b) b.setAttribute("aria-expanded", "true");
   const f = $("#" + id).querySelector("input, button, [data-nav]"); if (f) f.focus();
 }
-$$("[aria-controls][aria-expanded]").forEach(b => b.addEventListener("click", () => openOverlay(b.getAttribute("aria-controls"), b)));
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[aria-controls][aria-expanded]"); if (b && !b.closest(".simbar")) openOverlay(b.getAttribute("aria-controls"), b); });
 $("#search-close").onclick = () => closeAll(true);
 $("#collapse").onclick = () => { const r = $("#side").classList.toggle("rail"); $("#collapse").setAttribute("aria-pressed", String(r)); };
 $$("[data-nav]").forEach(b => b.onclick = () => nav(b.dataset.nav));
@@ -109,8 +116,8 @@ if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement
 document.addEventListener("keydown", e => {
   const t = e.target, typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable;
   if (e.key === "Escape" && openId) { e.preventDefault(); closeAll(true); return; } /* MUT:esc */
-  if (e.key === "Tab" && openId === "search") {   /* MUT:trap */
-    const f = $$("#search input, #search button"), i = f.indexOf(document.activeElement);
+  if (e.key === "Tab" && openId && $("#" + openId).matches("[role=dialog]") /* MUT:trap-other */) {   /* MUT:trap */
+    const f = $$(`#${openId} input, #${openId} button`), i = f.indexOf(document.activeElement);
     e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); return;
   }
   if (typing) return; /* MUT:typing */
