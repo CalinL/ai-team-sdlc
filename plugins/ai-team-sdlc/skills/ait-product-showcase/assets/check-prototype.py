@@ -62,14 +62,19 @@ CONTRAST_JS = r"""() => {
   const lum = c => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
   const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
   const fails = [], seen = new Set(); let checked = 0, skipped = 0;
+  // The leftmost x the page can scroll to: 0 in LTR; in RTL, content overflowing to the left is reachable.
+  const de = document.scrollingElement || document.documentElement;
+  const minX = getComputedStyle(de).direction === "rtl" ? Math.min(0, innerWidth - de.scrollWidth) : 0;
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
     const el = n.parentElement; if (!el || seen.has(el) || !n.textContent.trim()) continue; seen.add(el);
     if (el.closest("script,style,noscript,[aria-hidden='true'],[hidden]") || el.closest(":disabled")) continue;
     const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || !r.height || cs.visibility !== "visible" || +cs.opacity === 0) continue;
-    // Off-canvas (a skip link at left:-999px) or screen-reader-only (1px, clipped): never seen.
-    if (r.right + scrollX <= 0 || r.bottom + scrollY <= 0 || (r.width <= 1 && r.height <= 1)) continue;
+    // Never seen: off-canvas beyond the scrollable page (a skip link at left:-999px), or
+    // screen-reader-only (1px and clipped; a 1px box with overflow:visible still shows its text).
+    const clipped = cs.overflow !== "visible" || cs.clip !== "auto" || cs.clipPath !== "none";
+    if (r.right + scrollX <= minX || r.bottom + scrollY <= 0 || (r.width <= 1 && r.height <= 1 && clipped)) continue;
     const svg = el.closest("svg");
     // Composite the text pixel and the background pixel through every ancestor: each one's background
     // goes under both, and its opacity fades both (group opacity), down to a white canvas.

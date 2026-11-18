@@ -274,6 +274,9 @@ MUTATIONS = [
     ("footer says synthetic data", {"Simulated data for demonstration": "Synthetic data for demonstration"}, set()),
     ("off-screen skip link and screen-reader-only text", {"<header>": '<a href="#main" style="position:absolute;left:-999px;color:#eee">Skip to content</a>'
                                                                        '<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);color:#eee">Screen reader note</span><header>'}, set()),
+    ("unreadable text in an unclipped 1px box", {"<header>": '<span style="position:absolute;top:120px;left:300px;width:1px;height:1px;white-space:nowrap;color:#eee">Overflowing label</span><header>'}, {"contrast-light"}),
+    ("unreadable text an RTL page scrolls to", {'<html lang="en" data-theme="light">': '<html lang="en" dir="rtl" data-theme="light">',
+                                                "<header>": '<span style="position:absolute;top:120px;left:-300px;color:#eee">Scrolled label</span><header>'}, {"contrast-light"}),
     ("menu not a drawer on phones", {"#side{display:none;position:fixed": "#side{position:fixed"}, {"mobile-drawer"}),
 ]
 
