@@ -31,14 +31,27 @@ logic is the part that is easy to get subtly wrong.
     (done, current, upcoming). Bonus beats get a `BONUS` tag, a tinted border, and a **seam** in the
     dots, so a presenter knows where the main story ends.
   - **Controls.** `🔊` mute, `⏸`/`▶` pause, `Next ⏭` and `✕` exit. Keyboard: `Esc` exits; `→`
-    goes to the next beat and `Space` pauses, but neither fires while the viewer is typing in a
-    field.
+      goes to the next beat, `Space` pauses and `M` mutes, but none of them fires while the viewer
+      is typing in a field.
 - **Spotlight** (`.simfocus`). The element being discussed gets a pulsing accent outline and
   scrolls to the centre of the view.
-- **Toasts** move to the top while simulating so the panel never covers them.
+  - **Toasts** move to the top while simulating so the panel never covers them, and the engine
+    clears them at the start of every beat, so no message from one beat lingers into the next.
 - **Mobile (≤760px).** The controls wrap above the transcript. The transcript clamps to two lines
   and expands on tap or keyboard. Only at this width is the transcript a toggle button; on desktop
   it is plain text and not a tab stop.
+  - **Two scenarios.** A **short** tour (about 1 minute: only the core value moments) and the
+    **full** tour (under 5 minutes: every main feature, end to end). Start either from a menu item
+    (`data-simulate-run="short"` or `"full"`), with `Ctrl+Alt+1` / `Ctrl+Alt+2`, or with
+    `Simulate.start("short" | "full")`; the `▶ Simulate` button plays the full tour. Both play the
+    same way every time.
+  - **Presentation mode** (for live demos and screen recordings). `Ctrl+Alt+P`, a menu item calling
+    `Simulate.present()`, or `?present` in the URL hides every walkthrough control: the trigger, the
+    scenario menu items, the progress line, the panel, the spotlight outline, and anything marked
+    `data-demo-only`. What remains looks and behaves like the real product, with its navigation and
+    its footer disclosure. Both scenarios run in it; `Esc` still exits. Add `?cursor` (or
+    `CONFIG.cursor: true`) for a visible pointer that glides to each spotlight and click, and
+    `?mute` (or `M`) to run without narration. Shortcuts never fire while the viewer is typing.
 
 ## 2. Voice
 The kit uses the Web Speech API (`speechSynthesis`), with no keys or libraries.
@@ -68,11 +81,11 @@ A walkthrough is an ordered array of **beats**:
   d: 11000,                        // minimum un-paused ms the beat stays on screen
   r: async () => { … },            // stage actions, using the helpers below
   extra: true,                     // optional: a bonus beat after the main story
-  last: true }                     // optional: hold 2.5s longer on the final frame
+  last: true }                     // optional: hold 2.5s longer on the final frame (Next skips it)
 ```
 
 For each beat, the engine:
-1. updates the panel;
+1. updates the panel and clears leftover messages (`CONFIG.dismiss`);
 2. starts speech **and** stage actions in parallel;
 3. waits until the speech has finished **and** `d` ms of un-paused time have passed since the beat
    started;
@@ -101,6 +114,16 @@ pause, Next and Exit stay in control:
 - `click(selectorOrElement)` spotlights briefly, then clicks. A missing target is a no-op with a
   warning.
 
+**Every beat sets up its own screen.** A beat's `r` first puts the prototype in the exact state
+the beat needs (view, persona, filters, open panel), then acts, so "Next" can never leave the
+narration ahead of the screen and each scenario plays the same way every time. Never rely on the
+previous beat having finished. Use one small helper for it, for example:
+
+```js
+const at = (view, patch = {}) => { Object.assign(S, patch); nav(view); };   // the state a beat needs
+// r: async () => { at("ask", { answer: "" }); await wait(500); await typeInto("#q", "…"); }
+```
+
 ## 4. Integrating into a prototype
 1. **CSS.** Paste `SIMULATE · CSS` into the prototype's `<style>`. It reads the theme tokens
    (`--accent`, `--info`, `--surface-*`, `--line-2`, `--tx*`, `--r-*`, `--sh-2`) and has fallbacks.
@@ -113,7 +136,9 @@ pause, Next and Exit stay in control:
    - Rename the `.toast` rules to the prototype's toast class, or delete them if it has none.
 2. **Button.** Put `SIMULATE · BUTTON` in the top bar. Any element with `data-simulate` is a trigger,
    so a second entry scene (a landing or host-app screen) can carry its own button. You may swap
-   `.sim-trigger` for the prototype's primary-button class.
+   `.sim-trigger` for the prototype's primary-button class. Put the two scenarios in a menu (the
+   user or help menu) as items carrying `data-simulate-run="short"` and `data-simulate-run="full"`,
+   and mark any other demo-only element `data-demo-only`.
 3. **Engine.** Paste `SIMULATE · ENGINE` after the prototype's own script. It is an IIFE: it declares
    no globals except `window.Simulate` (`start`, `stop`, `next`, `pause`, `running`), and it does
    not depend on the host's `$`/`$$` helpers. Edit only `CONFIG`:
@@ -122,7 +147,13 @@ pause, Next and Exit stay in control:
      put the viewer back exactly where they were. Also close any modal or drawer a beat opens.
    - `restoreOnFinish` — `true` returns to the snapshot after a full run; `false` stays on the
      final frame.
-   - `steps({ wait, hl, typeInto, click })` — returns the beats (see §5).
+   - `closeAll()` — close every menu, search, panel and dialog. The engine calls it when a tour
+     starts and when it exits or finishes, so Reset and Exit always leave a clean screen.
+   - `dismiss()` — hide transient messages; called at the start of every beat. The default hides
+     `.toast.show`; map it to the prototype's own toast.
+   - `steps({ wait, hl, typeInto, click })` — returns the beats of the **full** tour (see §5).
+   - `short({ … })` — returns the beats of the **short** tour (same helpers).
+   - `cursor` — `true` shows the visible pointer in every tour (`?cursor` does it per session).
 4. **Drive the real UI.** Call the prototype's own navigation, render and click handlers, so the
    walkthrough exercises the same code paths a user would.
 5. **Keep it self-contained.** Use no external scripts and no `fetch`, so it plays from `file://`
@@ -143,7 +174,10 @@ The narration is the demo. Write it like a presenter, not a tooltip.
 
   Then add optional `extra` bonus beats for breadth, such as a quick montage of the remaining
   features. Keep the main story to about 3 minutes; cover the remaining screens and personas in
-  bonus beats or the montage.
+  bonus beats or the montage. The whole full tour stays under 5 minutes.
+- **The short tour** is a separate script, not a cut of the full one: about 1 minute, only the
+  core value moments (typically Act 1 and the strongest moment), each beat setting up its own
+  screen.
 - **Perform, don't assert.** If a beat says something happens, the screen must show it happening.
 - **Land on the strongest in-scope moment.** Pick the most compelling thing the prototype actually
   does. Never add a feature just to have a moment to narrate.
@@ -159,7 +193,9 @@ The narration is the demo. Write it like a presenter, not a tooltip.
 Run this with `ait-prototype-testing` (Playwright MCP). Serve over `http://` if the MCP blocks
 `file://`.
 Launch automated build/test browsers with `--mute-audio` using that skill's MCP configuration
-instructions. Keep the narration engine and controls intact; test muting must not silence the
+instructions. `--mute-audio` does not silence Web Speech on every OS (Windows speaks through the
+system voice), so also stub `speechSynthesis` in an init script, as the harness's `SILENT_JS`
+does. Keep the narration engine and controls intact; test muting must not silence the
 delivered showcase.
 - [ ] `▶ Simulate` is visible on load. Clicking it shows the panel, the hairline and the first beat.
 - [ ] Every `hl()`/`click()` target exists, with no `[simulate] … not found` warnings.
@@ -172,6 +208,14 @@ delivered showcase.
       returns to the trigger.
 - [ ] The panel never hides the spotlighted element.
 - [ ] At mobile width, the transcript clamps and expands, and the controls are reachable.
+- [ ] Both scenarios start from their menu item and their shortcut, and two runs of each show the
+      same screens beat for beat. Pressing Next at any point never leaves the narration ahead of
+      the screen.
+- [ ] Next on the last beat ends the tour at once, and no toast survives into the next beat.
+- [ ] Presentation mode hides the trigger, scenario menu items, progress line, panel, spotlight
+      and `data-demo-only` elements; navigation and the footer disclosure stay. Both scenarios run
+      in it, with and without `?cursor` and narration.
+- [ ] Shortcuts do nothing while typing in a field; Exit closes every overlay.
 - [ ] If persona or theme switches exist, the tour works from each supported persona and in each
       supported theme, with the panel, icons and highlights legible throughout. Do not add personas
       or themes just to satisfy this check.
@@ -180,7 +224,8 @@ delivered showcase.
       as verified or not verified in the handoff, and never claim it without hearing it.
 
 ## 7. Gotchas
-- `speechSynthesis` requires a user gesture, which is why the tour starts only from the button.
+- `speechSynthesis` requires a user gesture, which is why a tour starts only from a user action:
+  the button, a scenario menu item or a shortcut.
 - Chrome may stop a long utterance after about 15 seconds. Keep beats short; the backstop is only a
   safety net.
 - `speechSynthesis.pause()` is unreliable on some engines. The engine also freezes its own clock, so

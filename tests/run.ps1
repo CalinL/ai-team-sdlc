@@ -1,10 +1,10 @@
 # Run the ai-team-sdlc test suite. Tiers 1–2 are free and deterministic (and run in CI); tiers 3–4
 # call models through the Copilot CLI and cost AI credits. See tests/README.md.
-#   pwsh tests/run.ps1                      # static + recipes (+ agent-harness dry run)
+#   pwsh tests/run.ps1                      # static + recipes + showcase browser tests (+ agent-harness dry run)
 #   pwsh tests/run.ps1 -Tier agents -Case layout-*
 #   pwsh tests/run.ps1 -Tier e2e -E2E default
 param(
-  [ValidateSet('static', 'recipes', 'agents', 'e2e', 'free', 'all')][string]$Tier = 'free',
+  [ValidateSet('static', 'recipes', 'showcase', 'agents', 'e2e', 'free', 'all')][string]$Tier = 'free',
   [string[]]$Case = @('*'),              # agents: case-name wildcards
   [int]$Runs = 0,                        # agents: override runs per case
   [string]$Model = '',                   # agents/e2e: override the model
@@ -28,6 +28,9 @@ if ($Tier -in 'static', 'free', 'all') {
 }
 if ($Tier -in 'recipes', 'free', 'all') {
   Step 'recipes' { & $python "$here/recipes/run_recipes.py" }
+}
+if ($Tier -in 'showcase', 'free', 'all') {
+  Step 'showcase browser tests' { & $python "$here/showcase/run_showcase.py" }
 }
 if ($Tier -in 'free', 'all') {
   Step 'agent harness dry run' { pwsh -NoProfile -File "$here/agents/run_agents.ps1" -DryRun -Runs 1 }

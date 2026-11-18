@@ -17,6 +17,9 @@ Follow the `ait-conventions` skill.
 > **Repurposed from Anthropic's `webapp-testing` skill (Apache-2.0, see `LICENSE.txt`).**
 > That skill wrote native Python Playwright scripts; this one uses the **Playwright MCP** tools
 > already available in VS Code Copilot and the CLI, so no Python/Node test harness is vendored.
+> The one exception is `ait-product-showcase`'s optional `assets/check-prototype.py` (Python
+> Playwright), which repeats the product-app checks (contrast in both themes, overlay rules,
+> Simulate) on demand; run it when Python Playwright is available, otherwise follow its checks here.
 
 ## Prototype testing vs. ait-qa-validation (the boundary)
 | | `ait-prototype-testing` (this skill) | `ait-qa-validation` |
@@ -59,7 +62,11 @@ If you are validating shipped, spec-derived behavior against acceptance criteria
 > identical — use whichever prefix your environment surfaces.
 
 **Silent automated runs.** During building and testing, launch Chromium/Edge with
-`--mute-audio` so Simulate narration does not play aloud. For Playwright MCP, merge
+`--mute-audio` so Simulate narration does not play aloud. `--mute-audio` alone does not silence
+Web Speech on every OS (Windows speaks through the system voice): also stub `speechSynthesis`
+before the page runs, with the `SILENT_JS` init script from `ait-product-showcase`'s
+`assets/check-prototype.py` (for the Playwright MCP, through its init-script option), or run
+that harness, which does it. For Playwright MCP, merge
 `"--mute-audio"` into `browser.launchOptions.args` in its JSON configuration (loaded with
 `--config`), preserving existing options, then relaunch the test browser; an already-running
 browser will not pick up launch arguments. If the host cannot configure the launch, report
@@ -83,7 +90,8 @@ Audible narration remains a separate, explicitly requested manual check in an un
 7. Record evidence (screenshots, the flows that passed/failed, console output) and map each result
    back to the UX intent so `ait-product-prototype` can close or revise the `prototype-review` gate.
 8. Contribute results to the **`prototype-review`** gate via the `ait-quality-gates` skill. Use only the
-   Playwright MCP and documented review criteria; do not invent or install test tooling.
+   Playwright MCP, the bundled harness above and documented review criteria; do not invent or
+   install other test tooling.
 9. **Handoff depends on how you were invoked:** when dispatched as a **standalone** task, write
    exactly one `inbox/<ts>-ait-product-designer-<task-id>.md` summarizing flows verified, findings,
    evidence, and gate results. When invoked as a **sub-step of `ait-product-prototype` or

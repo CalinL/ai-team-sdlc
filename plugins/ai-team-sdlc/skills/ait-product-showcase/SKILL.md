@@ -105,6 +105,13 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
      or `fetch`, so it can be emailed and still works when opened from `file://`.
      Apply `frontend-design` for craft and `theme-factory` for a clean, consistent theme. Reach for `web-artifacts-builder` (React/Tailwind/shadcn) **only**
      when the user explicitly asks for it or the prototype genuinely needs heavy state/routing.
+     **Build a real product app**, unless the user asks otherwise, per
+     [`references/product-app.md`](references/product-app.md): a collapsible left menu with
+     icons and progress; a header with breadcrumb, Ctrl+K search, notifications, a light/dark
+     switch and a user menu; a footer with the data date and the disclosure; an Overview home
+     screen; and a slide-out menu on phones. Don't ask about the look; switch to a single-page or
+     presentation layout only on an explicit request. Build **light and dark themes from the
+     start**, on theme tokens that keep solid backgrounds separate from ink colours.
    - **Reproduce path** (a visual design already exists): delegate the build to
      `ait-wireframe-to-frontend` (token/component extraction, screen scaffolding, faithful
      reproduction). Do **not** invent elements the source does not contain. Pass it the resolved
@@ -114,7 +121,8 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    Either way: **no backend**. Use the real data the user supplies (in the source or alongside it)
    where it is available and appropriate for the audience; fill every gap with **realistic mock
    data**. Show one clear, **persistent** prototype-level disclosure of simulated data, visible
-   during normal browsing and Simulate (e.g. a header chip or footer); it satisfies the
+   during normal browsing and Simulate (in the app footer on the generate path; on the reproduce
+   path, where the source design puts it, e.g. a header chip); it satisfies the
    "labelled simulated" rule, so do not clutter screens with per-figure caveats. With mixed real and
    mock data, record which figures are sourced and which are simulated in the handoff. Keep data consistent across screens, and keep
    every screen visually consistent (brand, tone, spacing). Build only the scope the source asks
@@ -138,7 +146,11 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    accessibility smoke pass. Use its `--mute-audio` launch setup for all automated build/test runs,
    including Simulate checks; leave delivered narration enabled. On the reproduce path also run
    `ait-wireframe-to-frontend`'s pixel-diff
-   comparison against the source. Fix all issues before proceeding. Here `ait-prototype-testing` runs
+   comparison against the source. On the generate path, also check every screen's contrast in both
+   themes and the overlay rules ([`references/product-app.md`](references/product-app.md) §3–§5):
+   run the bundled harness [`assets/check-prototype.py`](assets/check-prototype.py) when Python
+   Playwright is available and it can run (`--tours none` if the user opted out of Simulate),
+   otherwise the same checks through the Playwright MCP. Fix all issues before proceeding. Here `ait-prototype-testing` runs
    as a **sub-step** and returns its evidence to you; **you** write the single inbox handoff.
 4. **Peer review (mandatory — two independent critics).** Spin up **two** review subagents and run
    them **in parallel**, each equipped with the `ait-product-design` skill. Prefer two strong models
@@ -153,10 +165,18 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    false or unsupportable). When you apply findings, fix what is weak rather than deleting the
    standout features — a "safe" version that loses the wow is a regression. When real data is in
    play, include **factual accuracy** in both critics' brief (no third critic): every claim, name
-   and figure is supported by the user's sources or covered by the simulated-data disclosure. Ask for *blocking · major · minor · missed opportunities · READY / NOT
-   READY*. Fix blocking and major issues and re-review; **do not stop** until both are READY. After
+   and figure is supported by the user's sources or covered by the simulated-data disclosure.
+   Always include a **finance and domain sanity pass** in both briefs: recompute every number on
+   screen and in the narration, and check that it makes economic sense. Typical slips: scenarios
+   that stack incompatible assumptions; one bad year's figures mixed with yearly averages; capital
+   losses counted as earnings; circular financing; headline totals that add exposures which don't
+   move together. Ask for *blocking · major · minor · missed opportunities · READY / NOT
+   READY*. If a reviewer returns an empty answer, ask it once to redo the review. Fix blocking and major issues and re-review; **do not stop** until both are READY. After
    **3 rounds** without agreement, stop iterating and hand the unresolved blockers to the user — the
-   task is `blocked`, never `done`, so nothing ships below the bar. Missed opportunities are suggestions, never scope changes without user
+   task is `blocked`, never `done`, so nothing ships below the bar. The user may choose to stop
+   once one critic is READY and the other's review is still pending: record that as the user's
+   decision, with the pending verdict, in the change summary `v<N>-changes.md` (create it for
+   `-v1` too) and in the handoff; it stands in for the second READY. Missed opportunities are suggestions, never scope changes without user
    approval (and never on the reproduce path). If a reviewer contradicts an explicit user
    instruction, follow the user and surface the disagreement. If the source may be confidential,
    confirm it may be shared with other models first (this includes any real data the user
@@ -178,7 +198,11 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    marked blocks of [`assets/simulate-kit.html`](assets/simulate-kit.html) (engine, live demo panel
    docked at the bottom with the transcript and controls) and follow
    [`references/simulate.md`](references/simulate.md) for voice preference, narration writing, and
-   the verification checklist.
+   the verification checklist. Script **two scenarios**: a short one (about 1 minute, only the core
+   value moments) and the full one (under 5 minutes, every main feature end to end). Every beat
+   sets up its own screen state before it acts, so Next never leaves the narration ahead of the
+   screen. Keep the kit's **presentation mode** working: it hides every walkthrough control for
+   live demos and recordings, and both scenarios run in it.
 7. **Optional extras (only those enabled in `showcase extras`).** Apply each enabled extra per
    [`references/optional-extras.md`](references/optional-extras.md); with none enabled, produce no
    extras and continue.
@@ -203,17 +227,23 @@ ideation (ait-product-design) → SHOWCASE PROTOTYPING (this skill) → specs (a
    - Any gap or "no" sends you back to fix it, then repeat this step (re-checks, critics, done-loop)
      within the same cumulative cap. Stop only when (a) has no gaps (apart from user-accepted
      exclusions), (b) is "yes", and the step 4 peer-review requirement is met: both critics are
-     READY, or the recorded waiver / human approvals stand in for them. If the cap runs out first,
+     READY, or the recorded waiver / human approvals / user's pending-review stop stand in for
+     them. If the cap runs out first,
      mark the task `blocked` with the open gaps; never `done`.
 9. Run the **`prototype-review`** gate through the `ait-quality-gates` skill. Note the gate verifies
    the *baseline* (prototype built and verified, flows work, no console errors, responsive, a11y
    smoke, stakeholder-validatable). The showcase-specific promises — **pixel/spec fidelity, both
-   critics READY on the final version (or the step 4 recorded waiver / human approvals), a done-loop
+   critics READY on the final version (or the step 4 recorded waiver / human approvals / user's
+   pending-review stop), a done-loop
    with no coverage gaps and a "yes" presenter test (both recorded in the handoff), a working
-   `Simulate` narration (unless the user opted out), and (if enabled) each showcase
+   `Simulate` narration (unless the user opted out) with both scenarios and presentation mode, on
+   the generate path the product-app layout (unless the user asked for another), contrast on every
+   screen in both themes and the overlay rules of `references/product-app.md` §3, and (if enabled)
+   each showcase
    extra** — are **explicit task acceptance criteria** this skill must also satisfy; record them in the
-   handoff. Use only the Playwright MCP and documented review criteria; do not invent or install test
-   tooling.
+   handoff. Use only the Playwright MCP, the bundled `assets/check-prototype.py` harness and
+   documented review criteria; do not invent or install other test tooling (the harness needs only
+   Python Playwright).
 10. Write exactly one `inbox/<ts>-ait-product-designer-<task-id>.md` file summarising the prototype,
    verification and review results, decisions, assumptions, risks, gate result, and the acceptance
    criteria above.
@@ -252,7 +282,9 @@ prototype until the user resolves or accepts them. This pre-build check
 does not use the step 4 round budget. Keep every supported feature, screen and demonstrated
 scenario of the previous version unless the user's feedback removes or replaces it; Simulate beats
 may be rewritten, combined or reordered as long as that coverage stays. Check this with a feature
-inventory before calling the version done, then finish the file with the change summary.
+inventory before calling the version done, then finish the file with the change summary. When the
+new version changes a behaviour on purpose, update the old tests and checks that encoded it, and
+list those updates in the change summary.
 
 ## Output
 ```

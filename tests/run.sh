@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Free tiers of the ai-team-sdlc test suite (static checks + recipes). Agent probes and E2E runs need
+# Free tiers of the ai-team-sdlc test suite (static checks, recipes, showcase browser tests). Agent probes and E2E runs need
 # PowerShell 7 and the Copilot CLI: see tests/README.md.
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 py="$(command -v python3 || command -v python)"
 export PYTHONIOENCODING=utf-8
 fail=0
-for step in "static/check_static.py" "static/self_test.py" "recipes/run_recipes.py"; do
+for step in "static/check_static.py" "static/self_test.py" "recipes/run_recipes.py" "showcase/run_showcase.py"; do
   printf '\n### %s\n' "$step"
   "$py" "$here/$step" || fail=1
 done

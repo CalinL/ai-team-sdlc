@@ -61,6 +61,7 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 |-------|----------|-------|
 | design direction | yes | UX flows, wireframes, design tokens, and acceptance-ready UX notes from `ait-product-design`. |
 | fidelity | no | Low/mid/high; default to the lowest fidelity that lets stakeholders validate the flow. |
+| shell | no | `lean` (default) or `full`; see `ait-product-showcase` `references/product-app.md` §1. |
 | constraints | no | Brand, platform, accessibility, device, or design-system constraints. |
 | opt-ins | no | **Default none.** Enable only on explicit user request: `simulate` (narrated guided tour) and/or `peer-review` (one round of critic review). |
 | output folder | no | Default `specs/ui/` (resolved by `ait-artifact-layout`; see **Output files**). |
@@ -78,11 +79,29 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 3. Build the prototype at the versioned path in **Output files**, applying `frontend-design` for
    craft and `theme-factory` for the chosen tokens/theme. Keep it a spike — no backend, no
    production concerns. Use real data only when the user supplies it; otherwise stub data is fine.
+   Unless the user asks otherwise, lay it out as a **product app** with the **lean shell**: a left
+   menu, a header with a breadcrumb and a light/dark switch, a footer with the data date and the
+   simulated-data disclosure, an Overview home screen, and a slide-out menu on phones. Use the
+   **full shell** (adding Ctrl+K search, notifications and a user menu) when the user asks, at high
+   fidelity, or when the flow needs them. Build **light and dark themes from the start** and follow
+   the **overlay rules** for the overlays it has (one open at a time, Esc closes the topmost, focus
+   returns to its opener, Tab stays inside dialogs, shortcuts are ignored while typing). Give it
+   the checker's hooks: menu items carry
+   `data-nav` (the active one `aria-current="page"`), the theme lives on `<html data-theme>` with a
+   `data-theme-toggle` switch, and overlay openers carry `aria-controls` and `aria-expanded`. The
+   details are in the `ait-product-showcase` skill's `references/product-app.md`; build it at this
+   skill's fidelity (plain styling is fine). Don't ask about the look; build a single-page layout
+   only on an explicit request.
    When the design direction or user names a target company, show its official logo following
    the `ait-product-showcase` skill's company-logo rule (retrieved from the company's own site,
    sanitised and embedded inline, unaltered, text-wordmark fallback).
 4. Verify it with `ait-prototype-testing` (Playwright MCP): walk each critical flow, check interaction
    states, capture console errors, test responsive breakpoints, and run an accessibility smoke pass.
+   Check contrast on every screen in both themes and the overlay rules, with the
+   `ait-product-showcase` skill's bundled `assets/check-prototype.py` when Python Playwright is
+   available and it can run (with `--shell lean` for the lean shell, `--tours none` unless the
+   `simulate` opt-in is on, and `--layout page` for a single-page layout the user asked for),
+   otherwise the same checks through the MCP.
    Use its `--mute-audio` launch setup during automated building/testing, including opt-in Simulate
    checks; leave delivered narration enabled.
    Here `ait-prototype-testing` runs as a **sub-step** and returns its evidence to you; **you** write the
@@ -94,7 +113,7 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
      engine. Keep it short and covering the critical flows; verify it as part of step 4's checks.
    - `peer-review`: run **one** round with two fresh critic subagents (different model family where
      available) given the same design direction plus the prototype. Ask for *blocking · major ·
-     minor*; fix blocking and major issues and re-verify. Extra rounds only on request. If a critic
+     minor*; if a critic returns an empty answer, ask it once to redo the review. Fix blocking and major issues and re-verify. Extra rounds only on request. If a critic
      contradicts an explicit user instruction, follow the user and surface the disagreement.
 6. Capture evidence (screenshots, the flows that passed/failed) and note where the prototype
    diverges from — or refines — the original design direction.
@@ -102,8 +121,10 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
    interactions, open questions, and constraints for `ait-tech-specs` and the Product Owner's PRD.
    Write them to the notes file in **Output files**.
 8. Run the **`prototype-review`** gate through the `ait-quality-gates` skill (prototype built and
-   verified, flows work, stakeholder-validatable). Use only the Playwright MCP and documented
-   review criteria; do not invent or install test tooling.
+   verified, flows work, stakeholder-validatable; contrast in both themes and the overlay rules
+   pass). Use only the Playwright MCP, the `ait-product-showcase` skill's bundled
+   `assets/check-prototype.py` harness and documented review criteria; do not invent or install
+   other test tooling.
 9. Write exactly one `inbox/<ts>-ait-product-designer-<task-id>.md` file summarizing the prototype,
    verification results, decisions, assumptions, risks, and gate results.
 10. Return the standard Result block.

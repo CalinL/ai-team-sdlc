@@ -1,0 +1,154 @@
+<!doctype html>
+<!-- Test fixture (not shipped): a minimal product app per ait-product-showcase/references/product-app.md.
+     tests/showcase/build_fixture.py injects the kit's SIMULATE blocks at the three markers and replaces
+     the engine's CONFIG with the one in #fixture-config, exactly as an author would. -->
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Claims Desk — fixture</title>
+<style>
+:root[data-theme="light"]{--bg:#f6f7f9;--surface:#ffffff;--surface-2:#eef0f3;--surface-3:#ffffff;--line-2:#d0d5dc;--accent-bg:#1f5fbf;
+  --ink:#1b1f24;--ink-2:#3d4652;--ink-muted:#59636e;--accent-ink:#1a56b0;--on-accent:#ffffff;--tx:#1b1f24;--tx-2:#3d4652;--tx-3:#59636e;--accent:#1f5fbf;--info:#1f5fbf}
+:root[data-theme="dark"]{--bg:#0f1318;--surface:#171c23;--surface-2:#222933;--surface-3:#1b2129;--line-2:#3a4350;--accent-bg:#2563c9;
+  --ink:#e8ecf1;--ink-2:#c3cbd5;--ink-muted:#9aa4b2;--accent-ink:#8cb8ff;--on-accent:#ffffff;--tx:#e8ecf1;--tx-2:#c3cbd5;--tx-3:#9aa4b2;--accent:#2563c9;--info:#2563c9}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 system-ui,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);display:grid;grid-template-columns:auto 1fr;grid-template-rows:56px 1fr auto;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+header{grid-column:1/3;display:flex;align-items:center;gap:10px;padding:0 16px;background:var(--surface);border-bottom:1px solid var(--line-2)}
+header .crumb{color:var(--ink-2)}header .sp{flex:1}
+.ib{border:1px solid var(--line-2);background:var(--surface-2);border-radius:8px;padding:6px 10px}
+#menu-btn{display:none}
+#side{background:var(--surface);border-right:1px solid var(--line-2);padding:12px 8px;display:flex;flex-direction:column;gap:4px;width:210px}
+#side.rail{width:60px}#side.rail .lbl{display:none}
+#side button[data-nav]{display:flex;gap:10px;align-items:center;border:0;background:transparent;border-radius:8px;padding:8px 10px;text-align:left}
+#side button[data-nav].on{background:var(--surface-2);font-weight:600}
+.count{margin-left:auto;background:var(--accent-bg);color:var(--on-accent);border-radius:999px;padding:0 7px;font-size:12px}
+main{padding:20px;overflow:auto}
+.card{background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:16px;margin-bottom:12px}
+.chart{display:flex;align-items:flex-end;height:90px;padding:28px 0 26px}.bar{position:relative;width:34px;background:var(--accent-bg);border-radius:6px 6px 0 0}
+.bar-v,.bar-lb{position:absolute;left:50%;transform:translateX(-50%);font-style:normal;color:var(--ink-2);font-size:12px}.bar-v{top:-22px}.bar-lb{bottom:-22px}
+.muted{color:var(--ink-muted)}.help-tx{color:var(--ink-2)}a{color:var(--accent-ink)}
+footer{grid-column:1/3;padding:8px 16px;color:var(--ink-muted);background:var(--surface);border-top:1px solid var(--line-2);font-size:12px}
+.pop{position:fixed;top:60px;right:16px;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:12px;width:260px;z-index:50}
+#search{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:60}
+#search .box{margin:80px auto;width:min(520px,92vw);background:var(--surface);border-radius:12px;padding:14px}
+#search input{width:100%;padding:10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface-2);color:var(--ink)}
+[hidden]{display:none!important}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);opacity:0;background:var(--surface);border:1px solid var(--line-2);padding:8px 14px;border-radius:8px;z-index:70}
+.toast.show{opacity:1}
+@media(max-width:760px){
+  body{grid-template-columns:1fr}
+  #menu-btn{display:inline-block}header .crumb,header .opt{display:none}
+  #side{display:none;position:fixed;top:56px;bottom:0;left:0;z-index:55;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+  #side.open{display:flex}
+}
+/* ==== SIMULATE CSS (injected) ==== */
+</style>
+</head>
+<body>
+<header>
+  <button class="ib" id="menu-btn" aria-controls="side" aria-expanded="false" aria-label="Menu">☰</button>
+  <b>Claims Desk</b><span class="crumb" id="crumb">Overview</span><span class="sp"></span>
+  <button class="ib" id="search-btn" aria-controls="search" aria-expanded="false">Search <span class="opt">Ctrl+K</span></button>
+  <button class="ib" id="notif-btn" aria-controls="notif" aria-expanded="false" aria-label="Notifications">🔔 3</button>
+  <button class="ib" data-theme-toggle aria-label="Switch theme">◐</button>
+  <button class="ib" id="user-btn" aria-controls="user-menu" aria-expanded="false">Dana · Adjuster</button>
+  <!-- ==== SIMULATE BUTTON (injected) ==== -->
+</header>
+<nav id="side" aria-label="Main">
+  <button class="ib" id="collapse" aria-pressed="false" aria-label="Collapse menu">⇤</button>
+  <button data-nav="overview" class="on">🏠 <span class="lbl">Overview</span></button>
+  <button data-nav="claims">📄 <span class="lbl">Claims</span><span class="count">12</span></button>
+  <button data-nav="insights">📈 <span class="lbl">Insights</span></button>
+</nav>
+<main id="view"></main>
+<p id="demo-note" data-demo-only class="muted" style="position:fixed;right:16px;bottom:44px;margin:0;background:var(--surface);padding:2px 6px">Demo: press Ctrl+Alt+1 for a tour</p>
+<footer>Data as of 14 Nov 2026 · Simulated data for demonstration · Not an official product</footer>
+<div id="decide" role="dialog" aria-modal="true" aria-label="Decide" class="pop" hidden><p class="help-tx">Approve 4,200?</p>
+  <button class="ib">Approve</button> <button class="ib">Send back</button></div>
+<div class="pop" id="help" hidden><p class="help-tx">Decide each claim before 5 pm.</p></div>
+<div class="pop" id="notif" hidden><b>Notifications</b><p class="muted">Claim CLM-2041 needs a decision.</p></div>
+<div class="pop" id="user-menu" hidden><button class="ib" data-simulate-run="short">Play the 1-minute tour</button> <button class="ib" data-simulate-run="full">Play the full tour</button><p class="muted">Signed in as Dana</p></div>
+<div id="search" role="dialog" aria-modal="true" aria-label="Search" hidden><div class="box">
+  <input id="q" placeholder="Search claims and screens…"><p class="muted">Try “CLM-2041”.</p><button class="ib" id="search-close">Close</button></div></div>
+<div class="toast" id="toast"></div>
+<script>
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const S = { view: "overview", claim: null };
+const VIEWS = {
+  overview: () => `<div class="card hero"><h2>Good morning, Dana</h2><p class="muted">3 claims need a decision today.</p><label class="muted">Filter <input id="filter" placeholder="Type to filter"></label>
+      <button class="ib" id="help-btn" aria-controls="help" aria-expanded="false">Help</button></div>
+    <div class="card"><svg width="260" height="40" role="img" aria-label="Claims this week"><text x="4" y="24" fill="var(--ink-2)">Claims this week − 12 · trend</text></svg></div>`,
+  claims: () => `<div class="card"><b>CLM-2041</b> · water damage · <a href="#" id="open-claim">Open</a> <button class="ib" id="decide-btn" aria-controls="decide" aria-expanded="false">Decide</button></div><div class="card" id="claim">${S.claim ? "Decision ready: approve 4,200." : "No claim open."}</div>`,
+  insights: () => `<div class="card kpis"><b>71%</b> <span class="muted">settled within 5 days</span>
+    <div class="chart"><div class="bar" style="height:40px"><em class="bar-v">4.8d</em><span class="bar-lb">Mon</span></div></div></div>`
+};
+function toast(t) { const e = $("#toast"); e.textContent = t; e.classList.add("show"); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove("show"), 2600); }
+function nav(v) {
+  S.view = v; $("#view").innerHTML = VIEWS[v](); $("#crumb").textContent = v[0].toUpperCase() + v.slice(1);
+  $$("[data-nav]").forEach(b => { b.classList.toggle("on", b.dataset.nav === v); if (b.dataset.nav === v) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); }); /* MUT:current */
+  const o = $("#open-claim"); if (o) o.onclick = e => { e.preventDefault(); S.claim = "CLM-2041"; nav("claims"); toast("Decision ready"); };
+  if (openId === "side") closeAll(false);
+}
+/* Overlays: one at a time, Esc closes the topmost, focus returns to the opener, Tab stays in dialogs. */
+let openId = null, opener = null;
+function show(id, on) { if (id === "side") $("#side").classList.toggle("open", on); else $("#" + id).hidden = !on; }
+function closeAll(restoreFocus) {
+  if (!openId) return;
+  show(openId, false); const b = $(`[aria-controls="${openId}"]`); if (b) b.setAttribute("aria-expanded", "false");
+  const back = opener; openId = null; opener = null;
+  if (restoreFocus && back) back.focus(); /* MUT:focus */
+}
+function openOverlay(id, by) {
+  if (openId === id) { closeAll(true); return; }
+  closeAll(false); /* MUT:one-at-a-time */
+  show(id, true); openId = id; opener = by || document.activeElement;
+  const b = $(`[aria-controls="${id}"]`); if (b) b.setAttribute("aria-expanded", "true");
+  const f = $("#" + id).querySelector("input, button, [data-nav]"); if (f) f.focus();
+}
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[aria-controls][aria-expanded]"); if (b && !b.closest(".simbar")) openOverlay(b.getAttribute("aria-controls"), b); });
+$("#search-close").onclick = () => closeAll(true);
+$("#collapse").onclick = () => { const r = $("#side").classList.toggle("rail"); $("#collapse").setAttribute("aria-pressed", String(r)); };
+$$("[data-nav]").forEach(b => b.onclick = () => nav(b.dataset.nav));
+$("[data-theme-toggle]").onclick = () => { const h = document.documentElement; h.dataset.theme = h.dataset.theme === "dark" ? "light" : "dark"; };
+if (matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.dataset.theme = "dark";
+document.addEventListener("keydown", e => {
+  const t = e.target, typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable;
+  if (e.key === "Escape" && openId) { e.preventDefault(); closeAll(true); return; } /* MUT:esc */
+  if (e.key === "Tab" && openId && $("#" + openId).matches("[role=dialog]") /* MUT:trap-other */) {   /* MUT:trap */
+    const f = $$(`#${openId} input, #${openId} button`), i = f.indexOf(document.activeElement);
+    e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); return;
+  }
+  if (typing) return; /* MUT:typing */
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openOverlay("search", $("#search-btn")); }
+});
+document.addEventListener("click", e => { if (openId && !e.target.closest(`#${openId}, [aria-controls="${openId}"]`)) closeAll(false); });
+nav("overview");
+</script>
+<!-- ==== SIMULATE ENGINE (injected) ==== -->
+<script id="fixture-config" type="text/plain">
+  const at = (view, patch = {}) => { closeAll(false); Object.assign(S, patch); nav(view); };
+  const CONFIG = {
+    trigger: "[data-simulate]",
+    badge: "Guided prototype · simulated data",
+    restoreOnFinish: true,
+    snapshot: () => ({ view: S.view, claim: S.claim }),
+    restore: s => at(s.view, { claim: s.claim }),
+    closeAll: () => closeAll(false),
+    dismiss: () => $("#toast").classList.remove("show"),
+    cursor: false,
+    steps: ({ wait, hl, click }) => [
+      { t: "Overview", d: 3000, n: "Dana starts on the overview.", r: async () => { at("overview"); await wait(300); hl(".hero"); } },
+      { t: "Open the claim", d: 3000, n: "One click opens the claim and the decision.", r: async () => { at("claims", { claim: null }); await wait(300); await click("#open-claim"); hl("#claim"); } },
+      { t: "Insights", d: 3000, n: "The owner sees how fast claims settle.", r: async () => { at("insights"); await wait(300); hl(".kpis"); } },
+      { t: "Back home", d: 2000, extra: true, last: true, n: "And back to the overview.", r: async () => { at("overview"); hl(null); } }
+    ],
+    short: ({ wait, hl, click }) => [
+      { t: "Open the claim", d: 3000, n: "One click, one decision.", r: async () => { at("claims", { claim: null }); await wait(300); await click("#open-claim"); hl("#claim"); } },
+      { t: "Insights", d: 3000, last: true, n: "And how fast claims settle.", r: async () => { at("insights"); await wait(300); hl(".kpis"); } }
+    ]
+  };
+</script>
+</body>
+</html>

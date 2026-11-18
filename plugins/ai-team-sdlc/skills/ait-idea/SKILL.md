@@ -154,10 +154,15 @@ Never overwrite an earlier run's files silently; ask first, or write new files a
      - be rigorous, specific and blunt;
      - have them form their own view of the company's biggest problems first;
      - flag anything factually wrong or not supported by its exact citation;
+     - recompute every number, starting from the brief's calculation ledger, and check that it
+       makes economic sense (no stacked incompatible assumptions, no bad year mixed with yearly
+       averages, no capital losses counted as earnings, no circular financing, no totals that add
+       exposures which don't move together);
      - flag anything generic or not buildable as a demo, and any idea with no wow;
      - do not sand off ambition: cut a claim only if it is false or unsupportable;
      - return *blocking · major · minor · missed opportunities · READY / NOT READY*.
-   - Fix the blocking and major findings, then re-review. If it is still not READY after 3 rounds,
+   - Fix the blocking and major findings, then re-review. If a reviewer returns an empty answer,
+     ask it once to redo the review. If it is still not READY after 3 rounds,
      stop as **NOT READY** and report the open findings to the user. Do not restart the budget.
 7. **Done-loop: "looks good" is not "done".** You are done only when all of these hold:
    - every requested deliverable exists and is complete;
@@ -227,7 +232,17 @@ than shrinking the type.
   when".
 - **Sample data:** the trigger (the request, document or event that starts the story) and the
   records each screen needs. Include enough rows for every state, plus the edge cases that create
-  tension and the wow. Make it synthetic but plausible for the sector.
+  tension and the wow. Make it synthetic but plausible for the sector, and check that no
+  synthetic company, client or place name matches a real one; rename any that does.
+- **Calculation ledger:** every headline number in the brief and the demo (totals, rates,
+  scenario outcomes) with its inputs, formula and result, reconciled so that the parts add up to
+  the totals shown on every screen.
+- **Locations:** name only office or site locations verified from the company's own sources;
+  otherwise describe the place generically.
+- **Prototype layout:** a product app (left menu, header with search and notifications, light and
+  dark themes, footer with the data date and the disclosure, an Overview home screen), unless the
+  user asked for a single-page or presentation layout. A quick `ait-product-prototype` spike may
+  use the lean shell (no search, notifications or user menu).
 - **Reproducible demo path:**
   - the starting state;
   - the exact simulated outputs for the wow beat, so the builder does not improvise the reveal;
@@ -247,7 +262,8 @@ than shrinking the type.
 ## Guardrails
 - **Facts about the company** come from cited public sources or from the user's material. Each
   citation must support the exact claim, not just the topic. Never invent statistics, quotes,
-  clients, systems or leadership statements.
+  clients, systems or leadership statements. Keep every quote in its original context: never
+  attach it to a topic, time or speaker it wasn't about.
 - **Sample data** in briefs is synthetic and labelled as such: invented people, clients and
   figures. Use real data only when the user supplies it and asks for it.
 - **No outcome promises:** keep ROI, savings percentages and headcount claims out of the

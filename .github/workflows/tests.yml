@@ -29,8 +29,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install PyYAML
-        run: python -m pip install --quiet pyyaml
+      - name: Install PyYAML and Playwright (Chromium)
+        run: |
+          python -m pip install --quiet pyyaml playwright
+          python -m playwright install --with-deps chromium
       - name: Install PowerShell (Linux images may not ship it)
         if: runner.os == 'Linux'
         run: command -v pwsh || sudo snap install powershell --classic
@@ -44,6 +46,8 @@ jobs:
           python tests/static/self_test.py
       - name: Recipes (bash, pwsh, Windows PowerShell on Windows)
         run: python tests/recipes/run_recipes.py
+      - name: Showcase browser tests (Simulate kit and check-prototype.py)
+        run: python tests/showcase/run_showcase.py
       - name: Agent harness dry run
         shell: pwsh
         run: ./tests/agents/run_agents.ps1 -DryRun -Runs 1

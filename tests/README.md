@@ -7,17 +7,18 @@ probes when you change a skill or agent; run the end-to-end lifecycles before a 
 |---|---|---|---|
 | 1. Static (`static/`) | Plugin files are well formed and match the change specs: front matter, agent policy, credit headers, vendored skills byte-identical, skill size, layout table = spec, no 1.1.0 output paths, approvals rules, 13 contract-mode blocks, relative links, versions and counts, JSON. A mutation self-test proves each check can fail. | free, seconds | CI + local |
 | 2. Recipes (`recipes/`) | The path-check and folder-digest recipes, extracted from `skills/ait-contract-mode/references/path-check-and-digests.md`, give the expected verdict on 28 fixtures in bash, PowerShell 7 and Windows PowerShell 5.1, and the same digests as a Python reference. | free, ~2 min | CI (Linux + Windows) + local |
+| 2b. Showcase (`showcase/`) | The Simulate kit (two scenarios, presentation mode, last-step Next, toasts, closeAll, shortcuts while typing) and the `check-prototype.py` harness: it passes a fixture product app built from the kit's own blocks, fails the matching check on mutated fixtures (contrast, group opacity, unmeasurable text, Esc, two overlays, focus, Tab traps, ARIA, presentation, host shortcuts while typing, phone drawer), and still passes the layouts that must pass (off-canvas drawer, chart labels, gradient page). All silent: speech is stubbed. | free, ~4 min | CI (Linux + Windows) + local |
 | 3. Agent probes (`agents/`) | Agents behave as the skills say, on small seeded repos: artifact placement (including a weak model), host rules and explicit folders, version series, Scribe writes only human records, sign-off validity against the release candidate, 1.1.0 carry-over, contract validation and activation, default mode applies no contract rule; from 1.1.2, branches and pull requests (cases carry a `Since` version and are skipped against older plugins). | ~300 AI credits for one run of every case (measured: 266 for 13 cases; the 5-run weak cases ~60 each) | local, Copilot CLI |
 | 4. End to end (`e2e/`) | A whole lifecycle in a scratch repo: default mode (idea → sign-off → deploy) and contract mode (brief → conformance → build → release acceptance → sign-off → deploy), with scripted human steps; asserts the layout, the approval rules, the tracking store and a fresh clone. | measured: default ≈ 360 credits / 20 min; contract ≈ 560 credits / 40 min | local, Copilot CLI |
 
 ## Running
 
-Requirements: Python 3.9+ with PyYAML, git, bash (Git Bash on Windows), PowerShell 7. Tiers 3–4 also
+Requirements: Python 3.9+ with PyYAML and Playwright (`python -m playwright install chromium`), git, bash (Git Bash on Windows), PowerShell 7. Tiers 3–4 also
 need the [Copilot CLI](https://docs.github.com/en/copilot/get-started/cli-quickstart) signed in, and Node.js
 for the E2E service's tests.
 
 ```powershell
-pwsh tests/run.ps1                                   # tiers 1–2 + agent-harness dry run (free)
+pwsh tests/run.ps1                                   # tiers 1–2b + agent-harness dry run (free)
 pwsh tests/run.ps1 -Tier agents                      # every agent probe, default runs
 pwsh tests/run.ps1 -Tier agents -Case layout-* -Runs 1
 pwsh tests/agents/run_agents.ps1 -List               # cases, models, runs, thresholds
@@ -25,7 +26,7 @@ pwsh tests/run.ps1 -Tier e2e -E2E default            # or contract, both
 ```
 
 ```bash
-bash tests/run.sh                                    # tiers 1–2 (+ dry run when pwsh is present)
+bash tests/run.sh                                    # tiers 1–2b (+ dry run when pwsh is present)
 ```
 
 Output goes to `tests/out/` (git-ignored): extracted recipes, transcripts (`run-<n>.log`), per-run
