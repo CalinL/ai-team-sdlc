@@ -79,12 +79,19 @@ ideation (ait-product-design) → PROTOTYPING (this skill) → specs (ait-tech-s
 3. Build the prototype at the versioned path in **Output files**, applying `frontend-design` for
    craft and `theme-factory` for the chosen tokens/theme. Keep it a spike — no backend, no
    production concerns. Use real data only when the user supplies it; otherwise stub data is fine.
-   Unless the user asks otherwise, lay it out as a **product app** with the **lean shell** (the
-   **full shell** when the user asks, at high fidelity, or when the flow needs search,
-   notifications or the user menu), **light and dark themes from the start** and the **overlay
-   rules** for the overlays it has, per the `ait-product-showcase` skill's
-   `references/product-app.md`, at this skill's fidelity (plain styling is fine). Don't ask about
-   the look; build a single-page layout only on an explicit request.
+   Unless the user asks otherwise, lay it out as a **product app** with the **lean shell**: a left
+   menu, a header with a breadcrumb and a light/dark switch, a footer with the data date and the
+   simulated-data disclosure, an Overview home screen, and a slide-out menu on phones. Use the
+   **full shell** (adding Ctrl+K search, notifications and a user menu) when the user asks, at high
+   fidelity, or when the flow needs them. Build **light and dark themes from the start** and follow
+   the **overlay rules** for the overlays it has (one open at a time, Esc closes the topmost, focus
+   returns to its opener, Tab stays inside dialogs, shortcuts are ignored while typing). Give it
+   the checker's hooks: menu items carry
+   `data-nav` (the active one `aria-current="page"`), the theme lives on `<html data-theme>` with a
+   `data-theme-toggle` switch, and overlay openers carry `aria-controls` and `aria-expanded`. The
+   details are in the `ait-product-showcase` skill's `references/product-app.md`; build it at this
+   skill's fidelity (plain styling is fine). Don't ask about the look; build a single-page layout
+   only on an explicit request.
    When the design direction or user names a target company, show its official logo following
    the `ait-product-showcase` skill's company-logo rule (retrieved from the company's own site,
    sanitised and embedded inline, unaltered, text-wordmark fallback).

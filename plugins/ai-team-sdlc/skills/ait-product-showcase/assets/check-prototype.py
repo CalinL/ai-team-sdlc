@@ -68,6 +68,8 @@ CONTRAST_JS = r"""() => {
     if (el.closest("script,style,noscript,[aria-hidden='true'],[hidden]") || el.closest(":disabled")) continue;
     const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || !r.height || cs.visibility !== "visible" || +cs.opacity === 0) continue;
+    // Off-canvas (a skip link at left:-999px) or screen-reader-only (1px, clipped): never seen.
+    if (r.right + scrollX <= 0 || r.bottom + scrollY <= 0 || (r.width <= 1 && r.height <= 1)) continue;
     const svg = el.closest("svg");
     // Composite the text pixel and the background pixel through every ancestor: each one's background
     // goes under both, and its opacity fades both (group opacity), down to a white canvas.

@@ -272,6 +272,8 @@ MUTATIONS = [
     ("drawer slides off-canvas (transform)", {"#side{display:none;position:fixed;top:56px;bottom:0;left:0;z-index:55;box-shadow:0 8px 24px rgba(0,0,0,.3)}\n  #side.open{display:flex}":
                                               "#side{display:flex;position:fixed;top:56px;bottom:0;left:0;z-index:55;transform:translateX(-105%);transition:.2s}\n  #side.open{transform:none}"}, set()),
     ("footer says synthetic data", {"Simulated data for demonstration": "Synthetic data for demonstration"}, set()),
+    ("off-screen skip link and screen-reader-only text", {"<header>": '<a href="#main" style="position:absolute;left:-999px;color:#eee">Skip to content</a>'
+                                                                       '<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);color:#eee">Screen reader note</span><header>'}, set()),
     ("menu not a drawer on phones", {"#side{display:none;position:fixed": "#side{position:fixed"}, {"mobile-drawer"}),
 ]
 
